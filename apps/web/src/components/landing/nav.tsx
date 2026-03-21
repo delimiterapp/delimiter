@@ -7,6 +7,14 @@ export function Nav() {
         </a>
         <div className="flex items-center gap-6">
           <a
+            href="https://github.com/syedos/delimiter"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-text-secondary transition-colors hover:text-text-primary"
+          >
+            GitHub
+          </a>
+          <a
             href="/docs"
             className="text-sm text-text-secondary transition-colors hover:text-text-primary"
           >
