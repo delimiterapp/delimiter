@@ -5,7 +5,9 @@ export function Footer() {
         <span>MIT open source</span>
         <span aria-hidden="true">&middot;</span>
         <a
-          href="https://github.com/delimiter"
+          href="https://github.com/syedos/delimiter"
+          target="_blank"
+          rel="noopener noreferrer"
           className="transition-colors hover:text-text-primary"
         >
           GitHub
