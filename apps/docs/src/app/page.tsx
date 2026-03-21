@@ -1,5 +1,13 @@
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useEffect } from 'react'
 
 export default function DocsHome() {
-  redirect('/getting-started/core-concepts')
+  useEffect(() => {
+    window.location.replace('/getting-started/core-concepts')
+  }, [])
+
+  return (
+    <meta httpEquiv="refresh" content="0;url=/getting-started/core-concepts" />
+  )
 }
