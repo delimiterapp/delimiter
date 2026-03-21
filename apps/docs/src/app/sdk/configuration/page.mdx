@@ -1,0 +1,53 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="SDK" page="CONFIGURATION">{children}</ContentLayout>
+}
+
+# Configuration
+
+## delimiter.init()
+
+Call once at app startup before wrapping any clients.
+
+```typescript
+import { delimiter } from '@delimiter/sdk'
+
+delimiter.init('dlm_your_project_key')
+```
+
+## Options
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| projectKey | string | Yes | — | Your project API key from delimiter.app. Starts with `dlm_`. |
+| options.app | string | No | "default" | App name tag for multi-app support. |
+| options.endpoint | string | No | "https://delimiter.app/api/report" | Custom reporting endpoint for self-hosted instances. |
+| options.enabled | boolean | No | true | Enable/disable reporting. Set to false in tests. |
+| options.debug | boolean | No | false | Log reports to console for debugging. |
+
+## Environment examples
+
+Production (default):
+
+```typescript
+delimiter.init('dlm_key')
+```
+
+Testing (disabled):
+
+```typescript
+delimiter.init('dlm_key', { enabled: false })
+```
+
+Development (debug logging):
+
+```typescript
+delimiter.init('dlm_key', { debug: true })
+```
+
+Self-hosted:
+
+```typescript
+delimiter.init('dlm_key', { endpoint: 'https://my-instance.com/api/report' })
+```

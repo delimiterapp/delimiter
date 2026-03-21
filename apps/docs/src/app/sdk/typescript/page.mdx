@@ -1,0 +1,39 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="SDK" page="TYPESCRIPT">{children}</ContentLayout>
+}
+
+# TypeScript
+
+## Type-safe wrapping
+
+The SDK is written in TypeScript and ships with type definitions. `delimiter.wrap()` preserves the original client's types.
+
+```typescript
+import { delimiter } from '@delimiter/sdk'
+import OpenAI from 'openai'
+
+delimiter.init('dlm_key')
+
+// openai is typed as OpenAI — full autocomplete, full type safety
+const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY! }))
+
+// All OpenAI types work as expected
+const response: OpenAI.Chat.ChatCompletion = await openai.chat.completions.create({
+  model: 'gpt-4o',
+  messages: [{ role: 'user', content: 'Hello' }]
+})
+```
+
+## How types are preserved
+
+- `delimiter.wrap<T>(client: T): T` — the return type matches the input type
+- The Proxy wrapper is transparent to TypeScript's type system
+- No type casting or assertions needed
+
+## No additional packages
+
+- No `@types/delimiter` package needed
+- Types are bundled with `@delimiter/sdk`
+- Works with TypeScript 5.0+

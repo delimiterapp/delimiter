@@ -1,0 +1,47 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="PROVIDERS" page="ANTHROPIC">{children}</ContentLayout>
+}
+
+# Anthropic
+
+## Supported headers
+
+Anthropic returns rate limit information on every API response:
+
+```
+anthropic-ratelimit-requests-limit: 4000
+anthropic-ratelimit-requests-remaining: 3201
+anthropic-ratelimit-tokens-limit: 400000
+anthropic-ratelimit-tokens-remaining: 312000
+anthropic-ratelimit-requests-reset: 2025-01-15T14:24:00Z
+anthropic-ratelimit-tokens-reset: 2025-01-15T14:23:15Z
+```
+
+## What gets parsed
+
+| Header | Parsed Field |
+| --- | --- |
+| `anthropic-ratelimit-requests-limit` | `requests_limit` |
+| `anthropic-ratelimit-requests-remaining` | `requests_remaining` |
+| `anthropic-ratelimit-tokens-limit` | `tokens_limit` |
+| `anthropic-ratelimit-tokens-remaining` | `tokens_remaining` |
+| `anthropic-ratelimit-requests-reset` | `reset_requests_ms` (parsed from ISO 8601) |
+| `anthropic-ratelimit-tokens-reset` | `reset_tokens_ms` (parsed from ISO 8601) |
+
+## Usage
+
+```typescript
+import { delimiter } from '@delimiter/sdk'
+import Anthropic from '@anthropic-ai/sdk'
+
+delimiter.init('dlm_key')
+const anthropic = delimiter.wrap(new Anthropic({ apiKey: process.env.ANTHROPIC_KEY }))
+
+await anthropic.messages.create({
+  model: 'claude-sonnet-4-20250514',
+  max_tokens: 1024,
+  messages: [{ role: 'user', content: 'Hello' }]
+})
+```
