@@ -1,0 +1,53 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="DASHBOARD" page="OVERVIEW">{children}</ContentLayout>
+}
+
+# Dashboard Overview
+
+The dashboard is the entire product. One screen, one glance.
+
+## Provider Health Cards
+
+A row of cards, one per connected provider. Each shows a health ring with color coding:
+
+- **Green**: below 50% of limit
+- **Yellow**: 50–80% of limit
+- **Red**: above 80% of limit
+
+Numbers below: current usage / limit for the highest-utilization metric. Cards appear automatically as providers are detected from SDK traffic.
+
+## Usage Bars
+
+Click any provider card to expand detailed metrics. Three progress bars per provider:
+
+- **Requests per minute**: current / limit
+- **Tokens per minute**: current / limit
+- **Tokens per day**: current / limit
+
+Color matches health status (green to yellow to red gradient). Updates in real time.
+
+## Timeline
+
+24-hour usage chart across all providers.
+
+- **X-axis**: time
+- **Y-axis**: usage (requests or tokens)
+- One line per provider, color-coded
+- Hover for exact numbers at any timestamp
+- Filter by: provider, app, time range (1h, 6h, 24h, 7d)
+
+## Alert Log
+
+Every threshold crossing is logged. Shows: timestamp, provider, metric, threshold crossed, current value / limit. Color-coded: yellow for warning, red for critical.
+
+## SDK Info
+
+- Your project key (always visible, with copy button)
+- List of apps currently reporting
+- List of detected providers
+
+## Empty State
+
+When you first sign in, the dashboard shows onboarding instructions. Your project key is pre-filled in a ready-to-copy code snippet. The moment your first SDK report arrives, the dashboard transitions to the live state.

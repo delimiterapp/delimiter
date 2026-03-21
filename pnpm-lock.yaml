@@ -66,9 +66,15 @@ importers:
 
   apps/web:
     dependencies:
-      docs:
-        specifier: workspace:*
-        version: link:../docs
+      '@mdx-js/loader':
+        specifier: ^3
+        version: 3.1.1
+      '@mdx-js/react':
+        specifier: ^3
+        version: 3.1.1(@types/react@19.2.14)(react@19.2.4)
+      '@next/mdx':
+        specifier: ^15
+        version: 15.5.14(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.2.14)(react@19.2.4))
       next:
         specifier: ^15
         version: 15.5.14(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -85,6 +91,12 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.2.2
+      '@tailwindcss/typography':
+        specifier: ^0.5
+        version: 0.5.19(tailwindcss@4.2.2)
+      '@types/mdx':
+        specifier: ^2
+        version: 2.0.13
       '@types/node':
         specifier: ^22
         version: 22.19.15

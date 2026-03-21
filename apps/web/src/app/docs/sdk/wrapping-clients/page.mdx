@@ -1,0 +1,49 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="SDK" page="WRAPPING CLIENTS">{children}</ContentLayout>
+}
+
+# Wrapping Clients
+
+## delimiter.wrap()
+
+Takes an AI provider client and returns a proxied version with identical types and API.
+
+```typescript
+const openai = delimiter.wrap(new OpenAI({ apiKey: '...' }))
+const anthropic = delimiter.wrap(new Anthropic({ apiKey: '...' }))
+```
+
+## How it works internally
+
+1. `delimiter.wrap(client)` returns a deep JavaScript Proxy around your AI client
+2. Property access (like `openai.chat.completions`) is proxied recursively
+3. When a method is called (like `.create()`), the Proxy wraps the return value
+4. If the return value is a Promise, the Proxy attaches a `.then()` handler
+5. The handler reads rate limit headers from the response object
+6. A fire-and-forget POST sends the parsed headers to the Delimiter API
+7. The original response is returned to your code, unchanged
+
+## Provider auto-detection
+
+The SDK automatically detects the provider from the client instance. No configuration needed — just pass the client to `wrap()`.
+
+- OpenAI clients are detected by the presence of `chat.completions`
+- Anthropic clients are detected by the presence of `messages`
+
+## Multiple providers
+
+You can wrap as many clients as you want. All report to the same dashboard under the same project key.
+
+```typescript
+const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY }))
+const anthropic = delimiter.wrap(new Anthropic({ apiKey: process.env.ANTHROPIC_KEY }))
+```
+
+## What the proxy doesn't change
+
+- All methods, properties, and types are preserved
+- Error handling works exactly as before
+- Streaming responses work exactly as before
+- The only addition: rate limit headers are read and reported after each response

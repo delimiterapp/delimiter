@@ -1,0 +1,39 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="GETTING STARTED" page="INSTALLATION">{children}</ContentLayout>
+}
+
+# Installation
+
+## Package managers
+
+```bash
+# npm
+npm install @delimiter/sdk
+
+# pnpm
+pnpm add @delimiter/sdk
+
+# yarn
+yarn add @delimiter/sdk
+```
+
+## Requirements
+
+- **Node.js 18** or later
+- One of the supported AI provider SDKs:
+  - `openai` v4+
+  - `@anthropic-ai/sdk` v0.20+
+
+## Peer dependencies
+
+The SDK does not install AI provider packages — you bring your own. This keeps the SDK lightweight and avoids version conflicts.
+
+Install whichever provider SDK you already use, then wrap it with Delimiter. If you add a new provider later, just install its SDK and wrap that client too.
+
+## TypeScript
+
+The SDK ships with TypeScript type definitions out of the box. No additional `@types` packages are needed.
+
+The wrapped client preserves the original client's types completely. Your editor's autocomplete, type checking, and go-to-definition all work exactly as they do with the unwrapped client.

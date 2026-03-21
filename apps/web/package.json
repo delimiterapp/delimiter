@@ -4,13 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "mkdir -p ./public/docs && cp -r ../docs/out/. ./public/docs/ && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "docs": "workspace:*",
+    "@mdx-js/loader": "^3",
+    "@mdx-js/react": "^3",
+    "@next/mdx": "^15",
     "next": "^15",
     "react": "^19",
     "react-dom": "^19",
@@ -18,6 +20,8 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5",
+    "@types/mdx": "^2",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
