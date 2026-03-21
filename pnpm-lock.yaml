@@ -66,6 +66,9 @@ importers:
 
   apps/web:
     dependencies:
+      docs:
+        specifier: workspace:*
+        version: link:../docs
       next:
         specifier: ^15
         version: 15.5.14(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
