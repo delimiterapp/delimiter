@@ -1,0 +1,44 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="GETTING STARTED" page="CORE CONCEPTS">{children}</ContentLayout>
+}
+
+# Core Concepts
+
+## What is Delimiter?
+
+Delimiter is a lightweight SDK that monitors AI API rate limits across providers in one dashboard. With just three lines of code, you get full visibility into your rate limit usage — and Delimiter never touches your API keys.
+
+## How it works
+
+The flow is simple:
+
+**Your App** → **AI Provider** → **Response** → **Delimiter reads headers** → **Dashboard updates**
+
+The SDK wraps your existing AI client using a JavaScript Proxy. When you make an API call, the response passes through completely unchanged — Delimiter just reads the rate limit headers that providers already include in every response.
+
+Reporting is async and fire-and-forget. Your application code runs exactly as it did before, with zero overhead in the critical path.
+
+## What Delimiter never does
+
+- **Never reads, stores, or transmits your API keys.** The SDK wraps your client after you've already configured it. Your keys stay in your environment.
+- **Never modifies requests or responses.** The Proxy pattern means your API calls are untouched. Delimiter is a passive observer.
+- **Never adds latency.** Header extraction and reporting happen asynchronously, after the response is already returned to your code.
+- **Never fails loudly.** If the Delimiter backend is unreachable, the SDK silently continues. Your application is never affected.
+
+## Supported providers
+
+| Provider | Status |
+| --- | --- |
+| OpenAI | Full headers on every response |
+| Anthropic | Full headers on every response |
+| Google Gemini | Coming soon |
+| Mistral | Coming soon |
+
+## Architecture
+
+Delimiter has two parts:
+
+- **SDK** (npm package) — wraps your AI clients, extracts rate limit headers from responses, and reports them asynchronously to the Delimiter backend.
+- **Dashboard** (web app) — receives reports from the SDK, aggregates the data, and displays your rate limit usage in real-time.

@@ -1,0 +1,49 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="PROVIDERS" page="OPENAI">{children}</ContentLayout>
+}
+
+# OpenAI
+
+## Supported headers
+
+OpenAI returns rate limit information on every API response:
+
+```
+x-ratelimit-limit-requests: 10000
+x-ratelimit-remaining-requests: 7342
+x-ratelimit-limit-tokens: 2000000
+x-ratelimit-remaining-tokens: 1456000
+x-ratelimit-reset-requests: 43s
+x-ratelimit-reset-tokens: 12s
+```
+
+## What gets parsed
+
+| Header | Parsed Field |
+| --- | --- |
+| `x-ratelimit-limit-requests` | `requests_limit` |
+| `x-ratelimit-remaining-requests` | `requests_remaining` |
+| `x-ratelimit-limit-tokens` | `tokens_limit` |
+| `x-ratelimit-remaining-tokens` | `tokens_remaining` |
+| `x-ratelimit-reset-requests` | `reset_requests_ms` (parsed from "43s" format) |
+| `x-ratelimit-reset-tokens` | `reset_tokens_ms` (parsed from "12s" format) |
+
+## Usage
+
+```typescript
+import { delimiter } from '@delimiter/sdk'
+import OpenAI from 'openai'
+
+delimiter.init('dlm_key')
+const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY }))
+
+// All OpenAI endpoints are monitored
+await openai.chat.completions.create({ model: 'gpt-4o', messages: [...] })
+await openai.embeddings.create({ model: 'text-embedding-3-small', input: '...' })
+```
+
+## Rate limit tiers
+
+OpenAI rate limits vary by model and usage tier. Delimiter shows your actual limits as reported by the API — no configuration needed.
