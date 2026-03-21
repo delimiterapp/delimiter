@@ -1,0 +1,51 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="API REFERENCE" page="REPORT ENDPOINT">{children}</ContentLayout>
+}
+
+# Report Endpoint
+
+The SDK sends rate limit data to this endpoint after each AI API call.
+
+## Endpoint
+
+- `POST https://delimiter.app/api/report`
+- For self-hosted: `POST https://your-instance.com/api/report`
+
+## Authentication
+
+Project key in the `Authorization` header:
+
+```
+Authorization: Bearer dlm_your_project_key
+```
+
+## Request body
+
+```json
+{
+  "app": "my-production-app",
+  "provider": "openai",
+  "model": "gpt-4o",
+  "timestamp": "2025-01-15T14:23:01.456Z",
+  "limits": {
+    "requests_limit": 10000,
+    "requests_remaining": 7342,
+    "tokens_limit": 2000000,
+    "tokens_remaining": 1456000,
+    "reset_requests_ms": 43000,
+    "reset_tokens_ms": 12000
+  }
+}
+```
+
+## Response
+
+- `200 OK` — report accepted
+- `401 Unauthorized` — invalid project key
+- `429 Too Many Requests` — report rate limit exceeded (free plan)
+
+## Behavior
+
+The SDK sends reports asynchronously (fire-and-forget). Reports are not retried on failure. If the endpoint is unreachable, the report is silently dropped. Your application is never affected by reporting failures.

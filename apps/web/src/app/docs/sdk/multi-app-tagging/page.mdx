@@ -1,0 +1,33 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="SDK" page="MULTI-APP TAGGING">{children}</ContentLayout>
+}
+
+# Multi-App Tagging
+
+## Why tag apps?
+
+If you run multiple services against the same AI provider accounts, you need to know which app is consuming your rate limits. Tagging lets you filter by app in the dashboard.
+
+## Usage
+
+```typescript
+delimiter.init('dlm_key', { app: 'my-production-app' })
+```
+
+```typescript
+// In your API service
+delimiter.init('dlm_key', { app: 'api-service' })
+
+// In your background worker
+delimiter.init('dlm_key', { app: 'background-worker' })
+```
+
+## Dashboard filtering
+
+The dashboard shows which app is consuming what percentage of your rate limits. Use the app filter dropdown to isolate specific apps. This tells you exactly which service to throttle when approaching limits.
+
+## Default app name
+
+If no app name is provided, reports are tagged as `"default"`. You can change this at any time by reinitializing with a new app name.

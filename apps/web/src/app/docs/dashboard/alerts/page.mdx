@@ -1,0 +1,45 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="DASHBOARD" page="ALERTS">{children}</ContentLayout>
+}
+
+# Alerts
+
+Get notified before your app starts returning 429 errors.
+
+## Thresholds
+
+Configure in the dashboard settings:
+
+- **Warning threshold**: default 70%
+- **Critical threshold**: default 90%
+
+Alerts fire when any provider's usage crosses a threshold.
+
+## Notification channels
+
+- **Email** — enabled by default, uses your account email
+- **Slack** — provide a webhook URL in settings
+- **Webhook** — any HTTP endpoint, receives a JSON payload
+
+## Alert payload
+
+Each alert includes:
+
+```json
+{
+  "provider": "openai",
+  "app": "my-production-app",
+  "metric": "requests",
+  "threshold": 90,
+  "current": 9102,
+  "limit": 10000,
+  "percentage": 91,
+  "timestamp": "2025-01-15T14:23:01.456Z"
+}
+```
+
+## Alert log
+
+All alerts are logged in the dashboard. View historical alerts with timestamp, provider, metric, and values.

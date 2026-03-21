@@ -4,7 +4,6 @@ const withMDX = createMDX({})
 
 const nextConfig = {
   output: 'export' as const,
-  basePath: '/docs',
   pageExtensions: ['tsx', 'mdx'],
 }
 
