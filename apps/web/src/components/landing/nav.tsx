@@ -15,7 +15,7 @@ export function Nav() {
             GitHub
           </a>
           <a
-            href="https://docs.delimiter.app"
+            href="/docs"
             className="text-sm text-text-secondary transition-colors hover:text-text-primary"
           >
             Docs

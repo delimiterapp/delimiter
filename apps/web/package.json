@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "mkdir -p ./public/docs && cp -r ../docs/out/. ./public/docs/ && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "docs": "workspace:*",
     "next": "^15",
     "react": "^19",
     "react-dom": "^19",
