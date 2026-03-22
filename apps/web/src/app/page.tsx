@@ -21,10 +21,10 @@ export default function Home() {
           <div className="ruler-line-subtle absolute top-0 bottom-0 right-20 hidden w-px lg:block" />
           {/* Horizontal tick marks — distributed along full height */}
           {Array.from({ length: 12 }).map((_, i) => (
-            <div key={`lt-${i}`} className="absolute left-8 hidden h-px w-6 bg-border/80 lg:block" style={{ top: `${4 + i * 8}%` }} />
+            <div key={`lt-${i}`} className="absolute left-8 hidden h-px w-8 bg-text-tertiary lg:block" style={{ top: `${4 + i * 8}%` }} />
           ))}
           {Array.from({ length: 12 }).map((_, i) => (
-            <div key={`rt-${i}`} className="absolute right-8 hidden h-px w-6 bg-border/80 lg:block" style={{ top: `${4 + i * 8}%` }} />
+            <div key={`rt-${i}`} className="absolute right-8 hidden h-px w-8 bg-text-tertiary lg:block" style={{ top: `${4 + i * 8}%` }} />
           ))}
         </div>
 
