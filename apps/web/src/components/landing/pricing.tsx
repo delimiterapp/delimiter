@@ -1,5 +1,3 @@
-'use client'
-
 function CheckCircleIcon() {
   return (
     <svg className="h-5 w-5 shrink-0 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -17,136 +15,33 @@ const pricingPoints = [
   'Priority support included',
 ]
 
-const useCases = [
-  {
-    title: 'AI Agent Web Access',
-    description:
-      'Give any AI agent eyes on the live web. Use scrape and markdown endpoints to read, parse, and reason over any page in real time.',
-  },
-  {
-    title: 'RAG & Knowledge Pipelines',
-    description:
-      'Crawl sitemaps, extract clean markdown, and feed your LLM knowledge base with structured, up-to-date web content; automatically.',
-  },
-]
-
 export function Pricing() {
   return (
-    <>
-      {/* Pricing */}
-      <section className="relative px-6 py-20">
-        {/* Ruler lines on both sides */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          {/* Left ruler */}
-          <div className="absolute top-0 bottom-0 left-8 hidden w-px border-l border-dashed border-border lg:block" />
-          <div className="absolute top-0 bottom-0 left-16 hidden w-px border-l border-dashed border-border/50 lg:block" />
-          {/* Right ruler */}
-          <div className="absolute top-0 bottom-0 right-8 hidden w-px border-r border-dashed border-border lg:block" />
-          <div className="absolute top-0 bottom-0 right-16 hidden w-px border-r border-dashed border-border/50 lg:block" />
-          {/* Horizontal tick marks - left */}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={`left-${i}`}
-              className="absolute left-8 hidden h-px w-4 bg-border lg:block"
-              style={{ top: `${12 + i * 10}%` }}
-            />
-          ))}
-          {/* Horizontal tick marks - right */}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={`right-${i}`}
-              className="absolute right-8 hidden h-px w-4 bg-border lg:block"
-              style={{ top: `${12 + i * 10}%` }}
-            />
-          ))}
-          {/* Corner marks */}
-          <div className="absolute top-12 left-8 hidden h-3 w-3 border-t border-l border-border lg:block" />
-          <div className="absolute top-12 right-8 hidden h-3 w-3 border-t border-r border-border lg:block" />
-          <div className="absolute bottom-12 left-8 hidden h-3 w-3 border-b border-l border-border lg:block" />
-          <div className="absolute bottom-12 right-8 hidden h-3 w-3 border-b border-r border-border lg:block" />
-        </div>
-
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-text-tertiary">
+    <section className="px-6 py-20">
+      <div className="mx-auto max-w-2xl text-center">
+        <div className="mb-6 flex justify-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold uppercase tracking-widest text-text-primary">
+            <svg className="h-3 w-3 text-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+            </svg>
             Pricing
-          </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-            Simple pricing. All inclusive.
-          </h2>
-
-          <div className="mx-auto mt-10 max-w-lg rounded-xl border border-border bg-surface/50 px-8 py-8">
-            <ul className="space-y-5">
-              {pricingPoints.map((point) => (
-                <li key={point} className="flex items-center justify-center gap-3 text-[15px] font-medium text-text-primary">
-                  <CheckCircleIcon />
-                  {point}
-                </li>
-              ))}
-            </ul>
-          </div>
+          </span>
         </div>
-      </section>
+        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          Simple pricing. All inclusive.
+        </h2>
 
-      {/* Use Cases */}
-      <section className="relative px-6 py-20">
-        {/* Ruler lines on both sides */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 bottom-0 left-8 hidden w-px border-l border-dashed border-border lg:block" />
-          <div className="absolute top-0 bottom-0 left-16 hidden w-px border-l border-dashed border-border/50 lg:block" />
-          <div className="absolute top-0 bottom-0 right-8 hidden w-px border-r border-dashed border-border lg:block" />
-          <div className="absolute top-0 bottom-0 right-16 hidden w-px border-r border-dashed border-border/50 lg:block" />
-          {/* Tick marks */}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={`left-uc-${i}`}
-              className="absolute left-8 hidden h-px w-4 bg-border lg:block"
-              style={{ top: `${12 + i * 10}%` }}
-            />
-          ))}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={`right-uc-${i}`}
-              className="absolute right-8 hidden h-px w-4 bg-border lg:block"
-              style={{ top: `${12 + i * 10}%` }}
-            />
-          ))}
-        </div>
-
-        <div className="mx-auto max-w-5xl">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold uppercase tracking-widest text-text-primary">
-              <svg className="h-3 w-3 text-[#4f6ef7]" viewBox="0 0 12 12" fill="currentColor">
-                <path d="M6 0L7.5 4.5L12 6L7.5 7.5L6 12L4.5 7.5L0 6L4.5 4.5Z" />
-              </svg>
-              Use Cases
-            </span>
-          </div>
-          <h2 className="mt-6 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-            What can you
-            <br />
-            do with{' '}
-            <span className="text-[#4f6ef7]">delimiter</span>?
-          </h2>
-          <p className="mt-4 max-w-xl text-lg text-text-secondary">
-            See how real-time rate limit monitoring powers AI agents, enrichment
-            pipelines, personalization, and intelligent automation.
-          </p>
-
-          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
-            {useCases.map((useCase) => (
-              <div
-                key={useCase.title}
-                className="rounded-xl border border-border bg-white p-8 transition-shadow hover:shadow-sm"
-              >
-                <h3 className="text-lg font-bold">{useCase.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-text-secondary">
-                  {useCase.description}
-                </p>
-              </div>
+        <div className="mx-auto mt-10 max-w-lg rounded-xl border border-border bg-surface/50 px-8 py-8">
+          <ul className="space-y-5">
+            {pricingPoints.map((point) => (
+              <li key={point} className="flex items-center justify-center gap-3 text-[15px] font-medium text-text-primary">
+                <CheckCircleIcon />
+                {point}
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   )
 }
