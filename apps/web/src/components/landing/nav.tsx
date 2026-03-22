@@ -1,4 +1,19 @@
+'use client'
+
+import { useState, useRef, useEffect } from 'react'
+
 export function Nav() {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-white/80 backdrop-blur-md">
       <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
@@ -27,12 +42,53 @@ export function Nav() {
             Docs
           </a>
           <div className="ml-2 h-5 w-px bg-border" />
-          <a
-            href="/sign-in"
-            className="ml-2 rounded-lg bg-text-primary px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90"
-          >
-            Sign in
-          </a>
+          <div className="relative ml-2" ref={ref}>
+            <button
+              onClick={() => setOpen(!open)}
+              className="inline-flex items-center gap-2 rounded-lg bg-text-primary px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+              Unlock
+              <svg className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </button>
+            {open && (
+              <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-border bg-white shadow-lg">
+                <a
+                  href="/sign-in"
+                  className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-surface"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-light text-accent">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.864 4.243A7.5 7.5 0 0119.5 10.5c0 2.92-.556 5.709-1.568 8.268M5.742 6.364A7.465 7.465 0 004.5 10.5a48.667 48.667 0 00-1.26 8.568M5.742 6.364a7.465 7.465 0 00-.246 1.636m13.5-4.243a7.465 7.465 0 011.004 3.743 48.52 48.52 0 01-.643 4.68M5.742 6.364A48.374 48.374 0 018.906 3.75a48.09 48.09 0 012.594-.472m9 9.75a48.09 48.09 0 01-2.594.472M12 12.75a2.25 2.25 0 002.25-2.25A2.25 2.25 0 0012 8.25a2.25 2.25 0 00-2.25 2.25A2.25 2.25 0 0012 12.75z" />
+                    </svg>
+                  </span>
+                  <div>
+                    <div className="font-medium text-text-primary">Sign in</div>
+                    <div className="text-xs text-text-tertiary">Passkey login &middot; Face / Touch ID</div>
+                  </div>
+                </a>
+                <div className="mx-4 border-t border-border" />
+                <a
+                  href="/sign-up"
+                  className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-surface"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-green/10 text-green">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+                    </svg>
+                  </span>
+                  <div>
+                    <div className="font-medium text-text-primary">Sign up</div>
+                    <div className="text-xs text-text-tertiary">Create account &middot; Passkey</div>
+                  </div>
+                </a>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
     </header>
