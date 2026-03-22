@@ -3,7 +3,10 @@ import { TopNav } from '@/components/docs/top-nav'
 import { Sidebar } from '@/components/docs/sidebar'
 
 export const metadata: Metadata = {
-  title: 'Delimiter Docs',
+  title: {
+    default: 'Docs',
+    template: '%s — Delimiter Docs',
+  },
   description: 'Developer documentation for Delimiter — AI rate limit monitoring SDK',
 }
 
