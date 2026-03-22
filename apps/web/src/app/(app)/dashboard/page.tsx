@@ -112,7 +112,7 @@ export default function Dashboard() {
           </div>
           <h2 className="text-lg font-semibold">Waiting for data</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
-            Once you wrap your AI client with the Delimiter SDK and make a request,
+            Once you initialize the Delimiter SDK and make an AI API request,
             rate limit data will appear here automatically.
           </p>
 
@@ -124,7 +124,7 @@ export default function Dashboard() {
                   <button
                     onClick={() =>
                       copy(
-                        `import { delimiter } from '@delimiter/sdk'\ndelimiter.init('${project.key}')\nconst openai = delimiter.wrap(new OpenAI())`
+                        `import { delimiter } from '@delimiter/sdk'\ndelimiter.init('${project.key}')`
                       )
                     }
                     className="text-xs text-white/40 transition-colors hover:text-white/70"
@@ -134,8 +134,7 @@ export default function Dashboard() {
                 </div>
                 <pre className="overflow-x-auto p-4 font-mono text-sm leading-relaxed text-code-text">
 {`import { delimiter } from '@delimiter/sdk'
-delimiter.init('${project.key}')
-const openai = delimiter.wrap(new OpenAI())`}
+delimiter.init('${project.key}')`}
                 </pre>
               </div>
             </div>

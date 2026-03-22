@@ -6,6 +6,10 @@ export default function Layout({ children }) {
 
 # Anthropic
 
+## Auto-detected
+
+Delimiter automatically detects requests to `api.anthropic.com` and reads rate-limit headers from every response. No setup needed beyond `delimiter.init()`.
+
 ## Supported headers
 
 Anthropic returns rate limit information on every API response:
@@ -37,7 +41,9 @@ import { delimiter } from '@delimiter/sdk'
 import Anthropic from '@anthropic-ai/sdk'
 
 delimiter.init('dlm_key')
-const anthropic = delimiter.wrap(new Anthropic({ apiKey: process.env.ANTHROPIC_KEY }))
+
+// Use Anthropic as normal — Delimiter monitors automatically
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY })
 
 await anthropic.messages.create({
   model: 'claude-sonnet-4-20250514',
@@ -45,3 +51,5 @@ await anthropic.messages.create({
   messages: [{ role: 'user', content: 'Hello' }]
 })
 ```
+
+Works the same with LangChain, Vercel AI SDK, or raw `fetch('https://api.anthropic.com/...')` calls.

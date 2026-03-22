@@ -26,25 +26,20 @@ This key identifies your project — it's not a secret, but keep it private.
 npm install @delimiter/sdk
 ```
 
-## 4. Wrap your AI clients
+## 4. Initialize Delimiter
 
 ```typescript
 import { delimiter } from '@delimiter/sdk'
-import OpenAI from 'openai'
 
 delimiter.init('dlm_your_project_key')
-
-const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY }))
-
-// Use it exactly as before
-const response = await openai.chat.completions.create({
-  model: 'gpt-4o',
-  messages: [{ role: 'user', content: 'Hello' }]
-})
 ```
 
-That's it. Three lines added to your existing code — `import`, `init`, and `wrap`.
+Add these two lines at the root of your application (e.g. `index.ts`, `server.ts`, or your app's entry point). That's it — no wrapping, no per-provider setup.
+
+Every AI API call your app makes is now automatically monitored.
 
 ## 5. Dashboard lights up
 
 The moment your first API call completes, your dashboard shows real-time rate limit data. Health cards appear for each provider, showing your current usage against the provider's limits.
+
+Add a new provider later? Switch from OpenAI to Anthropic? Use LangChain or Vercel AI SDK? Delimiter detects it automatically — no code changes needed.

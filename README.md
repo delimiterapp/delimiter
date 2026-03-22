@@ -5,7 +5,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/@delimiter/sdk.svg)](https://www.npmjs.com/package/@delimiter/sdk)
 
-Delimiter is a lightweight SDK that monitors your AI API rate limits across every provider in one dashboard. Three lines of code. Never touches your API keys.
+Delimiter is a lightweight SDK that monitors your AI API rate limits across every provider in one dashboard. Two lines of code. Zero maintenance. Never touches your API keys.
 
 [delimiter.app](https://delimiter.app)
 
@@ -22,16 +22,18 @@ Delimiter reads the rate limit headers that every AI API already returns on ever
 ## How It Works
 
 ```
-Your App → AI Provider SDK (wrapped by Delimiter) → API Response
-                                                        ↓
-                                              Delimiter reads headers
-                                                        ↓
-                                              Async POST to delimiter.app
-                                                        ↓
-                                              Dashboard updates in real time
+Your App → AI Provider API → Response
+                                 ↓
+                       Delimiter reads rate-limit headers
+                                 ↓
+                       Async POST to delimiter.app
+                                 ↓
+                       Dashboard updates in real time
 ```
 
-The SDK wraps your existing AI client using a JavaScript Proxy. When your app makes an API call, the response passes through unchanged — Delimiter just reads the rate limit headers off the response before handing it back. Reporting is async and fire-and-forget. If Delimiter's backend is down, your app doesn't notice.
+When you call `delimiter.init()`, the SDK hooks into Node's HTTP layer — `globalThis.fetch` and `http`/`https` modules. Every outbound request is checked against known AI provider domains (`api.openai.com`, `api.anthropic.com`, etc.). When a match is found, Delimiter reads the rate-limit headers from the response. Reporting is async and fire-and-forget. If Delimiter's backend is down, your app doesn't notice.
+
+This means Delimiter works with any AI SDK, any framework (LangChain, Vercel AI SDK, LiteLLM), or raw `fetch()` calls.
 
 ## Quick Start
 
@@ -47,25 +49,21 @@ Passkey auth — no passwords. Click, biometric confirms, you're in.
 npm install @delimiter/sdk
 ```
 
-### 4. Wrap your AI clients
+### 4. Initialize Delimiter
 
 ```javascript
 import { delimiter } from '@delimiter/sdk'
 
 delimiter.init('dlm_your_project_key')
 
-// Wrap your existing clients — that's it
-const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY }))
-const anthropic = delimiter.wrap(new Anthropic({ apiKey: process.env.ANTHROPIC_KEY }))
-
-// Use them exactly as before
+// That's it. All AI API calls are now automatically monitored.
 const response = await openai.chat.completions.create({
   model: 'gpt-4o',
   messages: [{ role: 'user', content: 'Hello' }]
 })
 ```
 
-Your dashboard lights up. That's it.
+Your dashboard lights up. Add a new provider later? Just start using it — Delimiter detects it automatically.
 
 ## What You See
 
@@ -89,10 +87,10 @@ Dashboard shows which app is consuming what percentage of your limits. You know 
 
 ## What The SDK Never Does
 
-- **Never reads, stores, or transmits your API keys.** You create your AI client with your own key. You pass the configured client to `delimiter.wrap()`. Delimiter only sees response headers.
+- **Never reads, stores, or transmits your API keys.** API keys are in request headers. Delimiter only reads response headers — rate-limit numbers, not credentials.
 - **Never modifies requests or responses.** Your API calls work exactly as before.
 - **Never adds latency.** Reporting is async, fire-and-forget. The POST to Delimiter happens after your response is returned.
-- **Never fails loudly.** If Delimiter's backend is down, the wrapper is transparent. Your app keeps working.
+- **Never fails loudly.** If Delimiter's backend is down, your app keeps working normally.
 
 ## What Headers Delimiter Reads
 
@@ -182,13 +180,12 @@ delimiter/
 ├── packages/
 │   └── sdk/                  # @delimiter/sdk — npm package
 │       └── src/
-│           ├── index.ts      # init(), wrap() exports
+│           ├── index.ts      # init() export
 │           ├── types.ts      # TypeScript definitions
+│           ├── instrument.ts # HTTP layer patching (fetch, http, https)
+│           ├── providers.ts  # Domain-to-provider mapping
 │           ├── headers.ts    # Header parsing per provider
-│           ├── reporter.ts   # Async fire-and-forget POST
-│           └── wrappers/
-│               ├── openai.ts
-│               └── anthropic.ts
+│           └── reporter.ts   # Async fire-and-forget POST
 └── apps/
     └── web/                  # Next.js — dashboard + API
         └── src/

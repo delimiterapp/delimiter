@@ -77,23 +77,13 @@ export default function Console() {
       language: 'bash',
     },
     {
-      title: 'Initialize with your project key',
-      description: 'Add this to your app entry point.',
+      title: 'Initialize Delimiter',
+      description: 'Add this to your app entry point. Every AI API call is automatically monitored.',
       code: `import { delimiter } from '@delimiter/sdk'
 
-delimiter.init('${project?.key || 'dlm_...'}')`,
-      language: 'typescript',
-    },
-    {
-      title: 'Wrap your AI client',
-      description: 'Wrap any supported provider — types are fully preserved.',
-      code: `import OpenAI from 'openai'
+delimiter.init('${project?.key || 'dlm_...'}')
 
-const openai = delimiter.wrap(
-  new OpenAI({ apiKey: process.env.OPENAI_KEY })
-)
-
-// Use openai as normal — delimiter monitors in the background`,
+// That's it. All AI API calls are now monitored automatically.`,
       language: 'typescript',
     },
   ]

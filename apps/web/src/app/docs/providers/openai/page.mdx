@@ -6,6 +6,10 @@ export default function Layout({ children }) {
 
 # OpenAI
 
+## Auto-detected
+
+Delimiter automatically detects requests to `api.openai.com` and reads rate-limit headers from every response. No setup needed beyond `delimiter.init()`.
+
 ## Supported headers
 
 OpenAI returns rate limit information on every API response:
@@ -37,12 +41,15 @@ import { delimiter } from '@delimiter/sdk'
 import OpenAI from 'openai'
 
 delimiter.init('dlm_key')
-const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY }))
 
-// All OpenAI endpoints are monitored
+// Use OpenAI as normal — Delimiter monitors automatically
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY })
+
 await openai.chat.completions.create({ model: 'gpt-4o', messages: [...] })
 await openai.embeddings.create({ model: 'text-embedding-3-small', input: '...' })
 ```
+
+Works the same with LangChain, Vercel AI SDK, or raw `fetch('https://api.openai.com/...')` calls.
 
 ## Rate limit tiers
 

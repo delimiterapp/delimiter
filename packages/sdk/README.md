@@ -1,8 +1,8 @@
 # @delimiter/sdk
 
-Lightweight rate limit monitoring for AI APIs. Wraps your existing OpenAI and Anthropic clients, reads response headers, reports to [delimiter.app](https://delimiter.app).
+Lightweight rate limit monitoring for AI APIs. Initialize once, monitor everything — [delimiter.app](https://delimiter.app).
 
-Zero interference. Zero latency. Never touches your API keys.
+Zero interference. Zero latency. Zero maintenance. Never touches your API keys.
 
 ## Install
 
@@ -14,19 +14,19 @@ pnpm add @delimiter/sdk
 yarn add @delimiter/sdk
 ```
 
+No peer dependencies. Works with any AI provider SDK, any framework, or raw `fetch()` calls.
+
 ## Quick Start
 
 ```javascript
 import { delimiter } from '@delimiter/sdk'
-import OpenAI from 'openai'
 
-// 1. Initialize with your project key (from delimiter.app dashboard)
+// Initialize once at app startup
 delimiter.init('dlm_your_project_key')
 
-// 2. Wrap your AI client
-const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY }))
+// Use your AI clients as normal — Delimiter monitors automatically
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY })
 
-// 3. Use it exactly as before
 const response = await openai.chat.completions.create({
   model: 'gpt-4o',
   messages: [{ role: 'user', content: 'Hello' }]
@@ -37,6 +37,8 @@ const response = await openai.chat.completions.create({
 
 ## Multiple Providers
 
+No extra setup needed. Use as many providers as you want — Delimiter detects them all.
+
 ```javascript
 import { delimiter } from '@delimiter/sdk'
 import OpenAI from 'openai'
@@ -44,13 +46,15 @@ import Anthropic from '@anthropic-ai/sdk'
 
 delimiter.init('dlm_your_project_key')
 
-const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY }))
-const anthropic = delimiter.wrap(new Anthropic({ apiKey: process.env.ANTHROPIC_KEY }))
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY })
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_KEY })
 
-// Both report to the same dashboard
+// Both are automatically monitored — no wrapping needed
 const chat = await openai.chat.completions.create({ model: 'gpt-4o', messages: [{ role: 'user', content: 'Hi' }] })
 const message = await anthropic.messages.create({ model: 'claude-sonnet-4-20250514', max_tokens: 1024, messages: [{ role: 'user', content: 'Hi' }] })
 ```
+
+Add Anthropic 6 months from now? Just start using it. Delimiter detects it automatically — no code changes.
 
 ## Multi-App Tagging
 
@@ -76,21 +80,9 @@ Initialize the SDK. Call once at app startup.
 | `options.enabled` | `boolean` | No | Enable/disable reporting. Defaults to `true`. Set to `false` in test environments. |
 | `options.debug` | `boolean` | No | Log reports to console. Defaults to `false`. |
 
-### `delimiter.wrap(client)`
-
-Wrap an AI provider client. Returns a proxied version of the same client with identical types and API.
-
-```typescript
-// TypeScript: return type matches input type
-const openai: OpenAI = delimiter.wrap(new OpenAI({ apiKey: '...' }))
-const anthropic: Anthropic = delimiter.wrap(new Anthropic({ apiKey: '...' }))
-```
-
-The wrapped client is a transparent proxy. All methods, properties, and types are preserved. The only difference: after each API response, Delimiter reads the rate limit headers and reports them asynchronously.
-
 ## What Gets Reported
 
-After every API call, the SDK extracts rate limit headers and sends a report:
+After every AI API call, the SDK extracts rate limit headers and sends a report:
 
 ```json
 {
@@ -113,22 +105,22 @@ This is sent as an async fire-and-forget POST. It never blocks your API call. If
 
 ## Supported Providers
 
-| Provider | Wrapper | Headers Parsed |
-|----------|---------|----------------|
-| **OpenAI** | `delimiter.wrap(new OpenAI(...))` | `x-ratelimit-limit-requests`, `x-ratelimit-remaining-requests`, `x-ratelimit-limit-tokens`, `x-ratelimit-remaining-tokens`, `x-ratelimit-reset-requests`, `x-ratelimit-reset-tokens` |
-| **Anthropic** | `delimiter.wrap(new Anthropic(...))` | `anthropic-ratelimit-requests-limit`, `anthropic-ratelimit-requests-remaining`, `anthropic-ratelimit-tokens-limit`, `anthropic-ratelimit-tokens-remaining`, `anthropic-ratelimit-requests-reset`, `anthropic-ratelimit-tokens-reset` |
+| Provider | Domain | Headers Parsed |
+|----------|--------|----------------|
+| **OpenAI** | `api.openai.com` | `x-ratelimit-limit-requests`, `x-ratelimit-remaining-requests`, `x-ratelimit-limit-tokens`, `x-ratelimit-remaining-tokens`, `x-ratelimit-reset-requests`, `x-ratelimit-reset-tokens` |
+| **Anthropic** | `api.anthropic.com` | `anthropic-ratelimit-requests-limit`, `anthropic-ratelimit-requests-remaining`, `anthropic-ratelimit-tokens-limit`, `anthropic-ratelimit-tokens-remaining`, `anthropic-ratelimit-requests-reset`, `anthropic-ratelimit-tokens-reset` |
 
-The SDK auto-detects the provider from the client instance. No configuration needed.
+The SDK auto-detects providers by domain. Works with official SDKs, LangChain, Vercel AI SDK, LiteLLM, or raw `fetch()` calls.
 
 ## Security
 
 **The SDK never touches your API keys.**
 
-You create your AI client with your own API key, stored however you want (env vars, Vault, AWS Secrets Manager). You pass the already-configured client to `delimiter.wrap()`. The SDK only sees response headers — rate limit numbers, not credentials.
+API keys are sent in request headers. Delimiter only reads response headers — rate limit numbers, not credentials. Your keys never leave your environment.
 
 **The SDK never modifies your requests or responses.**
 
-The Proxy wrapper intercepts method returns, not method inputs. Your API calls are identical with or without Delimiter.
+The HTTP instrumentation is read-only on responses. Your API calls are identical with or without Delimiter.
 
 **The SDK never adds latency to your API calls.**
 
@@ -137,6 +129,17 @@ Header extraction happens synchronously (nanoseconds). Reporting is a background
 **The SDK never fails loudly.**
 
 All reporting is wrapped in try/catch with silent failure. If Delimiter's backend is unreachable, the SDK does nothing. Your app continues working normally.
+
+## How It Works Internally
+
+1. `delimiter.init()` patches `globalThis.fetch` and Node's `http.request`/`https.request`
+2. On every outbound request, the SDK checks the URL against known AI provider domains
+3. Non-matching requests pass through with zero overhead
+4. For matching requests, the SDK reads rate-limit headers from the response
+5. A fire-and-forget POST sends the parsed headers to the Delimiter API
+6. The original response is returned to your code, unchanged
+
+This is the same auto-instrumentation technique used by Datadog, Sentry, and New Relic. It works with any HTTP client or framework because it sits at the network layer.
 
 ## Environments
 
@@ -156,40 +159,11 @@ delimiter.init('dlm_key', { endpoint: 'https://my-delimiter.example.com/api/repo
 
 ## TypeScript
 
-The SDK is written in TypeScript and ships type definitions. The wrapped client preserves the original client's types:
-
-```typescript
-import { delimiter } from '@delimiter/sdk'
-import OpenAI from 'openai'
-
-delimiter.init('dlm_key')
-
-// openai is typed as OpenAI — full autocomplete, full type safety
-const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY! }))
-
-// All OpenAI types work as expected
-const response: OpenAI.Chat.ChatCompletion = await openai.chat.completions.create({
-  model: 'gpt-4o',
-  messages: [{ role: 'user', content: 'Hello' }]
-})
-```
-
-## How It Works Internally
-
-1. `delimiter.wrap(client)` returns a deep [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) around your AI client
-2. Property access (like `openai.chat.completions`) is proxied recursively
-3. When a method is called (like `.create()`), the Proxy wraps the return value
-4. If the return value is a Promise, the Proxy attaches a `.then()` handler
-5. The handler reads rate limit headers from the response object
-6. A fire-and-forget POST sends the parsed headers to the Delimiter API
-7. The original response is returned to your code, unchanged
-
-The Proxy pattern means the SDK works with any method on any provider client — no need to enumerate every API endpoint. If the provider adds new endpoints, the SDK wraps them automatically.
+The SDK is written in TypeScript and ships type definitions. Since Delimiter works at the network layer, your AI client types are completely unaffected — no wrapping, no type changes, no generics to worry about.
 
 ## Requirements
 
 - Node.js 18+
-- One of: `openai` (v4+), `@anthropic-ai/sdk` (v0.20+)
 
 ## License
 

@@ -50,13 +50,12 @@ delimiter/
 ├── packages/
 │   └── sdk/                  # @delimiter/sdk — npm package
 │       ├── src/
-│       │   ├── index.ts      # Public API: init(), wrap()
+│       │   ├── index.ts      # Public API: init()
 │       │   ├── types.ts      # TypeScript interfaces
+│       │   ├── instrument.ts # HTTP layer patching (fetch, http, https)
+│       │   ├── providers.ts  # Domain-to-provider mapping and header definitions
 │       │   ├── headers.ts    # Rate limit header parsing per provider
-│       │   ├── reporter.ts   # Async reporting to backend
-│       │   └── wrappers/
-│       │       ├── openai.ts     # OpenAI client Proxy wrapper
-│       │       └── anthropic.ts  # Anthropic client Proxy wrapper
+│       │   └── reporter.ts   # Async reporting to backend
 │       ├── tsup.config.ts    # Build config (CJS + ESM output)
 │       ├── tsconfig.json
 │       └── package.json
@@ -124,8 +123,9 @@ pnpm typecheck
 The SDK is in `packages/sdk/`. In dev mode, tsup watches for changes and rebuilds. The web app picks up changes automatically since it references the SDK workspace package.
 
 Key files:
-- `src/headers.ts` — Add or modify header parsing for providers here
-- `src/wrappers/` — Each provider gets its own wrapper file
+- `src/instrument.ts` — HTTP layer patching (fetch, http.request, https.request)
+- `src/providers.ts` — Domain-to-provider mapping (add new providers here)
+- `src/headers.ts` — Rate limit header parsing per provider
 - `src/reporter.ts` — Reporting logic (batching, fire-and-forget)
 - `src/types.ts` — All shared TypeScript types
 
@@ -143,12 +143,12 @@ Key files:
 
 ### Adding a New Provider
 
-1. Add header parsing in `packages/sdk/src/headers.ts`
-2. Add a wrapper in `packages/sdk/src/wrappers/<provider>.ts`
-3. Register the provider in `packages/sdk/src/wrappers/index.ts`
-4. Add provider detection in `packages/sdk/src/index.ts` (the `wrap()` function)
-5. Add the provider's icon/logo to the web app
-6. Update the provider list in the dashboard
+1. Add the provider's domain to `packages/sdk/src/providers.ts`
+2. Add header parsing for the provider in `packages/sdk/src/headers.ts`
+3. Add the provider's icon/logo to the web app
+4. Update the provider list in the dashboard
+
+No wrapper code needed — the SDK detects providers by domain at the HTTP layer.
 
 ## Database
 

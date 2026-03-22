@@ -22,15 +22,14 @@ yarn add @delimiter/sdk
 ## Requirements
 
 - **Node.js 18** or later
-- One of the supported AI provider SDKs:
-  - `openai` v4+
-  - `@anthropic-ai/sdk` v0.20+
 
-## Peer dependencies
+## No peer dependencies
 
-The SDK does not install AI provider packages — you bring your own. This keeps the SDK lightweight and avoids version conflicts.
+Delimiter has zero peer dependencies. It works at the network layer — intercepting outbound HTTP requests to known AI provider domains and reading rate-limit headers from responses.
 
-Install whichever provider SDK you already use, then wrap it with Delimiter. If you add a new provider later, just install its SDK and wrap that client too.
+This means Delimiter works automatically with any AI provider SDK (OpenAI, Anthropic, etc.), any framework (LangChain, Vercel AI SDK, LiteLLM), or even raw `fetch()` calls. If it hits an AI API over HTTP, Delimiter sees it.
+
+Add a new provider 6 months from now? Just start using it. Delimiter detects it automatically — no code changes needed.
 
 ## TypeScript
 

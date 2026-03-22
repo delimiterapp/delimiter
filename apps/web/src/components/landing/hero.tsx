@@ -4,9 +4,7 @@ const snippet = `import { delimiter } from '@delimiter/sdk'
 
 delimiter.init('dlm_your_project_key')
 
-const openai = delimiter.wrap(
-  new OpenAI({ apiKey: process.env.OPENAI_KEY })
-)`
+// That's it. Every AI API call is now monitored.`
 
 export function Hero() {
   return (
@@ -22,7 +20,7 @@ export function Hero() {
           <span className="text-text-secondary">for AI apps.</span>
         </h1>
         <p className="mt-4 text-lg text-text-secondary">
-          Three lines of code. Every provider. One dashboard.
+          Two lines of code. Every provider. One dashboard.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
           <a
