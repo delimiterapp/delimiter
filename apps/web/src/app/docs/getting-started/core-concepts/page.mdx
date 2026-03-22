@@ -31,14 +31,27 @@ This means Delimiter works with any AI SDK, any framework (LangChain, Vercel AI 
 
 ## Supported providers
 
-| Provider | Status |
-| --- | --- |
-| OpenAI | Auto-detected — full headers on every response |
-| Anthropic | Auto-detected — full headers on every response |
-| Google Gemini | Coming soon |
-| Mistral | Coming soon |
+Delimiter works at the network layer — any AI provider that returns rate-limit headers over HTTP is automatically supported.
 
-New providers are added to the SDK's detection list over time. When a new provider is supported, your existing `delimiter.init()` call picks it up automatically — no code changes.
+| Provider | Domain | Status |
+| --- | --- | --- |
+| OpenAI | `api.openai.com` | Auto-detected |
+| Anthropic | `api.anthropic.com` | Auto-detected |
+| Google Gemini | `generativelanguage.googleapis.com` | Auto-detected |
+| Mistral | `api.mistral.ai` | Auto-detected |
+| Cohere | `api.cohere.com` | Auto-detected |
+| Groq | `api.groq.com` | Auto-detected |
+| DeepSeek | `api.deepseek.com` | Auto-detected |
+| xAI | `api.x.ai` | Auto-detected |
+| Perplexity | `api.perplexity.ai` | Auto-detected |
+| Together AI | `api.together.xyz` | Auto-detected |
+| Fireworks AI | `api.fireworks.ai` | Auto-detected |
+| Replicate | `api.replicate.com` | Auto-detected |
+| Azure OpenAI | `*.openai.azure.com` | Auto-detected |
+| Amazon Bedrock | `bedrock-runtime.*.amazonaws.com` | Auto-detected |
+| OpenRouter | `openrouter.ai` | Auto-detected |
+
+New providers are added to the SDK's detection list over time. When a new provider is added, your existing `delimiter.init()` call picks it up automatically — no code changes.
 
 ## Architecture
 

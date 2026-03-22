@@ -20,8 +20,21 @@ On every outbound HTTP request, the SDK checks the destination URL against a lis
 | --- | --- |
 | `api.openai.com` | OpenAI |
 | `api.anthropic.com` | Anthropic |
+| `generativelanguage.googleapis.com` | Google Gemini |
+| `api.mistral.ai` | Mistral |
+| `api.cohere.com` | Cohere |
+| `api.groq.com` | Groq |
+| `api.deepseek.com` | DeepSeek |
+| `api.x.ai` | xAI |
+| `api.perplexity.ai` | Perplexity |
+| `api.together.xyz` | Together AI |
+| `api.fireworks.ai` | Fireworks AI |
+| `api.replicate.com` | Replicate |
+| `*.openai.azure.com` | Azure OpenAI |
+| `bedrock-runtime.*.amazonaws.com` | Amazon Bedrock |
+| `openrouter.ai` | OpenRouter |
 
-If the URL doesn't match a known provider, the request passes through untouched — zero overhead.
+If the URL doesn't match a known provider, the request passes through untouched — zero overhead. New providers are added with every SDK update.
 
 ## Response header extraction
 
