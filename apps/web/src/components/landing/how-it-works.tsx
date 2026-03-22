@@ -54,7 +54,7 @@ export function HowItWorks() {
               className="group bg-white p-8 transition-colors hover:bg-surface"
             >
               <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-light text-accent">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface text-text-primary">
                   {step.icon}
                 </div>
                 <span className="font-mono text-xs text-text-tertiary">{step.step}</span>
