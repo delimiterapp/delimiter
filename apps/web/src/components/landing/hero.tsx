@@ -17,9 +17,9 @@ export function Hero() {
           Open source &middot; MIT licensed
         </div>
         <h1 className="text-4xl font-bold leading-[1.15] tracking-tight sm:text-5xl">
-          Know your AI rate limits
+          Rate limit monitoring
           <br />
-          <span className="text-text-secondary">before your app does.</span>
+          <span className="text-text-secondary">for AI apps.</span>
         </h1>
         <p className="mt-4 text-lg text-text-secondary">
           Three lines of code. Every provider. One dashboard.
