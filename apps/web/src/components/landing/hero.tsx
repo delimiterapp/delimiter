@@ -17,8 +17,7 @@ export function Hero() {
       <AnimatedGrid />
       <div className="relative mx-auto max-w-2xl text-center">
         <AnimatedBorderPill className="mb-5 text-text-secondary">
-          <span className="h-1.5 w-1.5 rounded-full bg-green" />
-          Open source &middot; MIT licensed
+          Open source
         </AnimatedBorderPill>
         <h1 className="text-4xl font-bold leading-[1.15] tracking-tight sm:text-5xl">
           Rate limit monitoring
@@ -35,7 +34,7 @@ export function Hero() {
             className="inline-flex items-center gap-2 rounded-lg bg-text-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-text-primary/90 hover:shadow-md"
             style={{ fontFamily: "'Chakra Petch', sans-serif" }}
             icon={
-              <img src="/unlock.png" alt="" className="h-4 w-4 invert" />
+              <img src="/unlock.png" alt="" className="h-4 w-4" style={{ mixBlendMode: 'screen' }} />
             }
           >
             Unlock
