@@ -1,4 +1,5 @@
 import { Breadcrumbs } from './breadcrumbs'
+import { PageNav } from './page-nav'
 import { TableOfContents } from './table-of-contents'
 
 export function ContentLayout({
@@ -17,6 +18,7 @@ export function ContentLayout({
         <article className="prose prose-neutral max-w-none">
           {children}
         </article>
+        <PageNav />
       </div>
       <TableOfContents />
     </div>

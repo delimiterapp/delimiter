@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import type { NavSection } from './sidebar-nav'
 
 function SectionIcon({ icon }: { icon: string }) {
-  const className = "h-4 w-4 text-text-secondary"
+  const className = "h-4 w-4 text-text-tertiary"
 
   switch (icon) {
     case 'book':
@@ -55,8 +55,8 @@ export function SidebarLinks({ navigation }: { navigation: NavSection[] }) {
   return (
     <nav>
       {navigation.map((section, sectionIndex) => (
-        <div key={section.title} className={sectionIndex === 0 ? '' : 'mt-8'}>
-          <div className="mb-2 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-text-primary">
+        <div key={section.title} className={sectionIndex === 0 ? '' : 'mt-6'}>
+          <div className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
             <SectionIcon icon={section.icon} />
             {section.title}
           </div>
@@ -67,13 +67,13 @@ export function SidebarLinks({ navigation }: { navigation: NavSection[] }) {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className={`block py-1 font-mono text-[13px] uppercase tracking-wide transition-colors ${
+                    className={`block rounded-md px-2 py-1.5 text-[13px] transition-colors ${
                       isActive
-                        ? 'font-medium text-accent'
-                        : 'text-text-secondary hover:text-text-primary'
+                        ? 'bg-accent-light font-medium text-accent'
+                        : 'text-text-secondary hover:bg-surface hover:text-text-primary'
                     }`}
                   >
-                    {isActive ? `[${item.title}]` : item.title}
+                    {item.title}
                   </Link>
                 </li>
               )

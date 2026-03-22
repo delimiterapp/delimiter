@@ -2,7 +2,10 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Delimiter — AI Rate Limit Monitoring',
+  title: {
+    default: 'Delimiter',
+    template: '%s — Delimiter',
+  },
   description:
     'Know your AI rate limits before your app does. Three lines of code. Every provider. One dashboard.',
 }
