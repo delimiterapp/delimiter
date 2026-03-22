@@ -52,11 +52,4 @@ export const navigation: NavSection[] = [
       { title: "Report Endpoint", href: "/api-reference/report-endpoint" },
     ],
   },
-  {
-    title: "SELF-HOSTING",
-    icon: "terminal",
-    items: [
-      { title: "Setup", href: "/self-hosting/setup" },
-    ],
-  },
 ]

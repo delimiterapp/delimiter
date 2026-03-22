@@ -76,7 +76,7 @@ Initialize the SDK. Call once at app startup.
 |-----------|------|----------|-------------|
 | `projectKey` | `string` | Yes | Your project API key from delimiter.app. Starts with `dlm_`. |
 | `options.app` | `string` | No | App name tag. Defaults to `"default"`. |
-| `options.endpoint` | `string` | No | Custom reporting endpoint. Defaults to `https://delimiter.app/api/report`. Use this for self-hosted instances. |
+| `options.endpoint` | `string` | No | Custom reporting endpoint. Defaults to `https://delimiter.app/api/report`. |
 | `options.enabled` | `boolean` | No | Enable/disable reporting. Defaults to `true`. Set to `false` in test environments. |
 | `options.debug` | `boolean` | No | Log reports to console. Defaults to `false`. |
 
@@ -168,8 +168,6 @@ delimiter.init('dlm_key', { enabled: false })
 // Development — enable debug logging
 delimiter.init('dlm_key', { debug: true })
 
-// Self-hosted — custom endpoint
-delimiter.init('dlm_key', { endpoint: 'https://my-delimiter.example.com/api/report' })
 ```
 
 ## TypeScript
