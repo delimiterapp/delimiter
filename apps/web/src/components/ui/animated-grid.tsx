@@ -2,20 +2,14 @@
 
 import { useEffect, useRef } from 'react'
 
-interface TracerLine {
-  x: number
-  y: number
-  direction: 'up' | 'down' | 'left' | 'right'
-  speed: number
-  length: number
-  opacity: number
-  life: number
-  maxLife: number
-}
-
 const GRID_SIZE = 60
-const MAX_TRACERS = 6
-const SPAWN_INTERVAL = 800
+
+interface GridLine {
+  type: 'h' | 'v'
+  pos: number       // grid coordinate (which line number from edge)
+  appear: number    // timestamp when it snaps in
+  maxPos: number    // total lines of this type
+}
 
 export function AnimatedGrid({ className = '' }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -28,183 +22,211 @@ export function AnimatedGrid({ className = '' }: { className?: string }) {
     if (!ctx) return
 
     let animationId: number
-    let lastSpawn = 0
-    const tracers: TracerLine[] = []
+    let w = 0
+    let h = 0
 
     function resize() {
       const rect = canvas!.getBoundingClientRect()
       const dpr = window.devicePixelRatio || 1
-      canvas!.width = rect.width * dpr
-      canvas!.height = rect.height * dpr
-      ctx!.scale(dpr, dpr)
+      w = rect.width
+      h = rect.height
+      canvas!.width = w * dpr
+      canvas!.height = h * dpr
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
 
     resize()
     window.addEventListener('resize', resize)
 
-    function spawnTracer(w: number, h: number) {
-      const directions: TracerLine['direction'][] = ['up', 'down', 'left', 'right']
-      const dir = directions[Math.floor(Math.random() * directions.length)]
-
-      const gridCols = Math.floor(w / GRID_SIZE)
-      const gridRows = Math.floor(h / GRID_SIZE)
-
-      let x: number, y: number
-      if (dir === 'left' || dir === 'right') {
-        x = dir === 'right' ? -60 : w + 60
-        y = (Math.floor(Math.random() * gridRows) + 1) * GRID_SIZE
-      } else {
-        x = (Math.floor(Math.random() * gridCols) + 1) * GRID_SIZE
-        y = dir === 'down' ? -60 : h + 60
-      }
-
-      tracers.push({
-        x,
-        y,
-        direction: dir,
-        speed: 1.5 + Math.random() * 2,
-        length: 40 + Math.random() * 50,
-        opacity: 0.4 + Math.random() * 0.4,
-        life: 0,
-        maxLife: 300 + Math.random() * 200,
-      })
-    }
-
-    // Compute how much to fade based on distance from center
-    function centerFade(px: number, py: number, w: number, h: number): number {
+    // Center fade — things fade out near center content
+    function centerFade(px: number, py: number): number {
       const cx = w / 2
       const cy = h / 2
       const dx = (px - cx) / (w * 0.35)
       const dy = (py - cy) / (h * 0.35)
       const dist = Math.sqrt(dx * dx + dy * dy)
-      // Fully transparent inside radius 0.6, fully visible outside 1.0
       return Math.min(1, Math.max(0, (dist - 0.5) / 0.5))
     }
 
+    // Build the sequence: lines ordered from edges inward
+    function buildSequence(): GridLine[] {
+      const cols = Math.floor(w / GRID_SIZE)
+      const rows = Math.floor(h / GRID_SIZE)
+      const lines: GridLine[] = []
+
+      // Vertical lines: pair from left & right edges inward
+      const vLines: number[] = []
+      let left = 1, right = cols
+      while (left <= right) {
+        vLines.push(left)
+        if (right !== left) vLines.push(right)
+        left++
+        right--
+      }
+
+      // Horizontal lines: pair from top & bottom edges inward
+      const hLines: number[] = []
+      let top = 1, bottom = rows
+      while (top <= bottom) {
+        hLines.push(top)
+        if (bottom !== top) hLines.push(bottom)
+        top++
+        bottom--
+      }
+
+      // Interleave: alternate between a vertical and horizontal line
+      const maxLen = Math.max(vLines.length, hLines.length)
+      let idx = 0
+      for (let i = 0; i < maxLen; i++) {
+        if (i < vLines.length) {
+          lines.push({ type: 'v', pos: vLines[i], appear: idx * 60, maxPos: cols })
+          idx++
+        }
+        if (i < hLines.length) {
+          lines.push({ type: 'h', pos: hLines[i], appear: idx * 60, maxPos: rows })
+          idx++
+        }
+      }
+
+      return lines
+    }
+
+    let sequence = buildSequence()
+    // Total cycle: build time + hold time + snap-out time
+    const buildDuration = () => sequence.length * 60
+    const holdDuration = 2000
+    const snapOutDuration = () => sequence.length * 40
+    const totalCycle = () => buildDuration() + holdDuration + snapOutDuration() + 800
+
+    let cycleStart = performance.now()
+
     function draw(time: number) {
-      const rect = canvas!.getBoundingClientRect()
-      const w = rect.width
-      const h = rect.height
       ctx!.clearRect(0, 0, w, h)
 
-      // Draw grid lines with center fade
-      ctx!.lineWidth = 0.5
-      for (let x = GRID_SIZE; x < w; x += GRID_SIZE) {
-        // Draw vertical line in segments for fade
-        for (let y = 0; y < h; y += 4) {
-          const fade = centerFade(x, y + 2, w, h)
-          if (fade < 0.02) continue
-          ctx!.strokeStyle = `rgba(229, 231, 235, ${0.5 * fade})`
-          ctx!.beginPath()
-          ctx!.moveTo(x, y)
-          ctx!.lineTo(x, Math.min(y + 4, h))
-          ctx!.stroke()
-        }
-      }
-      for (let y = GRID_SIZE; y < h; y += GRID_SIZE) {
-        for (let x = 0; x < w; x += 4) {
-          const fade = centerFade(x + 2, y, w, h)
-          if (fade < 0.02) continue
-          ctx!.strokeStyle = `rgba(229, 231, 235, ${0.5 * fade})`
-          ctx!.beginPath()
-          ctx!.moveTo(x, y)
-          ctx!.lineTo(Math.min(x + 4, w), y)
-          ctx!.stroke()
-        }
+      const elapsed = time - cycleStart
+      const total = totalCycle()
+
+      // Reset cycle
+      if (elapsed > total) {
+        cycleStart = time
+        sequence = buildSequence()
+        animationId = requestAnimationFrame(draw)
+        return
       }
 
-      // Draw subtle dots at grid intersections with fade
-      for (let x = GRID_SIZE; x < w; x += GRID_SIZE) {
-        for (let y = GRID_SIZE; y < h; y += GRID_SIZE) {
-          const fade = centerFade(x, y, w, h)
+      const buildEnd = buildDuration()
+      const holdEnd = buildEnd + holdDuration
+      const snapOutEnd = holdEnd + snapOutDuration()
+
+      // Draw persistent dots at all intersections (very subtle)
+      const cols = Math.floor(w / GRID_SIZE)
+      const rows = Math.floor(h / GRID_SIZE)
+      for (let c = 1; c <= cols; c++) {
+        for (let r = 1; r <= rows; r++) {
+          const px = c * GRID_SIZE
+          const py = r * GRID_SIZE
+          const fade = centerFade(px, py)
           if (fade < 0.02) continue
-          ctx!.fillStyle = `rgba(229, 231, 235, ${0.5 * fade})`
+          ctx!.fillStyle = `rgba(229, 231, 235, ${0.25 * fade})`
           ctx!.beginPath()
-          ctx!.arc(x, y, 1.5, 0, Math.PI * 2)
+          ctx!.arc(px, py, 1, 0, Math.PI * 2)
           ctx!.fill()
         }
       }
 
-      // Spawn new tracers
-      if (time - lastSpawn > SPAWN_INTERVAL && tracers.length < MAX_TRACERS) {
-        spawnTracer(w, h)
-        lastSpawn = time
-      }
+      // For each line in the sequence, determine if it's visible
+      for (let i = 0; i < sequence.length; i++) {
+        const line = sequence[i]
+        let alpha = 0
 
-      // Update and draw tracers
-      for (let i = tracers.length - 1; i >= 0; i--) {
-        const t = tracers[i]
-        t.life++
-
-        switch (t.direction) {
-          case 'right': t.x += t.speed; break
-          case 'left': t.x -= t.speed; break
-          case 'down': t.y += t.speed; break
-          case 'up': t.y -= t.speed; break
-        }
-
-        const lifeRatio = t.life / t.maxLife
-        let alpha = t.opacity
-        if (lifeRatio < 0.1) alpha *= lifeRatio / 0.1
-        else if (lifeRatio > 0.8) alpha *= (1 - lifeRatio) / 0.2
-
-        // Apply center fade to tracers too
-        const fade = centerFade(t.x, t.y, w, h)
-        alpha *= fade
-
-        if (alpha < 0.01) {
-          // Still alive, just invisible in center — skip drawing
-          if (t.life > t.maxLife || t.x > w + 100 || t.x < -100 || t.y > h + 100 || t.y < -100) {
-            tracers.splice(i, 1)
+        if (elapsed < buildEnd) {
+          // Build phase: snap in when elapsed >= appear time
+          if (elapsed >= line.appear) {
+            // Snap in — instant to full, slight overshoot feel via quick ease
+            const sincAppear = elapsed - line.appear
+            alpha = sincAppear < 80 ? Math.min(1, sincAppear / 30) : 1
           }
-          continue
+        } else if (elapsed < holdEnd) {
+          // Hold phase: all visible
+          alpha = 1
+        } else if (elapsed < snapOutEnd) {
+          // Snap out phase: lines disappear in reverse order
+          const snapOutElapsed = elapsed - holdEnd
+          const reverseIdx = sequence.length - 1 - i
+          const disappearTime = reverseIdx * 40
+          if (snapOutElapsed >= disappearTime) {
+            const sinceDisappear = snapOutElapsed - disappearTime
+            alpha = Math.max(0, 1 - sinceDisappear / 25)
+          } else {
+            alpha = 1
+          }
         }
 
-        // Draw tracer with gradient
-        const gradient = (t.direction === 'left' || t.direction === 'right')
-          ? ctx!.createLinearGradient(
-              t.direction === 'right' ? t.x - t.length : t.x + t.length,
-              t.y,
-              t.x,
-              t.y
-            )
-          : ctx!.createLinearGradient(
-              t.x,
-              t.direction === 'down' ? t.y - t.length : t.y + t.length,
-              t.x,
-              t.y
-            )
+        if (alpha < 0.01) continue
 
-        gradient.addColorStop(0, `rgba(139, 92, 246, 0)`)
-        gradient.addColorStop(0.5, `rgba(139, 92, 246, ${alpha * 0.6})`)
-        gradient.addColorStop(1, `rgba(139, 92, 246, ${alpha})`)
+        const px = line.pos * GRID_SIZE
 
-        ctx!.strokeStyle = gradient
-        ctx!.lineWidth = 1.5
-        ctx!.beginPath()
+        if (line.type === 'v') {
+          // Draw vertical line in segments for center fade
+          for (let y = 0; y < h; y += 6) {
+            const fade = centerFade(px, y + 3)
+            if (fade < 0.02) continue
+            const a = alpha * fade * 0.45
+            ctx!.strokeStyle = `rgba(156, 163, 175, ${a})`
+            ctx!.lineWidth = 0.5
+            ctx!.beginPath()
+            ctx!.moveTo(px, y)
+            ctx!.lineTo(px, Math.min(y + 6, h))
+            ctx!.stroke()
+          }
 
-        if (t.direction === 'left' || t.direction === 'right') {
-          const startX = t.direction === 'right' ? t.x - t.length : t.x + t.length
-          ctx!.moveTo(startX, t.y)
-          ctx!.lineTo(t.x, t.y)
+          // Flash the intersection dots when line snaps in
+          if (elapsed < buildEnd && elapsed >= line.appear) {
+            const since = elapsed - line.appear
+            if (since < 300) {
+              const flash = since < 100 ? since / 100 : Math.max(0, 1 - (since - 100) / 200)
+              for (let r = 1; r <= rows; r++) {
+                const py = r * GRID_SIZE
+                const fade = centerFade(px, py)
+                if (fade < 0.02) continue
+                ctx!.fillStyle = `rgba(139, 92, 246, ${flash * 0.7 * fade})`
+                ctx!.beginPath()
+                ctx!.arc(px, py, 2.5, 0, Math.PI * 2)
+                ctx!.fill()
+              }
+            }
+          }
         } else {
-          const startY = t.direction === 'down' ? t.y - t.length : t.y + t.length
-          ctx!.moveTo(t.x, startY)
-          ctx!.lineTo(t.x, t.y)
-        }
-        ctx!.stroke()
+          // Draw horizontal line in segments for center fade
+          const py = line.pos * GRID_SIZE
+          for (let x = 0; x < w; x += 6) {
+            const fade = centerFade(x + 3, py)
+            if (fade < 0.02) continue
+            const a = alpha * fade * 0.45
+            ctx!.strokeStyle = `rgba(156, 163, 175, ${a})`
+            ctx!.lineWidth = 0.5
+            ctx!.beginPath()
+            ctx!.moveTo(x, py)
+            ctx!.lineTo(Math.min(x + 6, w), py)
+            ctx!.stroke()
+          }
 
-        // Draw bright dot at head
-        ctx!.fillStyle = `rgba(139, 92, 246, ${alpha})`
-        ctx!.beginPath()
-        ctx!.arc(t.x, t.y, 2, 0, Math.PI * 2)
-        ctx!.fill()
-
-        // Remove dead tracers
-        if (t.life > t.maxLife ||
-            t.x > w + 100 || t.x < -100 ||
-            t.y > h + 100 || t.y < -100) {
-          tracers.splice(i, 1)
+          // Flash the intersection dots when line snaps in
+          if (elapsed < buildEnd && elapsed >= line.appear) {
+            const since = elapsed - line.appear
+            if (since < 300) {
+              const flash = since < 100 ? since / 100 : Math.max(0, 1 - (since - 100) / 200)
+              for (let c = 1; c <= cols; c++) {
+                const cpx = c * GRID_SIZE
+                const fade = centerFade(cpx, px)
+                if (fade < 0.02) continue
+                ctx!.fillStyle = `rgba(139, 92, 246, ${flash * 0.7 * fade})`
+                ctx!.beginPath()
+                ctx!.arc(cpx, line.pos * GRID_SIZE, 2.5, 0, Math.PI * 2)
+                ctx!.fill()
+              }
+            }
+          }
         }
       }
 
@@ -223,7 +245,6 @@ export function AnimatedGrid({ className = '' }: { className?: string }) {
     <canvas
       ref={canvasRef}
       className={`pointer-events-none absolute inset-0 h-full w-full ${className}`}
-      style={{ opacity: 0.7 }}
     />
   )
 }
