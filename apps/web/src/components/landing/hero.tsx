@@ -3,6 +3,7 @@
 import { CodeBlock } from '@/components/ui/code-block'
 import { AnimatedBorderPill } from '@/components/ui/animated-border-pill'
 import { ScrambleButton } from '@/components/ui/scramble-button'
+import { AnimatedGrid } from '@/components/ui/animated-grid'
 
 const snippet = `import { delimiter } from '@delimiter/sdk'
 
@@ -12,8 +13,9 @@ delimiter.init('dlm_your_project_key')
 
 export function Hero() {
   return (
-    <section className="px-6 pb-20 pt-28">
-      <div className="mx-auto max-w-2xl text-center">
+    <section className="relative px-6 pb-20 pt-28 overflow-hidden">
+      <AnimatedGrid />
+      <div className="relative mx-auto max-w-2xl text-center">
         <AnimatedBorderPill className="mb-5 text-text-secondary">
           <span className="h-1.5 w-1.5 rounded-full bg-green" />
           Open source &middot; MIT licensed
@@ -33,18 +35,7 @@ export function Hero() {
             className="inline-flex items-center gap-2 rounded-lg bg-text-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-text-primary/90 hover:shadow-md"
             style={{ fontFamily: "'Chakra Petch', sans-serif" }}
             icon={
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2a7 7 0 0 1 7 7" />
-                <path d="M12 5a4 4 0 0 1 4 4" />
-                <path d="M12 8a1 1 0 0 1 1 1" />
-                <path d="M7.5 11.5c0-2.5.5-4.5 1.5-6" />
-                <path d="M5 14c0-3.5 1-6.5 2.5-8.5" />
-                <path d="M12 11v4" />
-                <path d="M10 13v5" />
-                <path d="M14 12v4" />
-                <path d="M8 14v4" />
-                <path d="M16 13v3" />
-              </svg>
+              <img src="/unlock.png" alt="" className="h-4 w-4 invert" />
             }
           >
             Unlock
@@ -61,7 +52,7 @@ export function Hero() {
         </div>
       </div>
 
-      <div className="mx-auto mt-14 max-w-xl">
+      <div className="relative mx-auto mt-14 max-w-xl">
         <CodeBlock code={snippet} language="typescript" filename="app.ts" />
       </div>
     </section>

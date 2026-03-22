@@ -1,6 +1,6 @@
 export function Footer() {
   return (
-    <footer className="border-t border-border px-6 py-10">
+    <footer className="border-t border-border/90 px-6 py-10">
       <div className="mx-auto flex max-w-5xl items-center justify-between text-xs text-text-tertiary">
         <img src="/logo.png" alt="delimiter" className="h-5" />
         <div className="flex items-center gap-4">
