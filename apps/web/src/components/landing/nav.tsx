@@ -2,11 +2,11 @@ export function Nav() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-white/80 backdrop-blur-md">
       <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-        <a href="/" className="flex items-center gap-1.5 text-base font-semibold tracking-tight">
-          <svg width="18" height="22" viewBox="0 0 32 40" fill="none">
-            <path d="M22 0H12L0 40h10L22 0z" fill="currentColor"/>
+        <a href="/" className="flex items-center gap-1 text-[17px] font-black tracking-tight">
+          <svg width="14" height="20" viewBox="0 0 32 44" fill="none" className="-mt-0.5 mr-0.5">
+            <path d="M24 0H14L0 44h10L24 0z" fill="currentColor"/>
           </svg>
-          Delimiter
+          delimiter
         </a>
         <div className="flex items-center gap-1">
           <a
