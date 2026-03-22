@@ -3,21 +3,9 @@ export function TopNav() {
     <header className="sticky top-0 z-50 h-16 border-b border-border bg-white">
       <div className="mx-auto flex h-full max-w-screen-2xl items-center justify-between px-6">
         {/* Left: Logo */}
-        <a href="/" className="flex items-center gap-2.5">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            className="text-accent"
-          >
-            <rect width="24" height="24" rx="6" fill="currentColor" />
-            <path
-              d="M7 8h10M7 12h10M7 16h6"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
+        <a href="/" className="flex items-center gap-1.5">
+          <svg width="14" height="18" viewBox="0 0 32 40" fill="none">
+            <path d="M22 0H12L0 40h10L22 0z" fill="currentColor"/>
           </svg>
           <span className="text-lg font-semibold tracking-tight text-text-primary">
             Delimiter

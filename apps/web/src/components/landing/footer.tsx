@@ -2,10 +2,9 @@ export function Footer() {
   return (
     <footer className="border-t border-border px-6 py-10">
       <div className="mx-auto flex max-w-5xl items-center justify-between text-xs text-text-tertiary">
-        <div className="flex items-center gap-2">
-          <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="#7c3aed"/>
-            <path d="M9.5 10.5h13M9.5 16h13M9.5 21.5h8" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+        <div className="flex items-center gap-1.5">
+          <svg width="10" height="14" viewBox="0 0 32 40" fill="none">
+            <path d="M22 0H12L0 40h10L22 0z" fill="currentColor"/>
           </svg>
           <span>Delimiter</span>
         </div>
