@@ -8,9 +8,9 @@ const steps = [
         <line x1="12" y1="22.08" x2="12" y2="12" />
       </svg>
     ),
-    title: 'Wrap your AI clients',
+    title: 'Initialize once',
     description:
-      'Pass your OpenAI or Anthropic client to delimiter.wrap(). A lightweight proxy wraps it transparently — no code changes beyond one line.',
+      'Call delimiter.init() at your app\'s entry point. Two lines of code — that\'s the entire setup. No wrapping, no per-provider config.',
   },
   {
     step: '02',

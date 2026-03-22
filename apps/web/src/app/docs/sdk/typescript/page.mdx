@@ -6,9 +6,9 @@ export default function Layout({ children }) {
 
 # TypeScript
 
-## Type-safe wrapping
+## Zero type interference
 
-The SDK is written in TypeScript and ships with type definitions. `delimiter.wrap()` preserves the original client's types.
+The SDK is written in TypeScript and ships with type definitions. Since Delimiter works at the network layer, your AI client types are completely unaffected.
 
 ```typescript
 import { delimiter } from '@delimiter/sdk'
@@ -16,21 +16,14 @@ import OpenAI from 'openai'
 
 delimiter.init('dlm_key')
 
-// openai is typed as OpenAI — full autocomplete, full type safety
-const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY! }))
+// Your types are exactly as before — nothing is wrapped or proxied
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY! })
 
-// All OpenAI types work as expected
 const response: OpenAI.Chat.ChatCompletion = await openai.chat.completions.create({
   model: 'gpt-4o',
   messages: [{ role: 'user', content: 'Hello' }]
 })
 ```
-
-## How types are preserved
-
-- `delimiter.wrap<T>(client: T): T` — the return type matches the input type
-- The Proxy wrapper is transparent to TypeScript's type system
-- No type casting or assertions needed
 
 ## No additional packages
 

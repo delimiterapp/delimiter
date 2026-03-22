@@ -8,13 +8,15 @@ export default function Layout({ children }) {
 
 ## delimiter.init()
 
-Call once at app startup before wrapping any clients.
+Call once at app startup — typically in your entry point (`index.ts`, `server.ts`, `app.ts`).
 
 ```typescript
 import { delimiter } from '@delimiter/sdk'
 
 delimiter.init('dlm_your_project_key')
 ```
+
+That's it. All AI API calls your app makes are now automatically monitored.
 
 ## Options
 
