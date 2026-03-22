@@ -105,12 +105,27 @@ This is sent as an async fire-and-forget POST. It never blocks your API call. If
 
 ## Supported Providers
 
-| Provider | Domain | Headers Parsed |
-|----------|--------|----------------|
-| **OpenAI** | `api.openai.com` | `x-ratelimit-limit-requests`, `x-ratelimit-remaining-requests`, `x-ratelimit-limit-tokens`, `x-ratelimit-remaining-tokens`, `x-ratelimit-reset-requests`, `x-ratelimit-reset-tokens` |
-| **Anthropic** | `api.anthropic.com` | `anthropic-ratelimit-requests-limit`, `anthropic-ratelimit-requests-remaining`, `anthropic-ratelimit-tokens-limit`, `anthropic-ratelimit-tokens-remaining`, `anthropic-ratelimit-requests-reset`, `anthropic-ratelimit-tokens-reset` |
-
 The SDK auto-detects providers by domain. Works with official SDKs, LangChain, Vercel AI SDK, LiteLLM, or raw `fetch()` calls.
+
+| Provider | Domain |
+|----------|--------|
+| **OpenAI** | `api.openai.com` |
+| **Anthropic** | `api.anthropic.com` |
+| **Google Gemini** | `generativelanguage.googleapis.com` |
+| **Mistral** | `api.mistral.ai` |
+| **Cohere** | `api.cohere.com` |
+| **Groq** | `api.groq.com` |
+| **DeepSeek** | `api.deepseek.com` |
+| **xAI** | `api.x.ai` |
+| **Perplexity** | `api.perplexity.ai` |
+| **Together AI** | `api.together.xyz` |
+| **Fireworks AI** | `api.fireworks.ai` |
+| **Replicate** | `api.replicate.com` |
+| **Azure OpenAI** | `*.openai.azure.com` |
+| **Amazon Bedrock** | `bedrock-runtime.*.amazonaws.com` |
+| **OpenRouter** | `openrouter.ai` |
+
+...and any provider that speaks HTTP. The list grows with every SDK update — your code doesn't change.
 
 ## Security
 

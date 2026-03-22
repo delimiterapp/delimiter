@@ -120,12 +120,27 @@ The SDK normalizes these into a common format and reports them to the dashboard.
 
 ## Supported Providers
 
-| Provider | Status | Header Support |
-|----------|--------|----------------|
-| OpenAI | ✅ Supported | Full headers on every response |
-| Anthropic | ✅ Supported | Full headers on every response |
-| Google Gemini | 🔜 Coming | Service Usage API |
-| Mistral | 🔜 Coming | Partial headers |
+Delimiter auto-detects any AI provider at the network layer. No plugins, no per-provider config.
+
+| Provider | Domain |
+|----------|--------|
+| OpenAI | `api.openai.com` |
+| Anthropic | `api.anthropic.com` |
+| Google Gemini | `generativelanguage.googleapis.com` |
+| Mistral | `api.mistral.ai` |
+| Cohere | `api.cohere.com` |
+| Groq | `api.groq.com` |
+| DeepSeek | `api.deepseek.com` |
+| xAI | `api.x.ai` |
+| Perplexity | `api.perplexity.ai` |
+| Together AI | `api.together.xyz` |
+| Fireworks AI | `api.fireworks.ai` |
+| Replicate | `api.replicate.com` |
+| Azure OpenAI | `*.openai.azure.com` |
+| Amazon Bedrock | `bedrock-runtime.*.amazonaws.com` |
+| OpenRouter | `openrouter.ai` |
+
+...and any provider that speaks HTTP. The list grows with every SDK update — your code doesn't change.
 
 ## Alerts
 

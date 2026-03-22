@@ -75,7 +75,7 @@ export default function Dashboard() {
       <main className="mx-auto max-w-6xl px-6 py-8">
         {/* Provider health cards - empty state */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {['OpenAI', 'Anthropic', 'Google Gemini'].map((provider) => (
+          {['OpenAI', 'Anthropic', 'Gemini', 'Mistral', 'Groq', 'DeepSeek'].map((provider) => (
             <div key={provider} className="rounded-xl border border-border bg-white p-5">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{provider}</span>
