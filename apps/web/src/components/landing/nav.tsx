@@ -17,7 +17,7 @@ export function Nav() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-white/80 backdrop-blur-md">
       <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-        <a href="/" className="flex items-center">
+        <a href="/" className="shine-hover-light flex items-center rounded-lg px-1 py-0.5">
           <img src="/logo.png" alt="delimiter" className="h-7" />
         </a>
         <div className="flex items-center gap-1">
@@ -49,7 +49,7 @@ export function Nav() {
               className="inline-flex items-center gap-2 rounded-lg bg-text-primary px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-text-primary/90 hover:shadow-md"
               style={{ fontFamily: "'Chakra Petch', sans-serif" }}
               icon={
-                <img src="/unlock.png" alt="" className="h-4 w-4 invert" />
+                <img src="/unlock.png" alt="" className="h-4 w-4" style={{ mixBlendMode: 'screen' }} />
               }
             >
               Unlock
@@ -75,7 +75,7 @@ export function Nav() {
                   href="/sign-up"
                   className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-surface"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-green/10 text-green">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-light text-accent">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
                     </svg>

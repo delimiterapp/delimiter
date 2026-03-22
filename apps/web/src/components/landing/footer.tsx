@@ -2,7 +2,9 @@ export function Footer() {
   return (
     <footer className="border-t border-border/90 px-6 py-10">
       <div className="mx-auto flex max-w-5xl items-center justify-between text-xs text-text-tertiary">
-        <img src="/logo.png" alt="delimiter" className="h-5" />
+        <a href="/" className="shine-hover-light rounded px-1 py-0.5">
+          <img src="/logo.png" alt="delimiter" className="h-5" />
+        </a>
         <div className="flex items-center gap-4">
           <a
             href="https://github.com/syedos/delimiter"
