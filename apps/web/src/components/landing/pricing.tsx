@@ -1,8 +1,6 @@
 'use client'
 
-import { ScrambleButton } from '@/components/ui/scramble-button'
-
-function CheckIcon() {
+function CheckCircleIcon() {
   return (
     <svg className="h-5 w-5 shrink-0 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <circle cx="12" cy="12" r="10" />
@@ -11,110 +9,144 @@ function CheckIcon() {
   )
 }
 
-const freeFeatures = [
+const pricingPoints = [
+  '$20 per month, per workspace',
   'Unlimited providers and apps',
-  'Unlimited reports',
+  'Unlimited reports and history',
   'Slack, webhook, and email alerts',
-  '90-day history',
+  'Priority support included',
 ]
 
-const proFeatures = [
-  'Everything in Free',
-  'Unlimited history',
-  'Priority support',
-  'Advanced analytics',
+const useCases = [
+  {
+    title: 'AI Agent Web Access',
+    description:
+      'Give any AI agent eyes on the live web. Use scrape and markdown endpoints to read, parse, and reason over any page in real time.',
+  },
+  {
+    title: 'RAG & Knowledge Pipelines',
+    description:
+      'Crawl sitemaps, extract clean markdown, and feed your LLM knowledge base with structured, up-to-date web content; automatically.',
+  },
 ]
 
 export function Pricing() {
   return (
-    <section className="px-6 py-20">
-      <div className="mx-auto max-w-2xl text-center">
-        <p className="text-xs font-semibold uppercase tracking-widest text-text-tertiary">
-          Pricing
-        </p>
-        <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Free */}
-          <div className="flex flex-col rounded-xl border border-border p-7 transition-shadow hover:shadow-sm">
-            <h3 className="text-sm font-semibold text-text-secondary">Free</h3>
-            <p className="mt-3 text-3xl font-bold">$0</p>
-            <p className="mt-1 text-xs text-text-tertiary">
-              Forever, no credit card
-            </p>
-            <ul className="mt-6 flex-1 space-y-2.5">
-              {freeFeatures.map((f) => (
-                <li key={f} className="flex items-center gap-2.5 text-sm text-text-secondary">
-                  <CheckIcon />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <ScrambleButton
-              as="a"
-              href="/sign-up"
-              className="mt-7 flex items-center justify-center gap-2 rounded-lg border border-border py-2 text-center text-sm font-medium transition-colors hover:bg-surface"
-              icon={
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                </svg>
-              }
-            >
-              Unlock
-            </ScrambleButton>
-          </div>
-
-          {/* Pro */}
-          <div className="flex flex-col rounded-xl border-2 border-text-primary p-7">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-text-primary">Pro</h3>
-              <span className="rounded-full border border-border bg-surface px-2.5 py-0.5 text-[11px] font-medium text-text-primary">
-                Popular
-              </span>
-            </div>
-            <p className="mt-3 text-3xl font-bold">
-              $20
-              <span className="text-sm font-normal text-text-tertiary">
-                /mo
-              </span>
-            </p>
-            <p className="mt-1 text-xs text-text-tertiary">
-              Per workspace, billed monthly
-            </p>
-            <ul className="mt-6 flex-1 space-y-2.5">
-              {proFeatures.map((f) => (
-                <li key={f} className="flex items-center gap-2.5 text-sm text-text-secondary">
-                  <CheckIcon />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <ScrambleButton
-              as="a"
-              href="/sign-up?plan=pro"
-              className="mt-7 flex items-center justify-center gap-2 rounded-lg bg-text-primary py-2 text-center text-sm font-medium text-white transition-colors hover:bg-text-primary/90"
-              icon={
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                </svg>
-              }
-            >
-              Unlock
-            </ScrambleButton>
-          </div>
+    <>
+      {/* Pricing */}
+      <section className="relative px-6 py-20">
+        {/* Ruler lines on both sides */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {/* Left ruler */}
+          <div className="absolute top-0 bottom-0 left-8 hidden w-px border-l border-dashed border-border lg:block" />
+          <div className="absolute top-0 bottom-0 left-16 hidden w-px border-l border-dashed border-border/50 lg:block" />
+          {/* Right ruler */}
+          <div className="absolute top-0 bottom-0 right-8 hidden w-px border-r border-dashed border-border lg:block" />
+          <div className="absolute top-0 bottom-0 right-16 hidden w-px border-r border-dashed border-border/50 lg:block" />
+          {/* Horizontal tick marks - left */}
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={`left-${i}`}
+              className="absolute left-8 hidden h-px w-4 bg-border lg:block"
+              style={{ top: `${12 + i * 10}%` }}
+            />
+          ))}
+          {/* Horizontal tick marks - right */}
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={`right-${i}`}
+              className="absolute right-8 hidden h-px w-4 bg-border lg:block"
+              style={{ top: `${12 + i * 10}%` }}
+            />
+          ))}
+          {/* Corner marks */}
+          <div className="absolute top-12 left-8 hidden h-3 w-3 border-t border-l border-border lg:block" />
+          <div className="absolute top-12 right-8 hidden h-3 w-3 border-t border-r border-border lg:block" />
+          <div className="absolute bottom-12 left-8 hidden h-3 w-3 border-b border-l border-border lg:block" />
+          <div className="absolute bottom-12 right-8 hidden h-3 w-3 border-b border-r border-border lg:block" />
         </div>
 
-        <p className="mt-8 text-4xl font-bold">
-          $20
-          <span className="text-lg font-normal text-text-tertiary">/mo</span>
-        </p>
-        <p className="mt-1 text-sm text-text-tertiary">Per workspace</p>
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest text-text-tertiary">
+            Pricing
+          </p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            Simple pricing. All inclusive.
+          </h2>
 
-        <a
-          href="/sign-up"
-          className="mt-6 inline-block rounded-lg bg-accent px-8 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
-        >
-          Get started
-        </a>
-      </div>
-    </section>
+          <div className="mx-auto mt-10 max-w-lg rounded-xl border border-border bg-surface/50 px-8 py-8">
+            <ul className="space-y-5">
+              {pricingPoints.map((point) => (
+                <li key={point} className="flex items-center justify-center gap-3 text-[15px] font-medium text-text-primary">
+                  <CheckCircleIcon />
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases */}
+      <section className="relative px-6 py-20">
+        {/* Ruler lines on both sides */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 bottom-0 left-8 hidden w-px border-l border-dashed border-border lg:block" />
+          <div className="absolute top-0 bottom-0 left-16 hidden w-px border-l border-dashed border-border/50 lg:block" />
+          <div className="absolute top-0 bottom-0 right-8 hidden w-px border-r border-dashed border-border lg:block" />
+          <div className="absolute top-0 bottom-0 right-16 hidden w-px border-r border-dashed border-border/50 lg:block" />
+          {/* Tick marks */}
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={`left-uc-${i}`}
+              className="absolute left-8 hidden h-px w-4 bg-border lg:block"
+              style={{ top: `${12 + i * 10}%` }}
+            />
+          ))}
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={`right-uc-${i}`}
+              className="absolute right-8 hidden h-px w-4 bg-border lg:block"
+              style={{ top: `${12 + i * 10}%` }}
+            />
+          ))}
+        </div>
+
+        <div className="mx-auto max-w-5xl">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold uppercase tracking-widest text-text-primary">
+              <svg className="h-3 w-3 text-[#4f6ef7]" viewBox="0 0 12 12" fill="currentColor">
+                <path d="M6 0L7.5 4.5L12 6L7.5 7.5L6 12L4.5 7.5L0 6L4.5 4.5Z" />
+              </svg>
+              Use Cases
+            </span>
+          </div>
+          <h2 className="mt-6 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+            What can you
+            <br />
+            do with{' '}
+            <span className="text-[#4f6ef7]">delimiter</span>?
+          </h2>
+          <p className="mt-4 max-w-xl text-lg text-text-secondary">
+            See how real-time rate limit monitoring powers AI agents, enrichment
+            pipelines, personalization, and intelligent automation.
+          </p>
+
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
+            {useCases.map((useCase) => (
+              <div
+                key={useCase.title}
+                className="rounded-xl border border-border bg-white p-8 transition-shadow hover:shadow-sm"
+              >
+                <h3 className="text-lg font-bold">{useCase.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-text-secondary">
+                  {useCase.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   )
 }
