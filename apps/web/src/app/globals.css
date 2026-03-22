@@ -12,7 +12,7 @@
   --color-accent: #18181b;
   --color-accent-hover: #27272a;
   --color-accent-light: #f4f4f5;
-  --color-hint: #c4b5fd;
+  --color-hint: #a78bfa;
   --color-border-light: #f3f4f6;
   --color-green: #22c55e;
   --color-yellow: #eab308;
@@ -108,4 +108,79 @@ body {
 }
 .sidebar-scroll:hover::-webkit-scrollbar-thumb {
   background: var(--color-border);
+}
+
+/* Ruler dashed lines — longer dashes, more visible */
+.ruler-line {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--color-border) 0px,
+    var(--color-border) 8px,
+    transparent 8px,
+    transparent 20px
+  );
+  border: none !important;
+}
+.ruler-line-subtle {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-border) 70%, transparent) 0px,
+    color-mix(in srgb, var(--color-border) 70%, transparent) 6px,
+    transparent 6px,
+    transparent 20px
+  );
+  border: none !important;
+}
+
+/* Animated grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(to right, var(--color-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-border) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Grid tracer animation — shooting lines along grid */
+@keyframes trace-horizontal {
+  0% { transform: translateX(-100px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(calc(100vw + 100px)); opacity: 0; }
+}
+@keyframes trace-vertical {
+  0% { transform: translateY(-100px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(500px); opacity: 0; }
+}
+.grid-tracer-h {
+  position: absolute;
+  height: 1px;
+  width: 80px;
+  background: linear-gradient(90deg, transparent, var(--color-hint), transparent);
+  animation: trace-horizontal var(--duration, 4s) linear var(--delay, 0s) infinite;
+  opacity: 0;
+}
+.grid-tracer-v {
+  position: absolute;
+  width: 1px;
+  height: 80px;
+  background: linear-gradient(180deg, transparent, var(--color-hint), transparent);
+  animation: trace-vertical var(--duration, 3s) linear var(--delay, 0s) infinite;
+  opacity: 0;
+}
+
+/* Grid dot flash animation */
+@keyframes dot-flash {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.8; }
+}
+.grid-dot {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-hint);
+  animation: dot-flash var(--duration, 3s) ease-in-out var(--delay, 0s) infinite;
+  opacity: 0;
 }

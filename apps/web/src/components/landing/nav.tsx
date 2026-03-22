@@ -1,13 +1,11 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { ScrambleText } from '@/components/ui/scramble-text'
+import { ScrambleButton } from '@/components/ui/scramble-button'
 
 export function Nav() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const [unlockHoverKey, setUnlockHoverKey] = useState(0)
-
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
@@ -17,7 +15,7 @@ export function Nav() {
   }, [])
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-white/80 backdrop-blur-md">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-white/80 backdrop-blur-md">
       <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
         <a href="/" className="flex items-center">
           <img src="/logo.png" alt="delimiter" className="h-7" />
@@ -45,34 +43,17 @@ export function Nav() {
           </a>
           <div className="ml-2 h-5 w-px bg-border" />
           <div className="relative ml-2" ref={ref}>
-            <button
+            <ScrambleButton
+              as="button"
               onClick={() => setOpen(!open)}
-              onMouseEnter={() => setUnlockHoverKey((k) => k + 1)}
-              className="inline-flex items-center gap-2 rounded-lg bg-text-primary px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90"
+              className="inline-flex items-center gap-2 rounded-lg bg-text-primary px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-text-primary/90 hover:shadow-md"
               style={{ fontFamily: "'Chakra Petch', sans-serif" }}
+              icon={
+                <img src="/unlock.png" alt="" className="h-4 w-4 invert" />
+              }
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2a7 7 0 0 1 7 7" />
-                <path d="M12 5a4 4 0 0 1 4 4" />
-                <path d="M12 8a1 1 0 0 1 1 1" />
-                <path d="M7.5 11.5c0-2.5.5-4.5 1.5-6" />
-                <path d="M5 14c0-3.5 1-6.5 2.5-8.5" />
-                <path d="M12 11v4" />
-                <path d="M10 13v5" />
-                <path d="M14 12v4" />
-                <path d="M8 14v4" />
-                <path d="M16 13v3" />
-              </svg>
-              <ScrambleText
-                key={unlockHoverKey}
-                text="Unlock"
-                duration={0.4}
-                skipInitialAnimation={unlockHoverKey === 0}
-              />
-              <svg className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>
-            </button>
+              Unlock
+            </ScrambleButton>
             {open && (
               <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-border bg-white shadow-lg">
                 <a
