@@ -114,20 +114,21 @@ body {
 .ruler-line {
   background-image: repeating-linear-gradient(
     to bottom,
-    var(--color-border) 0px,
-    var(--color-border) 8px,
-    transparent 8px,
-    transparent 20px
+    var(--color-text-tertiary) 0px,
+    var(--color-text-tertiary) 10px,
+    transparent 10px,
+    transparent 24px
   );
   border: none !important;
+  width: 1.5px;
 }
 .ruler-line-subtle {
   background-image: repeating-linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--color-border) 70%, transparent) 0px,
-    color-mix(in srgb, var(--color-border) 70%, transparent) 6px,
-    transparent 6px,
-    transparent 20px
+    var(--color-border) 0px,
+    var(--color-border) 8px,
+    transparent 8px,
+    transparent 24px
   );
   border: none !important;
 }

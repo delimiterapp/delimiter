@@ -46,7 +46,6 @@ export function AnimatedGrid({ className = '' }: { className?: string }) {
       const directions: TracerLine['direction'][] = ['up', 'down', 'left', 'right']
       const dir = directions[Math.floor(Math.random() * directions.length)]
 
-      // Snap to grid lines
       const gridCols = Math.floor(w / GRID_SIZE)
       const gridRows = Math.floor(h / GRID_SIZE)
 
@@ -71,32 +70,57 @@ export function AnimatedGrid({ className = '' }: { className?: string }) {
       })
     }
 
+    // Compute how much to fade based on distance from center
+    function centerFade(px: number, py: number, w: number, h: number): number {
+      const cx = w / 2
+      const cy = h / 2
+      const dx = (px - cx) / (w * 0.35)
+      const dy = (py - cy) / (h * 0.35)
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      // Fully transparent inside radius 0.6, fully visible outside 1.0
+      return Math.min(1, Math.max(0, (dist - 0.5) / 0.5))
+    }
+
     function draw(time: number) {
       const rect = canvas!.getBoundingClientRect()
       const w = rect.width
       const h = rect.height
       ctx!.clearRect(0, 0, w, h)
 
-      // Draw grid lines
-      ctx!.strokeStyle = 'rgba(229, 231, 235, 0.5)'
+      // Draw grid lines with center fade
       ctx!.lineWidth = 0.5
-      ctx!.beginPath()
       for (let x = GRID_SIZE; x < w; x += GRID_SIZE) {
-        ctx!.moveTo(x, 0)
-        ctx!.lineTo(x, h)
+        // Draw vertical line in segments for fade
+        for (let y = 0; y < h; y += 4) {
+          const fade = centerFade(x, y + 2, w, h)
+          if (fade < 0.02) continue
+          ctx!.strokeStyle = `rgba(229, 231, 235, ${0.5 * fade})`
+          ctx!.beginPath()
+          ctx!.moveTo(x, y)
+          ctx!.lineTo(x, Math.min(y + 4, h))
+          ctx!.stroke()
+        }
       }
       for (let y = GRID_SIZE; y < h; y += GRID_SIZE) {
-        ctx!.moveTo(0, y)
-        ctx!.lineTo(w, y)
+        for (let x = 0; x < w; x += 4) {
+          const fade = centerFade(x + 2, y, w, h)
+          if (fade < 0.02) continue
+          ctx!.strokeStyle = `rgba(229, 231, 235, ${0.5 * fade})`
+          ctx!.beginPath()
+          ctx!.moveTo(x, y)
+          ctx!.lineTo(Math.min(x + 4, w), y)
+          ctx!.stroke()
+        }
       }
-      ctx!.stroke()
 
-      // Draw subtle dots at grid intersections
+      // Draw subtle dots at grid intersections with fade
       for (let x = GRID_SIZE; x < w; x += GRID_SIZE) {
         for (let y = GRID_SIZE; y < h; y += GRID_SIZE) {
-          ctx!.fillStyle = 'rgba(229, 231, 235, 0.4)'
+          const fade = centerFade(x, y, w, h)
+          if (fade < 0.02) continue
+          ctx!.fillStyle = `rgba(229, 231, 235, ${0.5 * fade})`
           ctx!.beginPath()
-          ctx!.arc(x, y, 1, 0, Math.PI * 2)
+          ctx!.arc(x, y, 1.5, 0, Math.PI * 2)
           ctx!.fill()
         }
       }
@@ -112,7 +136,6 @@ export function AnimatedGrid({ className = '' }: { className?: string }) {
         const t = tracers[i]
         t.life++
 
-        // Move
         switch (t.direction) {
           case 'right': t.x += t.speed; break
           case 'left': t.x -= t.speed; break
@@ -120,11 +143,22 @@ export function AnimatedGrid({ className = '' }: { className?: string }) {
           case 'up': t.y -= t.speed; break
         }
 
-        // Fade in/out
         const lifeRatio = t.life / t.maxLife
         let alpha = t.opacity
         if (lifeRatio < 0.1) alpha *= lifeRatio / 0.1
         else if (lifeRatio > 0.8) alpha *= (1 - lifeRatio) / 0.2
+
+        // Apply center fade to tracers too
+        const fade = centerFade(t.x, t.y, w, h)
+        alpha *= fade
+
+        if (alpha < 0.01) {
+          // Still alive, just invisible in center — skip drawing
+          if (t.life > t.maxLife || t.x > w + 100 || t.x < -100 || t.y > h + 100 || t.y < -100) {
+            tracers.splice(i, 1)
+          }
+          continue
+        }
 
         // Draw tracer with gradient
         const gradient = (t.direction === 'left' || t.direction === 'right')
@@ -141,9 +175,9 @@ export function AnimatedGrid({ className = '' }: { className?: string }) {
               t.y
             )
 
-        gradient.addColorStop(0, `rgba(196, 181, 253, 0)`)
-        gradient.addColorStop(0.5, `rgba(196, 181, 253, ${alpha * 0.6})`)
-        gradient.addColorStop(1, `rgba(196, 181, 253, ${alpha})`)
+        gradient.addColorStop(0, `rgba(139, 92, 246, 0)`)
+        gradient.addColorStop(0.5, `rgba(139, 92, 246, ${alpha * 0.6})`)
+        gradient.addColorStop(1, `rgba(139, 92, 246, ${alpha})`)
 
         ctx!.strokeStyle = gradient
         ctx!.lineWidth = 1.5
@@ -161,7 +195,7 @@ export function AnimatedGrid({ className = '' }: { className?: string }) {
         ctx!.stroke()
 
         // Draw bright dot at head
-        ctx!.fillStyle = `rgba(196, 181, 253, ${alpha})`
+        ctx!.fillStyle = `rgba(139, 92, 246, ${alpha})`
         ctx!.beginPath()
         ctx!.arc(t.x, t.y, 2, 0, Math.PI * 2)
         ctx!.fill()
