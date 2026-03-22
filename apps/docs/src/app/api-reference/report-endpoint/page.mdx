@@ -11,7 +11,6 @@ The SDK sends rate limit data to this endpoint after each AI API call.
 ## Endpoint
 
 - `POST https://delimiter.app/api/report`
-- For self-hosted: `POST https://your-instance.com/api/report`
 
 ## Authentication
 
@@ -44,7 +43,7 @@ Authorization: Bearer dlm_your_project_key
 
 - `200 OK` — report accepted
 - `401 Unauthorized` — invalid project key
-- `429 Too Many Requests` — report rate limit exceeded (free plan)
+- `429 Too Many Requests` — report rate limit exceeded
 
 ## Behavior
 

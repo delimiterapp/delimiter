@@ -1,6 +1,6 @@
 # Contributing to Delimiter
 
-Delimiter is an open source monorepo containing the SDK and web dashboard. Here's how to get set up.
+Delimiter is a monorepo containing the SDK and web dashboard. Here's how to get set up.
 
 ## Prerequisites
 

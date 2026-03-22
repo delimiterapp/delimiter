@@ -155,38 +155,7 @@ Alerts fire when any provider crosses your threshold. You get a message before y
 
 ## Pricing
 
-| Plan | Price | What You Get |
-|------|-------|--------------|
-| **Free** | $0 | 1 provider, 1 app, 1,000 reports/day, email alerts, 7-day history |
-| **Pro** | $20/month | Unlimited providers & apps, unlimited reports, Slack + webhook alerts, 90-day history |
-
-## Self-Hosting
-
-Delimiter is MIT licensed. You can self-host the entire stack.
-
-```bash
-git clone https://github.com/delimiterapp/delimiter.git
-cd delimiter
-pnpm install
-
-# Set up your Postgres database
-cp apps/web/.env.example apps/web/.env
-# Edit .env with your DATABASE_URL and other config
-
-# Run migrations
-pnpm --filter web db:push
-
-# Start the dev server
-pnpm dev
-```
-
-The SDK's reporting endpoint is configurable:
-
-```javascript
-delimiter.init('dlm_your_project_key', {
-  endpoint: 'https://your-delimiter-instance.com/api/report'
-})
-```
+**$20/month** per workspace — unlimited providers, apps, reports, and alerts.
 
 ## Architecture
 
@@ -215,7 +184,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup.
 
 ## Contributing
 
-Delimiter is open source under the MIT license. Contributions welcome.
+Contributions welcome.
 
 ```bash
 git clone https://github.com/delimiterapp/delimiter.git
