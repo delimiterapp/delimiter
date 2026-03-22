@@ -10,9 +10,11 @@ function CheckCircleIcon() {
 }
 
 const pricingPoints = [
-  'Free for auth-only and free plans',
-  '5% + $0.50 per charge on paid plans',
-  'Includes payment processing fees',
+  '$20 per month, per workspace',
+  'Unlimited providers and apps',
+  'Unlimited reports and history',
+  'Slack, webhook, and email alerts',
+  'Priority support included',
 ]
 
 const useCases = [
