@@ -3,13 +3,8 @@ export function TopNav() {
     <header className="sticky top-0 z-50 h-16 border-b border-border bg-white">
       <div className="mx-auto flex h-full max-w-screen-2xl items-center justify-between px-6">
         {/* Left: Logo */}
-        <a href="/" className="flex items-center gap-1">
-          <svg width="12" height="17" viewBox="0 0 32 44" fill="none">
-            <path d="M24 0H14L0 44h10L24 0z" fill="currentColor"/>
-          </svg>
-          <span className="text-[17px] font-black tracking-tight text-text-primary">
-            delimiter
-          </span>
+        <a href="/" className="flex items-center">
+          <img src="/logo.png" alt="delimiter" className="h-5" />
         </a>
 
         {/* Center: Documentation tab */}

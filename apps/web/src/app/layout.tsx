@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   },
   description:
     'Know your AI rate limits before your app does. Three lines of code. Every provider. One dashboard.',
+  icons: {
+    icon: '/icon.png',
+  },
 }
 
 export default function RootLayout({

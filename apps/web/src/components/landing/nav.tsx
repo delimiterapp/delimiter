@@ -2,11 +2,8 @@ export function Nav() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-white/80 backdrop-blur-md">
       <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-        <a href="/" className="flex items-center gap-1 text-[17px] font-black tracking-tight">
-          <svg width="14" height="20" viewBox="0 0 32 44" fill="none" className="-mt-0.5 mr-0.5">
-            <path d="M24 0H14L0 44h10L24 0z" fill="currentColor"/>
-          </svg>
-          delimiter
+        <a href="/" className="flex items-center">
+          <img src="/logo.png" alt="delimiter" className="h-5" />
         </a>
         <div className="flex items-center gap-1">
           <a
