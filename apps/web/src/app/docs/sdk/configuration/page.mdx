@@ -24,7 +24,7 @@ That's it. All AI API calls your app makes are now automatically monitored.
 |-----------|------|----------|---------|-------------|
 | projectKey | string | Yes | — | Your project API key from delimiter.app. Starts with `dlm_`. |
 | options.app | string | No | "default" | App name tag for multi-app support. |
-| options.endpoint | string | No | "https://delimiter.app/api/report" | Custom reporting endpoint for self-hosted instances. |
+| options.endpoint | string | No | "https://delimiter.app/api/report" | Custom reporting endpoint. |
 | options.enabled | boolean | No | true | Enable/disable reporting. Set to false in tests. |
 | options.debug | boolean | No | false | Log reports to console for debugging. |
 
@@ -48,8 +48,3 @@ Development (debug logging):
 delimiter.init('dlm_key', { debug: true })
 ```
 
-Self-hosted:
-
-```typescript
-delimiter.init('dlm_key', { endpoint: 'https://my-instance.com/api/report' })
-```

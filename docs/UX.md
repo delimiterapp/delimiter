@@ -46,7 +46,7 @@ Dark background. Minimal. Developer aesthetic.
 │       │ const openai = delimiter.wrap(ne... │       │
 │       └─────────────────────────────────────┘       │
 │                                                     │
-│       [Get started — it's free]                     │
+│       [Get started]                                 │
 │                                                     │
 │                                                     │
 │  ── What it does ──────────────────────────────     │
@@ -80,11 +80,10 @@ Dark background. Minimal. Developer aesthetic.
 │                                                     │
 │  ── Pricing ───────────────────────────────────     │
 │                                                     │
-│   Free: 1 provider, 1 app, 1K reports/day           │
-│   Pro ($20/mo): Unlimited everything, Slack alerts  │
+│   $20/mo: Unlimited everything                      │
 │                                                     │
 │                                                     │
-│  MIT open source · GitHub · delimiter.app           │
+│  GitHub · delimiter.app                             │
 │                                                     │
 └─────────────────────────────────────────────────────┘
 ```
@@ -94,7 +93,7 @@ Dark background. Minimal. Developer aesthetic.
 **Hero:**
 - Headline: "Know your AI rate limits before your app does."
 - Subhead: "Three lines of code. Every provider. One dashboard."
-- CTA: "Get started — it's free"
+- CTA: "Get started"
 
 **How it works (three cards):**
 1. "Wrap your AI clients" — "Delimiter wraps your OpenAI and Anthropic SDKs with a lightweight Proxy. No code changes beyond three lines."
@@ -108,8 +107,7 @@ Dark background. Minimal. Developer aesthetic.
 - "Never fails loudly — if we're down, your app doesn't notice"
 
 **Pricing:**
-- Free: 1 provider, 1 app, 1,000 reports/day, email alerts, 7-day history
-- Pro ($20/month): Unlimited providers & apps, unlimited reports, Slack + webhook alerts, 90-day history
+- $20/month per workspace — unlimited providers, apps, reports, and alerts
 
 ---
 
@@ -363,9 +361,8 @@ This transition should feel alive. The dashboard goes from empty to monitoring i
 │                                                     │
 │  ── Plan ──────────────────────────────────────     │
 │                                                     │
-│  Current plan: Free                                 │
-│  Usage: 342 / 1,000 reports today                   │
-│  [Upgrade to Pro — $20/month]                       │
+│  Plan: $20/month                                    │
+│  Status: Active                                     │
 │                                                     │
 └─────────────────────────────────────────────────────┘
 ```

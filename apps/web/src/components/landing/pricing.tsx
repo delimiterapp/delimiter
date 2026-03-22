@@ -4,36 +4,26 @@ import { ScrambleButton } from '@/components/ui/scramble-button'
 
 function CheckIcon() {
   return (
-    <svg className="h-4 w-4 shrink-0 text-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <polyline points="20 6 9 17 4 12" />
+    <svg className="h-5 w-5 shrink-0 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="16 10 11 15 8 12" />
     </svg>
   )
 }
 
-const freeFeatures = [
-  '1 provider',
-  '1 app',
-  '1,000 reports/day',
-  'Email alerts',
-  '7-day history',
-]
-
-const proFeatures = [
-  'Unlimited providers & apps',
+const features = [
+  'Unlimited providers and apps',
   'Unlimited reports',
-  'Slack + webhook alerts',
+  'Slack, webhook, and email alerts',
   '90-day history',
 ]
 
 export function Pricing() {
   return (
     <section className="px-6 py-20">
-      <div className="mx-auto max-w-3xl">
-        <h2 className="text-center text-2xl font-bold tracking-tight">
+      <div className="mx-auto max-w-2xl text-center">
+        <p className="text-xs font-semibold uppercase tracking-widest text-text-tertiary">
           Pricing
-        </h2>
-        <p className="mt-2 text-center text-sm text-text-secondary">
-          Start free, upgrade when you need to.
         </p>
         <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Free */}
@@ -104,6 +94,19 @@ export function Pricing() {
             </ScrambleButton>
           </div>
         </div>
+
+        <p className="mt-8 text-4xl font-bold">
+          $20
+          <span className="text-lg font-normal text-text-tertiary">/mo</span>
+        </p>
+        <p className="mt-1 text-sm text-text-tertiary">Per workspace</p>
+
+        <a
+          href="/sign-up"
+          className="mt-6 inline-block rounded-lg bg-accent px-8 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+        >
+          Get started
+        </a>
       </div>
     </section>
   )
