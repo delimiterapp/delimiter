@@ -27,12 +27,12 @@ export async function CodeBlock(props: React.ComponentPropsWithoutRef<'pre'>) {
 
   const html = await codeToHtml(code, {
     lang: language,
-    theme: 'github-dark',
+    theme: 'github-light',
   })
 
   return (
     <div
-      className="my-4 overflow-x-auto rounded-lg border border-border bg-code-bg p-4 text-sm"
+      className="my-4 overflow-x-auto rounded-lg border border-border bg-white p-4 text-sm [&_pre]:!bg-transparent [&_code]:!bg-transparent"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )
