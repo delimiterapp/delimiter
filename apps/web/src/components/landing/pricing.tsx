@@ -11,11 +11,18 @@ function CheckIcon() {
   )
 }
 
-const features = [
+const freeFeatures = [
   'Unlimited providers and apps',
   'Unlimited reports',
   'Slack, webhook, and email alerts',
   '90-day history',
+]
+
+const proFeatures = [
+  'Everything in Free',
+  'Unlimited history',
+  'Priority support',
+  'Advanced analytics',
 ]
 
 export function Pricing() {
