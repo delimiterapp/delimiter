@@ -30,13 +30,69 @@ model Credential {
 }
 
 model Project {
-  id        String   @id @default(cuid())
-  userId    String
-  name      String
-  key       String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String            @id @default(cuid())
+  userId        String
+  name          String
+  key           String            @unique
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reports       RateLimitReport[]
+  alertRules    AlertRule[]
+  alertEvents   AlertEvent[]
+  fallbackChain FallbackChain?
 
   @@index([userId])
+}
+
+model RateLimitReport {
+  id        String   @id @default(cuid())
+  projectId String
+  app       String   @default("default")
+  provider  String
+  model     String?
+  timestamp DateTime
+  limits    Json
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, timestamp])
+  @@index([projectId, provider])
+}
+
+model AlertRule {
+  id         String  @id @default(cuid())
+  projectId  String
+  provider   String?
+  warnAt     Int     @default(70)
+  criticalAt Int     @default(90)
+  enabled    Boolean @default(true)
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, provider])
+}
+
+model AlertEvent {
+  id         String   @id @default(cuid())
+  projectId  String
+  provider   String
+  app        String
+  metric     String
+  threshold  Int
+  current    Float
+  limit      Float
+  percentage Float
+  timestamp  DateTime @default(now())
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, timestamp])
+}
+
+model FallbackChain {
+  id        String  @id @default(cuid())
+  projectId String  @unique
+  chain     Json
+  threshold Int     @default(80)
+  enabled   Boolean @default(false)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
