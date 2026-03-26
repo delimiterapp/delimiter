@@ -1,38 +1,41 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useApp } from '@/components/app/app-context'
+import { HealthRing } from '@/components/app/health-ring'
+import { UsageBar } from '@/components/app/usage-bar'
+import Link from 'next/link'
 
-type Project = { id: string; name: string; key: string }
-type User = { id: string; email: string; name: string | null }
+type ProviderData = {
+  provider: string
+  model: string | null
+  limits: Record<string, number | null>
+  requestsUsage: number | null
+  tokensUsage: number | null
+  overallUsage: number
+}
 
-export default function Dashboard() {
-  const [user, setUser] = useState<User | null>(null)
-  const [project, setProject] = useState<Project | null>(null)
+type OverviewData = {
+  providers: ProviderData[]
+  apps: string[]
+  recentAlerts: number
+  hasData: boolean
+}
+
+export default function OverviewPage() {
+  const { activeProject } = useApp()
+  const [data, setData] = useState<OverviewData | null>(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then((r) => {
-        if (!r.ok) {
-          window.location.href = '/sign-in'
-          return null
-        }
-        return r.json()
-      })
-      .then((data) => {
-        if (data) {
-          setUser(data.user)
-          setProject(data.projects?.[0] || null)
-        }
-        setLoading(false)
-      })
-  }, [])
-
-  async function handleLogout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    window.location.href = '/'
-  }
+    if (!activeProject) return
+    setLoading(true)
+    fetch(`/api/dashboard/overview?projectId=${activeProject.id}`)
+      .then((r) => r.json())
+      .then(setData)
+      .finally(() => setLoading(false))
+  }, [activeProject?.id])
 
   function copy(text: string) {
     navigator.clipboard.writeText(text)
@@ -42,166 +45,114 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex h-full items-center justify-center p-8">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen bg-surface">
-      {/* Top bar */}
-      <header className="border-b border-border bg-white">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <div className="flex items-center gap-4">
-            <a href="/" className="flex items-center">
-              <img src="/logo.png" alt="delimiter" className="h-5" />
-            </a>
-            <div className="h-5 w-px bg-border" />
-            <span className="text-sm text-text-secondary">{project?.name || 'Dashboard'}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-text-secondary">{user?.email}</span>
-            <button
-              onClick={handleLogout}
-              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface hover:text-text-primary"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-6 py-8">
-        {/* Provider health cards - empty state */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {['OpenAI', 'Anthropic', 'Gemini', 'Mistral', 'Groq', 'DeepSeek'].map((provider) => (
-            <div key={provider} className="rounded-xl border border-border bg-white p-5">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{provider}</span>
-                <span className="rounded-full bg-surface px-2 py-0.5 text-xs text-text-tertiary">
-                  No data
-                </span>
-              </div>
-              <div className="mt-4 space-y-2">
-                <div>
-                  <div className="flex justify-between text-xs text-text-tertiary">
-                    <span>Requests / min</span>
-                    <span>— / —</span>
-                  </div>
-                  <div className="mt-1 h-1.5 rounded-full bg-surface" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-xs text-text-tertiary">
-                    <span>Tokens / min</span>
-                    <span>— / —</span>
-                  </div>
-                  <div className="mt-1 h-1.5 rounded-full bg-surface" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Empty state CTA */}
-        <div className="mt-8 rounded-xl border border-dashed border-border bg-white p-10 text-center">
+  // Empty state — onboarding
+  if (!data?.hasData && activeProject) {
+    return (
+      <div className="flex h-full items-center justify-center p-8">
+        <div className="max-w-lg text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent-light">
             <svg className="h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold">Waiting for data</h2>
+          <h2 className="text-lg font-semibold">Waiting for first event</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
-            Once you initialize the Delimiter SDK and make an AI API request,
-            rate limit data will appear here automatically.
+            Initialize the Delimiter SDK and make an AI API call. Rate limit data will appear here automatically.
           </p>
 
-          {project && (
-            <div className="mx-auto mt-6 max-w-md">
-              <div className="overflow-hidden rounded-lg border border-border bg-code-bg text-left">
-                <div className="flex items-center justify-between border-b border-white/5 px-4 py-2">
-                  <span className="font-mono text-xs text-white/40">Quick start</span>
-                  <button
-                    onClick={() =>
-                      copy(
-                        `import { delimiter } from '@delimiter/sdk'\ndelimiter.init('${project.key}')`
-                      )
-                    }
-                    className="text-xs text-white/40 transition-colors hover:text-white/70"
-                  >
-                    {copied ? 'Copied!' : 'Copy'}
-                  </button>
-                </div>
-                <pre className="overflow-x-auto p-4 font-mono text-sm leading-relaxed text-code-text">
+          <div className="mx-auto mt-6 max-w-md">
+            <div className="overflow-hidden rounded-lg border border-border bg-code-bg text-left">
+              <div className="flex items-center justify-between border-b border-white/5 px-4 py-2">
+                <span className="font-mono text-xs text-white/40">Quick start</span>
+                <button
+                  onClick={() => copy(`import { delimiter } from '@delimiter/sdk'\ndelimiter.init('${activeProject.key}')`)}
+                  className="text-xs text-white/40 transition-colors hover:text-white/70"
+                >
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+              <pre className="overflow-x-auto p-4 font-mono text-sm leading-relaxed text-code-text">
 {`import { delimiter } from '@delimiter/sdk'
-delimiter.init('${project.key}')`}
-                </pre>
-              </div>
-            </div>
-          )}
-
-          <div className="mt-6 flex justify-center gap-3">
-            <a
-              href="/console"
-              className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
-            >
-              Setup guide
-            </a>
-            <a
-              href="/docs"
-              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-surface"
-            >
-              Read docs
-            </a>
-          </div>
-        </div>
-
-        {/* Alert log - empty state */}
-        <div className="mt-8 rounded-xl border border-border bg-white">
-          <div className="flex items-center justify-between border-b border-border px-5 py-4">
-            <h2 className="font-semibold">Alert log</h2>
-            <span className="text-xs text-text-tertiary">Last 24 hours</span>
-          </div>
-          <div className="px-5 py-10 text-center text-sm text-text-tertiary">
-            No alerts yet. Alerts will appear when rate limits are approached.
-          </div>
-        </div>
-
-        {/* SDK info panel */}
-        {project && (
-          <div className="mt-8 rounded-xl border border-border bg-white p-5">
-            <h2 className="font-semibold">SDK info</h2>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div>
-                <div className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                  Project key
-                </div>
-                <div className="mt-1 flex items-center gap-2">
-                  <code className="font-mono text-sm">{project.key}</code>
-                  <button
-                    onClick={() => copy(project.key)}
-                    className="text-xs text-text-tertiary transition-colors hover:text-text-primary"
-                  >
-                    {copied ? 'Copied' : 'Copy'}
-                  </button>
-                </div>
-              </div>
-              <div>
-                <div className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                  Apps reporting
-                </div>
-                <div className="mt-1 text-sm text-text-secondary">None yet</div>
-              </div>
-              <div>
-                <div className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                  Detected providers
-                </div>
-                <div className="mt-1 text-sm text-text-secondary">None yet</div>
-              </div>
+delimiter.init('${activeProject.key}')`}
+              </pre>
             </div>
           </div>
+
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 text-xs text-text-tertiary">
+            <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-yellow" />
+            Waiting for first event...
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-8">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-lg font-semibold">Overview</h1>
+        {data && data.recentAlerts > 0 && (
+          <Link
+            href="/dashboard/alerts"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-red/10 px-3 py-1.5 text-xs font-medium text-red"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            {data.recentAlerts} alert{data.recentAlerts > 1 ? 's' : ''} in 24h
+          </Link>
         )}
-      </main>
+      </div>
+
+      {/* Provider health cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {data?.providers.map((p) => {
+          const limits = p.limits
+          const reqUsed = limits.requests_limit && limits.requests_remaining != null
+            ? limits.requests_limit - limits.requests_remaining
+            : null
+
+          const tokUsed = limits.tokens_limit && limits.tokens_remaining != null
+            ? limits.tokens_limit - limits.tokens_remaining
+            : null
+
+          return (
+            <Link
+              key={p.provider}
+              href={`/dashboard/providers?provider=${p.provider}`}
+              className="group rounded-xl border border-border bg-white p-5 transition-colors hover:border-accent/20"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-sm font-medium capitalize">{p.provider}</span>
+                  {p.model && (
+                    <div className="mt-0.5 text-xs text-text-tertiary">{p.model}</div>
+                  )}
+                </div>
+                <HealthRing percentage={p.overallUsage} size={56} strokeWidth={5} />
+              </div>
+              <div className="mt-4 space-y-2">
+                <UsageBar
+                  label="Requests / min"
+                  current={reqUsed}
+                  limit={limits.requests_limit ?? null}
+                />
+                <UsageBar
+                  label="Tokens / min"
+                  current={tokUsed}
+                  limit={limits.tokens_limit ?? null}
+                />
+              </div>
+            </Link>
+          )
+        })}
+      </div>
     </div>
   )
 }
