@@ -1,15 +1,21 @@
 import { NextResponse } from 'next/server'
 import { Pool } from 'pg'
+import { getSession } from '@/lib/session'
 
 /**
  * Idempotent database migration.
  *
+ * Security:
+ * - First run (no User table): open — bootstraps the database
+ * - After that: requires logged-in superadmin (role = 'superadmin')
+ *
+ * Migration strategy:
  * - CREATE TABLE IF NOT EXISTS: creates tables on first run
  * - ALTER TABLE ADD COLUMN IF NOT EXISTS: adds new columns to existing tables
  * - CREATE INDEX IF NOT EXISTS: adds missing indexes
  * - DO/EXCEPTION blocks: adds foreign keys + constraints without failing if they exist
  *
- * Safe to hit repeatedly. Handles both fresh setup and schema evolution.
+ * Safe to hit repeatedly.
  */
 const SQL = `
 
@@ -52,6 +58,7 @@ CREATE TABLE IF NOT EXISTS "FallbackChain" (
 -- User
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "email" TEXT NOT NULL DEFAULT '';
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "name" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "role" TEXT NOT NULL DEFAULT 'user';
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
@@ -166,6 +173,28 @@ END $$;
 
 `
 
+async function isFirstRun(pool: Pool): Promise<boolean> {
+  const result = await pool.query(`
+    SELECT EXISTS (
+      SELECT 1 FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = 'User'
+    ) AS exists
+  `)
+  if (!result.rows[0].exists) return true
+
+  // Table exists but has no users — still first run
+  const users = await pool.query(`SELECT COUNT(*) as count FROM "User"`)
+  return parseInt(users.rows[0].count) === 0
+}
+
+async function isSuperAdmin(pool: Pool, userId: string): Promise<boolean> {
+  const result = await pool.query(
+    `SELECT "role" FROM "User" WHERE "id" = $1`,
+    [userId]
+  )
+  return result.rows[0]?.role === 'superadmin'
+}
+
 export async function GET() {
   const url = process.env.DATABASE_URL
   if (!url) {
@@ -173,11 +202,32 @@ export async function GET() {
   }
 
   const pool = new Pool({ connectionString: url })
-  const applied: string[] = []
 
   try {
+    // Auth check: allow first run, require superadmin after
+    const firstRun = await isFirstRun(pool)
+
+    if (!firstRun) {
+      const session = await getSession()
+      if (!session) {
+        await pool.end()
+        return NextResponse.json({ error: 'Not authenticated. Sign in first.' }, { status: 401 })
+      }
+
+      const admin = await isSuperAdmin(pool, session.userId)
+      if (!admin) {
+        await pool.end()
+        return NextResponse.json({ error: 'Forbidden. Superadmin access required.' }, { status: 403 })
+      }
+    }
+
+    // Run migration
+    const applied: string[] = []
     await pool.query(SQL)
     applied.push('tables', 'columns', 'indexes', 'foreign_keys')
+
+    // If first run, promote the first user who signs up to superadmin
+    // (handled via a note in the response)
 
     // Report current state
     const tables = await pool.query(`
@@ -202,7 +252,10 @@ export async function GET() {
 
     return NextResponse.json({
       ok: true,
-      message: 'Database migrated successfully',
+      message: firstRun
+        ? 'Database bootstrapped. Sign up — the first user will be superadmin.'
+        : 'Database migrated successfully.',
+      firstRun,
       applied,
       tables: tables.rows.map((r) => r.table_name),
       schema,
@@ -212,7 +265,6 @@ export async function GET() {
     return NextResponse.json({
       ok: false,
       error: err instanceof Error ? err.message : 'Unknown error',
-      applied,
     }, { status: 500 })
   }
 }

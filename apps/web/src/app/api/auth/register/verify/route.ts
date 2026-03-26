@@ -32,9 +32,14 @@ export async function POST(req: NextRequest) {
 
   const { credential: cred, credentialDeviceType, credentialBackedUp } = verification.registrationInfo
 
+  // First user becomes superadmin
+  const userCount = await db.user.count()
+  const role = userCount === 0 ? 'superadmin' : 'user'
+
   const user = await db.user.create({
     data: {
       email,
+      role,
       credentials: {
         create: {
           credentialId: cred.id,
