@@ -10,9 +10,8 @@
         "GITHUB_CLIENT_SECRET",
         "NEXT_PUBLIC_APP_URL",
         "WHOP_API_KEY",
-        "WHOP_WEBHOOK_SECRET",
-        "WHOP_CHECKOUT_URL",
-        "WHOP_COMPANY_ID"
+        "WHOP_PLAN_ID",
+        "WHOP_WEBHOOK_SECRET"
       ],
       "outputs": [".next/**", "dist/**"]
     },

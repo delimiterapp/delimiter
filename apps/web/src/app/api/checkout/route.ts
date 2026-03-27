@@ -9,16 +9,47 @@ export async function GET() {
     return NextResponse.redirect(new URL('/sign-in', appUrl))
   }
 
-  const checkoutUrl = process.env.WHOP_CHECKOUT_URL
-  if (!checkoutUrl) {
+  const whopApiKey = process.env.WHOP_API_KEY
+  const planId = process.env.WHOP_PLAN_ID
+
+  if (!whopApiKey || !planId) {
     return NextResponse.json({ error: 'Checkout not configured' }, { status: 500 })
   }
 
-  // Append user ID so the webhook can tie payment back to the user
-  // and redirect back to the app after checkout
-  const url = new URL(checkoutUrl)
-  url.searchParams.set('metadata[user_id]', session.userId)
-  url.searchParams.set('d', `${appUrl}/dashboard`)
+  // Create a checkout session via Whop's Checkout Configuration API
+  // This properly passes metadata and sets the redirect URL
+  const res = await fetch('https://api.whop.com/api/v5/checkout_configurations', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${whopApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      plan_id: planId,
+      redirect_url: `${appUrl}/dashboard?upgraded=1`,
+      metadata: {
+        user_id: session.userId,
+      },
+    }),
+  })
 
-  return NextResponse.redirect(url.toString())
+  if (!res.ok) {
+    const err = await res.text()
+    console.error('Whop checkout creation failed:', err)
+    return NextResponse.json({ error: 'Failed to create checkout' }, { status: 500 })
+  }
+
+  const data = await res.json()
+  const purchaseUrl = data.purchase_url
+
+  if (!purchaseUrl) {
+    return NextResponse.json({ error: 'No checkout URL returned' }, { status: 500 })
+  }
+
+  // Whop returns a relative path like /checkout/plan_xxx?session=ch_xxx
+  const checkoutUrl = purchaseUrl.startsWith('http')
+    ? purchaseUrl
+    : `https://whop.com${purchaseUrl}`
+
+  return NextResponse.redirect(checkoutUrl)
 }
