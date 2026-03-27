@@ -6,25 +6,21 @@ import { getChallenge } from '@/lib/challenges'
 import { createSession } from '@/lib/session'
 
 export async function POST(req: NextRequest) {
-  const { email, credential } = await req.json()
+  const { challengeId, credential } = await req.json()
 
-  const expectedChallenge = getChallenge(email)
+  const expectedChallenge = getChallenge(challengeId)
   if (!expectedChallenge) {
     return NextResponse.json({ error: 'Challenge expired. Try again.' }, { status: 400 })
   }
 
-  const user = await db.user.findUnique({
-    where: { email },
-    include: { credentials: true },
+  // Look up credential by ID from the passkey response
+  const dbCredential = await db.credential.findUnique({
+    where: { credentialId: credential.id },
+    include: { user: true },
   })
 
-  if (!user) {
-    return NextResponse.json({ error: 'User not found' }, { status: 404 })
-  }
-
-  const dbCredential = user.credentials.find((c) => c.credentialId === credential.id)
   if (!dbCredential) {
-    return NextResponse.json({ error: 'Credential not recognized' }, { status: 400 })
+    return NextResponse.json({ error: 'Credential not recognized. Please sign up first.' }, { status: 404 })
   }
 
   let verification
@@ -55,11 +51,11 @@ export async function POST(req: NextRequest) {
     data: { counter: verification.authenticationInfo.newCounter },
   })
 
-  await createSession(user.id)
+  await createSession(dbCredential.user.id)
 
   return NextResponse.json({
     verified: true,
-    user: { id: user.id, email: user.email },
+    user: { id: dbCredential.user.id, email: dbCredential.user.email },
   })
 }
 

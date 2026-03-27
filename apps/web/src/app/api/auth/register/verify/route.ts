@@ -7,9 +7,9 @@ import { createSession } from '@/lib/session'
 import { generateProjectKey } from '@/lib/project-key'
 
 export async function POST(req: NextRequest) {
-  const { email, credential } = await req.json()
+  const { challengeId, credential } = await req.json()
 
-  const expectedChallenge = getChallenge(email)
+  const expectedChallenge = getChallenge(challengeId)
   if (!expectedChallenge) {
     return NextResponse.json({ error: 'Challenge expired. Try again.' }, { status: 400 })
   }
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Verification failed' }, { status: 400 })
   }
 
-  const { credential: cred, credentialDeviceType, credentialBackedUp } = verification.registrationInfo
+  const { credential: cred } = verification.registrationInfo
 
   // First user becomes superadmin
   const userCount = await db.user.count()
@@ -38,7 +38,6 @@ export async function POST(req: NextRequest) {
 
   const user = await db.user.create({
     data: {
-      email,
       role,
       credentials: {
         create: {
@@ -62,7 +61,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     verified: true,
-    user: { id: user.id, email: user.email },
+    user: { id: user.id },
     project: user.projects[0],
   })
 }

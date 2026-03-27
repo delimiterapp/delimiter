@@ -1,38 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateRegistrationOptions } from '@simplewebauthn/server'
-import { db } from '@/lib/db'
 import { rpName, rpID } from '@/lib/webauthn'
-import { storeChallenge } from '@/lib/challenges'
+import { generateChallengeId, storeChallenge } from '@/lib/challenges'
+import { randomBytes } from 'crypto'
 
-export async function POST(req: NextRequest) {
-  const { email } = await req.json()
-
-  if (!email || typeof email !== 'string') {
-    return NextResponse.json({ error: 'Email is required' }, { status: 400 })
-  }
-
-  const existing = await db.user.findUnique({
-    where: { email },
-    include: { credentials: true },
-  })
-
-  if (existing) {
-    return NextResponse.json({ error: 'Account already exists. Please sign in.' }, { status: 409 })
-  }
+export async function POST(_req: NextRequest) {
+  const challengeId = generateChallengeId()
+  const userName = `user-${randomBytes(4).toString('hex')}`
 
   const options = await generateRegistrationOptions({
     rpName,
     rpID,
-    userName: email,
-    userDisplayName: email,
+    userName,
+    userDisplayName: 'Delimiter User',
     attestationType: 'none',
     authenticatorSelection: {
-      residentKey: 'preferred',
+      residentKey: 'required',
       userVerification: 'preferred',
     },
   })
 
-  storeChallenge(email, options.challenge)
+  storeChallenge(challengeId, options.challenge)
 
-  return NextResponse.json(options)
+  return NextResponse.json({ challengeId, options })
 }
