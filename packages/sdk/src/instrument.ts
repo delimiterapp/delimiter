@@ -78,17 +78,13 @@ function patchFetch(config: DelimiterConfig): void {
         if (config.debug) {
           console.log(`[delimiter] intercepted fetch to ${provider}`, { url, model, hasLimits: hasLimits(limits), limits })
         }
-        if (hasLimits(limits)) {
-          sendReport(config, {
-            app: config.app,
-            provider,
-            model,
-            timestamp: new Date().toISOString(),
-            limits,
-          })
-        } else if (config.debug) {
-          console.log(`[delimiter] no rate limit headers found in response from ${provider} — skipping report`)
-        }
+        sendReport(config, {
+          app: config.app,
+          provider,
+          model,
+          timestamp: new Date().toISOString(),
+          limits,
+        })
       } catch {
         // Never interfere with the response
       }
@@ -178,17 +174,13 @@ function patchNodeHttp(config: DelimiterConfig): void {
             if (config.debug) {
               console.log(`[delimiter] intercepted http request to ${provider}`, { url, model, hasLimits: hasLimits(limits), limits })
             }
-            if (hasLimits(limits)) {
-              sendReport(config, {
-                app: config.app,
-                provider,
-                model,
-                timestamp: new Date().toISOString(),
-                limits,
-              })
-            } else if (config.debug) {
-              console.log(`[delimiter] no rate limit headers found in response from ${provider} — skipping report`)
-            }
+            sendReport(config, {
+              app: config.app,
+              provider,
+              model,
+              timestamp: new Date().toISOString(),
+              limits,
+            })
           } catch {
             // Never interfere with the response
           }
