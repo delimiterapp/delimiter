@@ -68,7 +68,7 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-white">
-      {/* Breadcrumb header */}
+      {/* Project switcher header */}
       <div className="border-b border-border px-4 py-3">
         <BreadcrumbSwitcher />
       </div>

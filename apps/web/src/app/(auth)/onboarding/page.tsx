@@ -8,8 +8,6 @@ export default function Onboarding() {
   const [step, setStep] = useState<Step>('loading')
   const [githubUsername, setGithubUsername] = useState('')
   const [orgName, setOrgName] = useState('')
-  const [providerCount, setProviderCount] = useState('')
-  const [orgCount, setOrgCount] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -32,18 +30,12 @@ export default function Onboarding() {
       })
   }, [])
 
-  const disqualified =
-    (providerCount !== '' && providerCount !== '1') ||
-    (orgCount !== '' && orgCount !== '1')
-
   const formValid =
     githubUsername.trim() !== '' &&
-    orgName.trim() !== '' &&
-    providerCount !== '' &&
-    orgCount !== ''
+    orgName.trim() !== ''
 
   async function handleApply() {
-    if (!formValid || disqualified) return
+    if (!formValid) return
     setSubmitting(true)
     setError('')
 
@@ -54,8 +46,6 @@ export default function Onboarding() {
         body: JSON.stringify({
           githubUsername: githubUsername.trim(),
           orgName: orgName.trim(),
-          providerCount: parseInt(providerCount),
-          orgCount: parseInt(orgCount),
         }),
       })
 
@@ -77,7 +67,6 @@ export default function Onboarding() {
   }
 
   async function handleSelectPro() {
-    // Redirect to Whop checkout via our API
     window.location.href = '/api/checkout'
   }
 
@@ -96,7 +85,7 @@ export default function Onboarding() {
           <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
           </div>
-          <h1 className="text-lg font-semibold">Reviewing your application</h1>
+          <h1 className="text-lg font-semibold">Setting up your account</h1>
           <p className="mt-2 text-sm text-text-secondary">
             This usually takes just a moment...
           </p>
@@ -134,7 +123,7 @@ export default function Onboarding() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-6">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-lg">
         <a href="/" className="mb-10 flex justify-center">
           <img src="/logo.png" alt="delimiter" className="h-5" />
         </a>
@@ -146,55 +135,53 @@ export default function Onboarding() {
               Select a plan to get started with Delimiter.
             </p>
 
-            <div className="mt-8 space-y-3">
-              {/* Pro plan */}
+            <div className="mt-8 grid grid-cols-2 gap-4">
+              {/* Free plan */}
               <button
-                onClick={handleSelectPro}
-                className="shine-hover-light group w-full rounded-xl border border-border bg-white p-5 text-left transition-all hover:border-accent hover:shadow-sm"
+                onClick={() => setStep('form')}
+                className="shine-hover-light group rounded-xl border border-border/60 bg-white p-5 text-left transition-all hover:border-accent/50 hover:shadow-sm"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold">Base Plan</div>
-                    <div className="mt-0.5 text-sm text-text-secondary">$20/month per workspace</div>
-                  </div>
-                  <div className="text-2xl font-bold">$20</div>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {['Unlimited providers', 'Unlimited apps', 'Alerts', 'Priority support'].map((f) => (
-                    <span key={f} className="rounded-full bg-surface px-2.5 py-0.5 text-xs text-text-secondary">
+                <div className="text-2xl font-bold text-text-secondary">$0</div>
+                <div className="mt-1 font-semibold">Free</div>
+                <div className="mt-0.5 text-xs text-text-secondary">For solo developers</div>
+                <ul className="mt-4 space-y-2">
+                  {['1 project', '3,000 events/mo', 'Unlimited providers', 'Unlimited API keys', 'Community support'].map((f) => (
+                    <li key={f} className="flex items-center gap-1.5 text-xs text-text-secondary">
+                      <svg className="h-3 w-3 shrink-0 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
                       {f}
-                    </span>
+                    </li>
                   ))}
-                </div>
-                <div className="mt-3 flex items-center gap-1 text-sm font-medium text-accent opacity-0 transition-opacity group-hover:opacity-100">
-                  Subscribe
+                </ul>
+                <div className="mt-4 flex items-center gap-1 text-sm font-medium text-accent opacity-0 transition-opacity group-hover:opacity-100">
+                  Get started
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                   </svg>
                 </div>
               </button>
 
-              {/* Free plan */}
+              {/* Pro plan */}
               <button
-                onClick={() => setStep('form')}
-                className="shine-hover-light group w-full rounded-xl border border-border/60 bg-white p-5 text-left transition-all hover:border-accent/50 hover:shadow-sm"
+                onClick={handleSelectPro}
+                className="shine-hover-light group rounded-xl border border-accent/30 bg-white p-5 text-left transition-all hover:border-accent hover:shadow-sm"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold">Solo Developer</div>
-                    <div className="mt-0.5 text-sm text-text-secondary">Free for individual developers</div>
-                  </div>
-                  <div className="text-2xl font-bold text-text-secondary">$0</div>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {['1 provider', '1 workspace', 'Community support'].map((f) => (
-                    <span key={f} className="rounded-full bg-surface px-2.5 py-0.5 text-xs text-text-secondary">
+                <div className="text-2xl font-bold">$20</div>
+                <div className="mt-1 font-semibold">Pro</div>
+                <div className="mt-0.5 text-xs text-text-secondary">Per workspace/month</div>
+                <ul className="mt-4 space-y-2">
+                  {['Unlimited projects', '50,000 events/mo', 'Unlimited providers', 'Fallback chains', 'Alerts & webhooks', 'Priority support'].map((f) => (
+                    <li key={f} className="flex items-center gap-1.5 text-xs text-text-secondary">
+                      <svg className="h-3 w-3 shrink-0 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
                       {f}
-                    </span>
+                    </li>
                   ))}
-                </div>
-                <div className="mt-3 flex items-center gap-1 text-sm font-medium text-accent opacity-0 transition-opacity group-hover:opacity-100">
-                  Apply for access
+                </ul>
+                <div className="mt-4 flex items-center gap-1 text-sm font-medium text-accent opacity-0 transition-opacity group-hover:opacity-100">
+                  Subscribe
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                   </svg>
@@ -205,7 +192,7 @@ export default function Onboarding() {
         )}
 
         {step === 'form' && (
-          <div>
+          <div className="mx-auto max-w-md">
             <button
               onClick={() => setStep('plan')}
               className="mb-6 flex items-center gap-1 text-sm text-text-secondary transition-colors hover:text-text-primary"
@@ -216,9 +203,9 @@ export default function Onboarding() {
               Back
             </button>
 
-            <h1 className="text-lg font-semibold">Apply for the free plan</h1>
+            <h1 className="text-lg font-semibold">Get started for free</h1>
             <p className="mt-1 text-sm text-text-secondary">
-              Tell us a bit about yourself and your setup.
+              Tell us a bit about yourself.
             </p>
 
             <div className="mt-6 space-y-4">
@@ -234,63 +221,22 @@ export default function Onboarding() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Product or organization name</label>
+                <label className="mb-1.5 block text-sm font-medium">What are you building?</label>
                 <input
                   type="text"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
-                  placeholder="What are you building?"
+                  placeholder="Product or project name"
                   className="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm transition-colors focus:border-accent focus:outline-none"
                 />
               </div>
 
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">How many AI providers do you use?</label>
-                <select
-                  value={providerCount}
-                  onChange={(e) => setProviderCount(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm transition-colors focus:border-accent focus:outline-none"
-                >
-                  <option value="">Select</option>
-                  <option value="1">1</option>
-                  <option value="2">2–3</option>
-                  <option value="4">4+</option>
-                </select>
+              <div className="rounded-lg border border-border/60 bg-surface/50 px-4 py-3">
+                <p className="text-xs text-text-secondary">
+                  <span className="font-medium text-text-primary">Free plan includes:</span>{' '}
+                  1 project, 3,000 events/month, unlimited providers and API keys.
+                </p>
               </div>
-
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">How many workspaces will you need?</label>
-                <select
-                  value={orgCount}
-                  onChange={(e) => setOrgCount(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm transition-colors focus:border-accent focus:outline-none"
-                >
-                  <option value="">Select</option>
-                  <option value="1">1</option>
-                  <option value="2">2–3</option>
-                  <option value="4">4+</option>
-                </select>
-              </div>
-
-              {disqualified && (
-                <div className="rounded-lg border border-yellow/30 bg-yellow/5 px-4 py-3">
-                  <p className="text-sm font-medium text-text-primary">
-                    The free plan is for solo developers using a single provider.
-                  </p>
-                  <p className="mt-1 text-sm text-text-secondary">
-                    Based on your needs, the Base Plan would be a better fit.
-                  </p>
-                  <button
-                    onClick={handleSelectPro}
-                    className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-accent transition-colors hover:text-accent-hover"
-                  >
-                    Subscribe to Base Plan
-                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                    </svg>
-                  </button>
-                </div>
-              )}
 
               {error && (
                 <div className="rounded-lg bg-red/5 px-3.5 py-2.5 text-sm text-red">
@@ -300,10 +246,10 @@ export default function Onboarding() {
 
               <button
                 onClick={handleApply}
-                disabled={!formValid || disqualified || submitting}
+                disabled={!formValid || submitting}
                 className="shine-hover flex w-full items-center justify-center gap-2 rounded-lg bg-text-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Submitting...' : 'Submit application'}
+                {submitting ? 'Setting up...' : 'Create account'}
               </button>
             </div>
           </div>

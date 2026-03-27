@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 
-type User = { id: string; email: string; name: string | null }
+type User = { id: string; email: string; name: string | null; plan: string }
 type Project = { id: string; name: string; key: string }
 
 interface AppContextValue {
@@ -74,7 +74,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           return
         }
         const meData = await meRes.json()
-        setUser(meData.user)
+        setUser({ ...meData.user, plan: meData.user.plan || 'none' })
 
         const projRes = await fetch('/api/projects')
         if (projRes.ok) {

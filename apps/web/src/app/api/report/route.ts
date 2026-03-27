@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
+const FREE_EVENT_LIMIT = 3000
+
 export async function POST(request: NextRequest) {
   try {
     const auth = request.headers.get('authorization')
@@ -9,9 +11,35 @@ export async function POST(request: NextRequest) {
     }
 
     const projectKey = auth.slice(7)
-    const project = await db.project.findUnique({ where: { key: projectKey } })
+    const project = await db.project.findUnique({
+      where: { key: projectKey },
+      include: { user: { select: { plan: true, id: true } } },
+    })
     if (!project) {
       return NextResponse.json({ error: 'Invalid project key' }, { status: 401 })
+    }
+
+    // Check event limits for free users
+    if (project.user.plan === 'free' || project.user.plan === 'none') {
+      const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      const userProjects = await db.project.findMany({
+        where: { userId: project.user.id },
+        select: { id: true },
+      })
+      const projectIds = userProjects.map((p) => p.id)
+      const eventCount = await db.rateLimitReport.count({
+        where: {
+          projectId: { in: projectIds },
+          createdAt: { gte: startOfMonth },
+        },
+      })
+      if (eventCount >= FREE_EVENT_LIMIT) {
+        return NextResponse.json(
+          { error: 'Monthly event limit reached. Upgrade to Pro for higher limits.', limit: FREE_EVENT_LIMIT, used: eventCount },
+          { status: 429 }
+        )
+      }
     }
 
     const body = await request.json()

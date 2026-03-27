@@ -24,6 +24,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 })
   }
 
+  // Check project limits for free users
+  const user = await db.user.findUnique({
+    where: { id: session.userId },
+    select: { plan: true },
+  })
+
+  if (user?.plan === 'free' || user?.plan === 'none') {
+    const projectCount = await db.project.count({
+      where: { userId: session.userId },
+    })
+    if (projectCount >= 1) {
+      return NextResponse.json(
+        { error: 'Free plan is limited to 1 project. Upgrade to Pro for unlimited projects.' },
+        { status: 403 }
+      )
+    }
+  }
+
   const project = await db.project.create({
     data: {
       userId: session.userId,

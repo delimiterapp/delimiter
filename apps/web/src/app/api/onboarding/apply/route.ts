@@ -8,15 +8,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { githubUsername, orgName, providerCount, orgCount } = await req.json()
+  const { githubUsername, orgName } = await req.json()
 
-  if (!githubUsername || !orgName || !providerCount || !orgCount) {
+  if (!githubUsername || !orgName) {
     return NextResponse.json({ error: 'All fields are required' }, { status: 400 })
-  }
-
-  // Disqualify if multiple providers or workspaces
-  if (providerCount > 1 || orgCount > 1) {
-    return NextResponse.json({ error: 'Does not qualify for free plan' }, { status: 400 })
   }
 
   await db.user.update({
@@ -26,8 +21,6 @@ export async function POST(req: NextRequest) {
       onboardingComplete: true,
       githubUsername,
       orgName,
-      providerCount,
-      orgCount,
     },
   })
 
