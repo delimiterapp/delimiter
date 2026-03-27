@@ -6,9 +6,9 @@
       "env": [
         "DATABASE_URL",
         "JWT_SECRET",
-        "WEBAUTHN_RP_NAME",
-        "WEBAUTHN_RP_ID",
-        "WEBAUTHN_ORIGIN",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "NEXT_PUBLIC_APP_URL",
         "WHOP_API_KEY",
         "WHOP_WEBHOOK_SECRET",
         "WHOP_CHECKOUT_URL",

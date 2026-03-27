@@ -23,6 +23,8 @@ export async function GET() {
       email: user.email,
       name: user.name,
       plan: user.plan,
+      avatarUrl: user.avatarUrl,
+      githubUsername: user.githubUsername,
     },
     onboardingComplete: user.onboardingComplete,
     projects: user.projects.map((p) => ({

@@ -26,9 +26,10 @@ Edit `apps/web/.env` with your database URL and other config:
 
 ```env
 DATABASE_URL="postgresql://user:password@host:5432/delimiter"
-WEBAUTHN_RP_NAME="Delimiter"
-WEBAUTHN_RP_ID="localhost"
-WEBAUTHN_ORIGIN="http://localhost:3000"
+GITHUB_CLIENT_ID="your-github-oauth-client-id"
+GITHUB_CLIENT_SECRET="your-github-oauth-client-secret"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+JWT_SECRET="change-this-to-a-random-string"
 ```
 
 ```bash
@@ -72,7 +73,7 @@ delimiter/
 │       │   │       ├── history/[range]/route.ts
 │       │   │       ├── alerts/route.ts
 │       │   │       ├── alerts/log/route.ts
-│       │   │       └── auth/                 # Passkey auth endpoints
+│       │   │       └── auth/                 # GitHub OAuth endpoints
 │       │   ├── components/   # React components
 │       │   └── lib/          # Shared utilities (db, auth, alerts)
 │       ├── prisma/
@@ -138,7 +139,7 @@ Key files:
 - `src/app/dashboard/page.tsx` — The main dashboard page
 - `src/components/` — All UI components
 - `src/lib/db.ts` — Prisma client instance
-- `src/lib/auth.ts` — Passkey authentication logic
+- `src/lib/session.ts` — GitHub OAuth session management
 - `prisma/schema.prisma` — Database schema
 
 ### Adding a New Provider

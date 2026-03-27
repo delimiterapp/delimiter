@@ -27,10 +27,6 @@ CREATE TABLE IF NOT EXISTS "User" (
   "id" TEXT NOT NULL PRIMARY KEY
 );
 
-CREATE TABLE IF NOT EXISTS "Credential" (
-  "id" TEXT NOT NULL PRIMARY KEY
-);
-
 CREATE TABLE IF NOT EXISTS "Project" (
   "id" TEXT NOT NULL PRIMARY KEY
 );
@@ -56,19 +52,17 @@ CREATE TABLE IF NOT EXISTS "FallbackChain" (
 -- ============================================================
 
 -- User
-ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "email" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "email" TEXT;
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "name" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "avatarUrl" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "githubId" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "githubUsername" TEXT;
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "role" TEXT NOT NULL DEFAULT 'user';
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "plan" TEXT NOT NULL DEFAULT 'none';
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "onboardingComplete" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "orgName" TEXT;
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
-
--- Credential
-ALTER TABLE "Credential" ADD COLUMN IF NOT EXISTS "userId" TEXT NOT NULL DEFAULT '';
-ALTER TABLE "Credential" ADD COLUMN IF NOT EXISTS "credentialId" TEXT NOT NULL DEFAULT '';
-ALTER TABLE "Credential" ADD COLUMN IF NOT EXISTS "publicKey" BYTEA NOT NULL DEFAULT ''::BYTEA;
-ALTER TABLE "Credential" ADD COLUMN IF NOT EXISTS "counter" BIGINT NOT NULL DEFAULT 0;
-ALTER TABLE "Credential" ADD COLUMN IF NOT EXISTS "transports" TEXT[] DEFAULT '{}';
-ALTER TABLE "Credential" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 -- Project
 ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "userId" TEXT NOT NULL DEFAULT '';
@@ -115,9 +109,7 @@ ALTER TABLE "FallbackChain" ADD COLUMN IF NOT EXISTS "enabled" BOOLEAN NOT NULL 
 -- ============================================================
 
 CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
-
-CREATE UNIQUE INDEX IF NOT EXISTS "Credential_credentialId_key" ON "Credential"("credentialId");
-CREATE INDEX IF NOT EXISTS "Credential_userId_idx" ON "Credential"("userId");
+CREATE UNIQUE INDEX IF NOT EXISTS "User_githubId_key" ON "User"("githubId");
 
 CREATE UNIQUE INDEX IF NOT EXISTS "Project_key_key" ON "Project"("key");
 CREATE INDEX IF NOT EXISTS "Project_userId_idx" ON "Project"("userId");
@@ -134,12 +126,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS "FallbackChain_projectId_key" ON "FallbackChai
 -- ============================================================
 -- 4. FOREIGN KEYS (add if not exists via exception handling)
 -- ============================================================
-
-DO $$ BEGIN
-  ALTER TABLE "Credential" ADD CONSTRAINT "Credential_userId_fkey"
-    FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
 
 DO $$ BEGIN
   ALTER TABLE "Project" ADD CONSTRAINT "Project_userId_fkey"
@@ -226,9 +212,6 @@ export async function GET() {
     await pool.query(SQL)
     applied.push('tables', 'columns', 'indexes', 'foreign_keys')
 
-    // If first run, promote the first user who signs up to superadmin
-    // (handled via a note in the response)
-
     // Report current state
     const tables = await pool.query(`
       SELECT table_name FROM information_schema.tables
@@ -253,7 +236,7 @@ export async function GET() {
     return NextResponse.json({
       ok: true,
       message: firstRun
-        ? 'Database bootstrapped. Sign up — the first user will be superadmin.'
+        ? 'Database bootstrapped. Sign in with GitHub — the first user will be superadmin.'
         : 'Database migrated successfully.',
       firstRun,
       applied,

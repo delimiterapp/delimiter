@@ -8,10 +8,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { githubUsername, orgName } = await req.json()
+  const { orgName } = await req.json()
 
-  if (!githubUsername || !orgName) {
-    return NextResponse.json({ error: 'All fields are required' }, { status: 400 })
+  if (!orgName) {
+    return NextResponse.json({ error: 'Project name is required' }, { status: 400 })
   }
 
   await db.user.update({
@@ -19,7 +19,6 @@ export async function POST(req: NextRequest) {
     data: {
       plan: 'free',
       onboardingComplete: true,
-      githubUsername,
       orgName,
     },
   })

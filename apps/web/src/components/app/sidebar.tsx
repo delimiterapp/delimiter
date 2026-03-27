@@ -116,10 +116,14 @@ export function Sidebar() {
 
         <div className="flex items-center justify-between rounded-lg px-2.5 py-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-medium text-white">
-              {user?.email?.[0]?.toUpperCase() || '?'}
-            </div>
-            <span className="truncate text-[13px] text-text-secondary">{user?.email}</span>
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="" className="h-5 w-5 shrink-0 rounded-full" />
+            ) : (
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] font-medium text-white">
+                {(user?.name || user?.email)?.[0]?.toUpperCase() || '?'}
+              </div>
+            )}
+            <span className="truncate text-[13px] text-text-secondary">{user?.name || user?.githubUsername || user?.email}</span>
           </div>
           <button
             onClick={handleLogout}

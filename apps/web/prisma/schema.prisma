@@ -7,33 +7,19 @@ generator client {
 }
 
 model User {
-  id                 String       @id @default(cuid())
-  email              String?      @unique
+  id                 String    @id @default(cuid())
+  email              String?   @unique
   name               String?
-  role               String       @default("user")
-  plan               String       @default("none")
-  onboardingComplete Boolean      @default(false)
+  avatarUrl          String?
+  githubId           Int       @unique @default(0)
   githubUsername      String?
-  orgName             String?
-  providerCount       Int?
-  orgCount            Int?
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
-  credentials        Credential[]
+  role               String    @default("user")
+  plan               String    @default("none")
+  onboardingComplete Boolean   @default(false)
+  orgName            String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
   projects           Project[]
-}
-
-model Credential {
-  id                  String   @id @default(cuid())
-  userId              String
-  credentialId        String   @unique
-  publicKey           Bytes
-  counter             BigInt   @default(0)
-  transports          String[]
-  createdAt           DateTime @default(now())
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }
 
 model Project {
