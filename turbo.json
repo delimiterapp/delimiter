@@ -3,6 +3,17 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": [
+        "DATABASE_URL",
+        "JWT_SECRET",
+        "WEBAUTHN_RP_NAME",
+        "WEBAUTHN_RP_ID",
+        "WEBAUTHN_ORIGIN",
+        "WHOP_API_KEY",
+        "WHOP_WEBHOOK_SECRET",
+        "WHOP_CHECKOUT_URL",
+        "WHOP_COMPANY_ID"
+      ],
       "outputs": [".next/**", "dist/**"]
     },
     "dev": {
