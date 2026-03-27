@@ -7,7 +7,15 @@ import { createSession } from '@/lib/session'
 import { generateProjectKey } from '@/lib/project-key'
 
 export async function POST(req: NextRequest) {
-  const { challengeId, credential } = await req.json()
+  let challengeId: string
+  let credential: any
+  try {
+    const body = await req.json()
+    challengeId = body.challengeId
+    credential = body.credential
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
 
   const expectedChallenge = getChallenge(challengeId)
   if (!expectedChallenge) {
@@ -22,8 +30,14 @@ export async function POST(req: NextRequest) {
       expectedOrigin: origin,
       expectedRPID: rpID,
     })
-  } catch (err) {
-    return NextResponse.json({ error: 'Verification failed' }, { status: 400 })
+  } catch (err: any) {
+    console.error('Registration verification error:', err)
+    const message = err?.message?.includes('origin')
+      ? 'Origin mismatch. Check WEBAUTHN_ORIGIN env variable.'
+      : err?.message?.includes('RP ID')
+        ? 'RP ID mismatch. Check WEBAUTHN_RP_ID env variable.'
+        : `Verification failed: ${err?.message || 'Unknown error'}`
+    return NextResponse.json({ error: message }, { status: 400 })
   }
 
   if (!verification.verified || !verification.registrationInfo) {
