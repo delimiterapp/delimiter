@@ -1,5 +1,11 @@
+import { randomBytes } from 'crypto'
+
 // In-memory challenge store (use Redis in production)
 const challenges = new Map<string, { challenge: string; expiresAt: number }>()
+
+export function generateChallengeId(): string {
+  return randomBytes(32).toString('base64url')
+}
 
 export function storeChallenge(key: string, challenge: string) {
   challenges.set(key, {

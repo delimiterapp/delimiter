@@ -40,6 +40,14 @@ export function Pricing() {
               </li>
             ))}
           </ul>
+          <div className="mt-8 flex justify-center">
+            <a
+              href="/sign-in"
+              className="inline-flex items-center gap-2 rounded-lg bg-text-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-text-primary/90 hover:shadow-md"
+            >
+              Start Monitoring
+            </a>
+          </div>
         </div>
       </div>
     </section>
