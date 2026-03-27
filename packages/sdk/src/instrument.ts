@@ -75,6 +75,9 @@ function patchFetch(config: DelimiterConfig): void {
     return _originalFetch!.call(globalThis, input, init).then((response: Response) => {
       try {
         const limits = parseHeaders(provider, fetchHeaderGetter(response))
+        if (config.debug) {
+          console.log(`[delimiter] intercepted fetch to ${provider}`, { url, model, hasLimits: hasLimits(limits), limits })
+        }
         if (hasLimits(limits)) {
           sendReport(config, {
             app: config.app,
@@ -83,6 +86,8 @@ function patchFetch(config: DelimiterConfig): void {
             timestamp: new Date().toISOString(),
             limits,
           })
+        } else if (config.debug) {
+          console.log(`[delimiter] no rate limit headers found in response from ${provider} — skipping report`)
         }
       } catch {
         // Never interfere with the response
@@ -113,10 +118,11 @@ function patchNodeHttp(config: DelimiterConfig): void {
   function wrapRequest(
     original: typeof http.request,
     protocol: string,
+    mod: typeof http,
   ): typeof http.request {
     return function delimiterRequest(this: unknown, ...args: unknown[]) {
       // Parse args to extract the URL/options
-      const req = original.apply(http, args as Parameters<typeof http.request>)
+      const req = original.apply(mod, args as Parameters<typeof http.request>)
 
       let url: string | null = null
       const firstArg = args[0]
@@ -169,6 +175,9 @@ function patchNodeHttp(config: DelimiterConfig): void {
             const bodyStr = bodyChunks.length > 0 ? Buffer.concat(bodyChunks).toString('utf-8') : null
             const model = extractModel(bodyStr)
             const limits = parseHeaders(provider, nodeHeaderGetter(res.headers))
+            if (config.debug) {
+              console.log(`[delimiter] intercepted http request to ${provider}`, { url, model, hasLimits: hasLimits(limits), limits })
+            }
             if (hasLimits(limits)) {
               sendReport(config, {
                 app: config.app,
@@ -177,6 +186,8 @@ function patchNodeHttp(config: DelimiterConfig): void {
                 timestamp: new Date().toISOString(),
                 limits,
               })
+            } else if (config.debug) {
+              console.log(`[delimiter] no rate limit headers found in response from ${provider} — skipping report`)
             }
           } catch {
             // Never interfere with the response
@@ -190,8 +201,8 @@ function patchNodeHttp(config: DelimiterConfig): void {
     } as typeof http.request
   }
 
-  http.request = wrapRequest(_originalHttpRequest, 'http:')
-  https.request = wrapRequest(_originalHttpsRequest, 'https:')
+  http.request = wrapRequest(_originalHttpRequest, 'http:', http)
+  https.request = wrapRequest(_originalHttpsRequest, 'https:', https)
 }
 
 /**
