@@ -92,32 +92,6 @@ Dashboard shows which app is consuming what percentage of your limits. You know 
 - **Never adds latency.** Reporting is async, fire-and-forget. The POST to Delimiter happens after your response is returned.
 - **Never fails loudly.** If Delimiter's backend is down, your app keeps working normally.
 
-## What Headers Delimiter Reads
-
-Every major AI provider returns rate limit information in response headers. Delimiter parses these automatically.
-
-**OpenAI:**
-```
-x-ratelimit-limit-requests: 10000
-x-ratelimit-remaining-requests: 7342
-x-ratelimit-limit-tokens: 2000000
-x-ratelimit-remaining-tokens: 1456000
-x-ratelimit-reset-requests: 43s
-x-ratelimit-reset-tokens: 12s
-```
-
-**Anthropic:**
-```
-anthropic-ratelimit-requests-limit: 4000
-anthropic-ratelimit-requests-remaining: 3201
-anthropic-ratelimit-tokens-limit: 400000
-anthropic-ratelimit-tokens-remaining: 312000
-anthropic-ratelimit-requests-reset: 2025-01-15T14:24:00Z
-anthropic-ratelimit-tokens-reset: 2025-01-15T14:23:15Z
-```
-
-The SDK normalizes these into a common format and reports them to the dashboard.
-
 ## Supported Providers
 
 Delimiter auto-detects any AI provider at the network layer. No plugins, no per-provider config.
