@@ -34,8 +34,14 @@ export function sendReport(config: DelimiterConfig, report: RateLimitReport): vo
         'Authorization': `Bearer ${config.projectKey}`,
       },
       body: JSON.stringify(report),
-    }).catch(() => {
-      // Silently drop — fire-and-forget
+    }).then((res) => {
+      if (config.debug) {
+        console.log(`[delimiter] report sent — ${res.status} ${res.statusText}`)
+      }
+    }).catch((err) => {
+      if (config.debug) {
+        console.error('[delimiter] failed to send report:', err?.message ?? err)
+      }
     })
   } catch {
     // Silently drop — fire-and-forget
