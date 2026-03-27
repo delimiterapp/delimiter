@@ -22,7 +22,9 @@ export async function GET() {
       id: user.id,
       email: user.email,
       name: user.name,
+      plan: user.plan,
     },
+    onboardingComplete: user.onboardingComplete,
     projects: user.projects.map((p) => ({
       id: p.id,
       name: p.name,
