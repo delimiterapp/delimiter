@@ -114,10 +114,10 @@ export default function SignIn() {
             <button
               onClick={handleSignIn}
               disabled={loading !== null}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-text-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90 disabled:opacity-50"
+              className="shine-hover flex w-full items-center justify-center gap-2 rounded-lg bg-text-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90 disabled:opacity-50"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7.864 4.243A7.5 7.5 0 0119.5 10.5c0 2.92-.556 5.709-1.568 8.268M5.742 6.364A7.465 7.465 0 004.5 10.5a48.667 48.667 0 00-1.26 8.568M5.742 6.364a7.465 7.465 0 00-.246 1.636m13.5-4.243a7.465 7.465 0 011.004 3.743 48.52 48.52 0 01-.643 4.68M5.742 6.364A48.374 48.374 0 018.906 3.75a48.09 48.09 0 012.594-.472m9 9.75a48.09 48.09 0 01-2.594.472M12 12.75a2.25 2.25 0 002.25-2.25A2.25 2.25 0 0012 8.25a2.25 2.25 0 00-2.25 2.25A2.25 2.25 0 0012 12.75z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
               </svg>
               {loading === 'signin' ? 'Authenticating...' : 'Sign in with passkey'}
             </button>
@@ -134,10 +134,10 @@ export default function SignIn() {
             <button
               onClick={handleCreateAccount}
               disabled={loading !== null}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-surface disabled:opacity-50"
+              className="shine-hover-light flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-surface disabled:opacity-50"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
               </svg>
               {loading === 'signup' ? 'Creating passkey...' : 'Create new account'}
             </button>
