@@ -1,6 +1,6 @@
 {
   "name": "@delimiter/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Lightweight rate limit monitoring for AI APIs. Initialize once, monitor everything.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
