@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 
-type User = { id: string; email: string; name: string | null; plan: string }
+type User = { id: string; email: string; name: string | null; plan: string; avatarUrl: string | null; githubUsername: string | null }
 type Project = { id: string; name: string; key: string }
 
 interface AppContextValue {

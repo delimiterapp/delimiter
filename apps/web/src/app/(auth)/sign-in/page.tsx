@@ -1,98 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { startAuthentication } from '@simplewebauthn/browser'
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export default function SignIn() {
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState<'signin' | 'signup' | null>(null)
-
-  async function handleSignIn() {
-    setError('')
-    setLoading('signin')
-
-    try {
-      const optionsRes = await fetch('/api/auth/login/options', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      })
-
-      const optionsData = await optionsRes.json().catch(() => ({}))
-
-      if (!optionsRes.ok) {
-        throw new Error(optionsData.error || 'Failed to start login')
-      }
-
-      const { challengeId, options } = optionsData
-      const credential = await startAuthentication({ optionsJSON: options })
-
-      const verifyRes = await fetch('/api/auth/login/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ challengeId, credential }),
-      })
-
-      const verifyData = await verifyRes.json().catch(() => ({}))
-
-      if (!verifyRes.ok) {
-        throw new Error(verifyData.error || 'Login failed')
-      }
-      window.location.href = verifyData.onboardingComplete ? '/dashboard' : '/onboarding'
-    } catch (err: any) {
-      if (err.name === 'NotAllowedError') {
-        setError('Passkey authentication was cancelled.')
-      } else {
-        setError(err.message || 'Something went wrong')
-      }
-    } finally {
-      setLoading(null)
-    }
-  }
-
-  async function handleCreateAccount() {
-    setError('')
-    setLoading('signup')
-
-    try {
-      const { startRegistration } = await import('@simplewebauthn/browser')
-
-      const optionsRes = await fetch('/api/auth/register/options', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      })
-
-      const regOptionsData = await optionsRes.json().catch(() => ({}))
-
-      if (!optionsRes.ok) {
-        throw new Error(regOptionsData.error || 'Failed to start registration')
-      }
-
-      const { challengeId, options } = regOptionsData
-      const credential = await startRegistration({ optionsJSON: options })
-
-      const verifyRes = await fetch('/api/auth/register/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ challengeId, credential }),
-      })
-
-      const regVerifyData = await verifyRes.json().catch(() => ({}))
-
-      if (!verifyRes.ok) {
-        throw new Error(regVerifyData.error || 'Registration failed')
-      }
-
-      window.location.href = '/onboarding'
-    } catch (err: any) {
-      if (err.name === 'NotAllowedError') {
-        setError('Passkey creation was cancelled.')
-      } else {
-        setError(err.message || 'Something went wrong')
-      }
-    } finally {
-      setLoading(null)
-    }
-  }
+function SignInContent() {
+  const searchParams = useSearchParams()
+  const error = searchParams.get('error')
 
   return (
     <div className="flex min-h-screen items-center justify-center px-6">
@@ -104,49 +17,48 @@ export default function SignIn() {
         <div className="rounded-xl border border-border bg-white p-8">
           <h1 className="text-lg font-semibold">Welcome to Delimiter</h1>
           <p className="mt-1 text-sm text-text-secondary">
-            Sign in or create an account using your device&apos;s passkey.
+            Sign in with your GitHub account to get started.
           </p>
 
           <div className="mt-6 space-y-3">
             {error && (
               <div className="rounded-lg bg-red/5 px-3.5 py-2.5 text-sm text-red">
-                {error}
+                {error === 'invalid_state'
+                  ? 'Authentication failed. Please try again.'
+                  : error === 'token_exchange_failed'
+                    ? 'Could not verify your GitHub account. Please try again.'
+                    : 'Something went wrong. Please try again.'}
               </div>
             )}
 
-            <button
-              onClick={handleSignIn}
-              disabled={loading !== null}
-              className="shine-hover flex w-full items-center justify-center gap-2 rounded-lg bg-text-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90 disabled:opacity-50"
+            <a
+              href="/api/auth/github"
+              className="shine-hover flex w-full items-center justify-center gap-2.5 rounded-lg bg-text-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
               </svg>
-              {loading === 'signin' ? 'Authenticating...' : 'Sign in with passkey'}
-            </button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-white px-2 text-text-tertiary">or</span>
-              </div>
-            </div>
-
-            <button
-              onClick={handleCreateAccount}
-              disabled={loading !== null}
-              className="shine-hover-light flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-surface disabled:opacity-50"
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
-              </svg>
-              {loading === 'signup' ? 'Creating passkey...' : 'Create new account'}
-            </button>
+              Continue with GitHub
+            </a>
           </div>
+
+          <p className="mt-5 text-center text-xs text-text-tertiary">
+            By continuing, you agree to our terms of service.
+          </p>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   )
 }

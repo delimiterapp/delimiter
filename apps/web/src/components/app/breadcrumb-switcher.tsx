@@ -51,9 +51,13 @@ export function BreadcrumbSwitcher() {
     <>
       <div ref={ref} className="relative flex items-center gap-3 min-w-0">
         {/* User avatar */}
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent to-accent/70 text-[11px] font-semibold text-white">
-          {user?.email?.[0]?.toUpperCase() || '?'}
-        </div>
+        {user?.avatarUrl ? (
+          <img src={user.avatarUrl} alt="" className="h-7 w-7 shrink-0 rounded-lg" />
+        ) : (
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent to-accent/70 text-[11px] font-semibold text-white">
+            {(user?.name || user?.email)?.[0]?.toUpperCase() || '?'}
+          </div>
+        )}
 
         {/* Separator */}
         <svg className="h-4 w-4 shrink-0 text-border" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>

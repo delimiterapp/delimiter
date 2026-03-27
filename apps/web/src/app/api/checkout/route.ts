@@ -4,7 +4,7 @@ import { getSession } from '@/lib/session'
 export async function GET() {
   const session = await getSession()
   if (!session) {
-    return NextResponse.redirect(new URL('/sign-in', process.env.WEBAUTHN_ORIGIN || 'http://localhost:3000'))
+    return NextResponse.redirect(new URL('/sign-in', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'))
   }
 
   const checkoutUrl = process.env.WHOP_CHECKOUT_URL

@@ -6,10 +6,10 @@ type Step = 'loading' | 'plan' | 'form' | 'reviewing' | 'approved'
 
 export default function Onboarding() {
   const [step, setStep] = useState<Step>('loading')
-  const [githubUsername, setGithubUsername] = useState('')
   const [orgName, setOrgName] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [userName, setUserName] = useState('')
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -26,16 +26,13 @@ export default function Onboarding() {
           window.location.href = '/dashboard'
           return
         }
+        setUserName(data.user.name || data.user.githubUsername || '')
         setStep('plan')
       })
   }, [])
 
-  const formValid =
-    githubUsername.trim() !== '' &&
-    orgName.trim() !== ''
-
   async function handleApply() {
-    if (!formValid) return
+    if (!orgName.trim()) return
     setSubmitting(true)
     setError('')
 
@@ -43,10 +40,7 @@ export default function Onboarding() {
       const res = await fetch('/api/onboarding/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          githubUsername: githubUsername.trim(),
-          orgName: orgName.trim(),
-        }),
+        body: JSON.stringify({ orgName: orgName.trim() }),
       })
 
       if (!res.ok) {
@@ -55,11 +49,7 @@ export default function Onboarding() {
       }
 
       setStep('reviewing')
-
-      // Fake review delay
-      setTimeout(() => {
-        setStep('approved')
-      }, 2500)
+      setTimeout(() => setStep('approved'), 2000)
     } catch (err: any) {
       setError(err.message)
       setSubmitting(false)
@@ -85,7 +75,7 @@ export default function Onboarding() {
           <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
           </div>
-          <h1 className="text-lg font-semibold">Setting up your account</h1>
+          <h1 className="text-lg font-semibold">Setting up your workspace</h1>
           <p className="mt-2 text-sm text-text-secondary">
             This usually takes just a moment...
           </p>
@@ -105,7 +95,7 @@ export default function Onboarding() {
           </div>
           <h1 className="text-xl font-bold">You&apos;re in.</h1>
           <p className="mt-2 text-sm text-text-secondary">
-            Welcome to Delimiter. Let&apos;s get your project set up.
+            Welcome to Delimiter{userName ? `, ${userName}` : ''}. Let&apos;s get your project set up.
           </p>
           <a
             href="/console"
@@ -130,7 +120,9 @@ export default function Onboarding() {
 
         {step === 'plan' && (
           <div>
-            <h1 className="text-center text-lg font-semibold">Choose your plan</h1>
+            <h1 className="text-center text-lg font-semibold">
+              {userName ? `Welcome, ${userName}` : 'Choose your plan'}
+            </h1>
             <p className="mt-1 text-center text-sm text-text-secondary">
               Select a plan to get started with Delimiter.
             </p>
@@ -203,31 +195,22 @@ export default function Onboarding() {
               Back
             </button>
 
-            <h1 className="text-lg font-semibold">Get started for free</h1>
+            <h1 className="text-lg font-semibold">One last thing</h1>
             <p className="mt-1 text-sm text-text-secondary">
-              Tell us a bit about yourself.
+              What are you building? This helps us understand your use case.
             </p>
 
             <div className="mt-6 space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium">GitHub username</label>
-                <input
-                  type="text"
-                  value={githubUsername}
-                  onChange={(e) => setGithubUsername(e.target.value)}
-                  placeholder="username"
-                  className="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm transition-colors focus:border-accent focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">What are you building?</label>
+                <label className="mb-1.5 block text-sm font-medium">Product or project name</label>
                 <input
                   type="text"
                   value={orgName}
                   onChange={(e) => setOrgName(e.target.value)}
-                  placeholder="Product or project name"
+                  onKeyDown={(e) => { if (e.key === 'Enter' && orgName.trim()) handleApply() }}
+                  placeholder="e.g. My AI App"
                   className="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm transition-colors focus:border-accent focus:outline-none"
+                  autoFocus
                 />
               </div>
 
@@ -246,10 +229,10 @@ export default function Onboarding() {
 
               <button
                 onClick={handleApply}
-                disabled={!formValid || submitting}
+                disabled={!orgName.trim() || submitting}
                 className="shine-hover flex w-full items-center justify-center gap-2 rounded-lg bg-text-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Setting up...' : 'Create account'}
+                {submitting ? 'Setting up...' : 'Get started'}
               </button>
             </div>
           </div>
