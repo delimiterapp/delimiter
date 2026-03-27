@@ -1,6 +1,6 @@
 # Delimiter
 
-**Rate limit monitoring for AI APIs.**
+**Rate limit monitoring for AI apps.**
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/@delimiter/sdk.svg)](https://www.npmjs.com/package/@delimiter/sdk)
