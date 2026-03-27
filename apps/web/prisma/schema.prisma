@@ -11,7 +11,7 @@ model User {
   email              String?   @unique
   name               String?
   avatarUrl          String?
-  githubId           Int       @unique
+  githubId           Int       @unique @default(0)
   githubUsername      String?
   role               String    @default("user")
   plan               String    @default("none")
