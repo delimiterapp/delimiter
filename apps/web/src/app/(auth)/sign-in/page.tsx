@@ -36,7 +36,8 @@ export default function SignIn() {
         throw new Error(data.error || 'Login failed')
       }
 
-      window.location.href = '/dashboard'
+      const verifyData = await verifyRes.json()
+      window.location.href = verifyData.onboardingComplete ? '/dashboard' : '/onboarding'
     } catch (err: any) {
       if (err.name === 'NotAllowedError') {
         setError('Passkey authentication was cancelled.')
@@ -79,7 +80,7 @@ export default function SignIn() {
         throw new Error(data.error || 'Registration failed')
       }
 
-      window.location.href = '/console'
+      window.location.href = '/onboarding'
     } catch (err: any) {
       if (err.name === 'NotAllowedError') {
         setError('Passkey creation was cancelled.')

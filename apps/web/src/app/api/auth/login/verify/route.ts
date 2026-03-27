@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     verified: true,
     user: { id: dbCredential.user.id, email: dbCredential.user.email },
+    onboardingComplete: dbCredential.user.onboardingComplete,
   })
 }
 

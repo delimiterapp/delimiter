@@ -49,6 +49,24 @@ export function Pricing() {
             </a>
           </div>
         </div>
+
+        <div className="mx-auto mt-4 max-w-md rounded-lg border border-border/60 bg-surface/30 px-6 py-5">
+          <p className="text-sm text-text-secondary">
+            <span className="font-medium text-text-primary">Solo developer?</span>{' '}
+            Free plan for individual devs with a single provider.
+          </p>
+          <div className="mt-3 flex justify-center">
+            <a
+              href="/sign-in"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-accent transition-colors hover:text-accent-hover"
+            >
+              Apply for access
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   )
