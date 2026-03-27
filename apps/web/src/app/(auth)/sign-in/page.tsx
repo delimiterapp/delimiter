@@ -17,12 +17,13 @@ export default function SignIn() {
         headers: { 'Content-Type': 'application/json' },
       })
 
+      const optionsData = await optionsRes.json().catch(() => ({}))
+
       if (!optionsRes.ok) {
-        const data = await optionsRes.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to start login')
+        throw new Error(optionsData.error || 'Failed to start login')
       }
 
-      const { challengeId, options } = await optionsRes.json()
+      const { challengeId, options } = optionsData
       const credential = await startAuthentication({ optionsJSON: options })
 
       const verifyRes = await fetch('/api/auth/login/verify', {
@@ -31,12 +32,11 @@ export default function SignIn() {
         body: JSON.stringify({ challengeId, credential }),
       })
 
-      if (!verifyRes.ok) {
-        const data = await verifyRes.json().catch(() => ({}))
-        throw new Error(data.error || 'Login failed')
-      }
+      const verifyData = await verifyRes.json().catch(() => ({}))
 
-      const verifyData = await verifyRes.json()
+      if (!verifyRes.ok) {
+        throw new Error(verifyData.error || 'Login failed')
+      }
       window.location.href = verifyData.onboardingComplete ? '/dashboard' : '/onboarding'
     } catch (err: any) {
       if (err.name === 'NotAllowedError') {
@@ -61,12 +61,13 @@ export default function SignIn() {
         headers: { 'Content-Type': 'application/json' },
       })
 
+      const regOptionsData = await optionsRes.json().catch(() => ({}))
+
       if (!optionsRes.ok) {
-        const data = await optionsRes.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to start registration')
+        throw new Error(regOptionsData.error || 'Failed to start registration')
       }
 
-      const { challengeId, options } = await optionsRes.json()
+      const { challengeId, options } = regOptionsData
       const credential = await startRegistration({ optionsJSON: options })
 
       const verifyRes = await fetch('/api/auth/register/verify', {
@@ -75,9 +76,10 @@ export default function SignIn() {
         body: JSON.stringify({ challengeId, credential }),
       })
 
+      const regVerifyData = await verifyRes.json().catch(() => ({}))
+
       if (!verifyRes.ok) {
-        const data = await verifyRes.json().catch(() => ({}))
-        throw new Error(data.error || 'Registration failed')
+        throw new Error(regVerifyData.error || 'Registration failed')
       }
 
       window.location.href = '/onboarding'
