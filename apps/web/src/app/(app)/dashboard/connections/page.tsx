@@ -63,28 +63,10 @@ export default function ConnectionsPage() {
       .finally(() => setLoading(false))
   }, [activeProject?.id])
 
-  async function connectProvider(providerId: string) {
-    if (!activeProject) return
-    setConnecting(providerId)
-
-    // In production, this would trigger Pipedream Connect's embedded flow:
+  async function connectProvider(_providerId: string) {
+    // Pipedream Connect integration coming soon.
+    // When ready, this will open Pipedream's embedded auth popup:
     // client.connectAccount({ app: provider.pipedreamApp })
-    // For now, register the connection — Pipedream account linking happens via their SDK
-    await fetch('/api/connections', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        projectId: activeProject.id,
-        provider: providerId,
-        pipedreamAccountId: null, // Set by Pipedream Connect callback
-      }),
-    })
-
-    // Refresh
-    const res = await fetch(`/api/connections?projectId=${activeProject.id}`)
-    const updated = await res.json()
-    setData(updated)
-    setConnecting(null)
   }
 
   async function disconnectProvider(providerId: string) {
@@ -205,13 +187,9 @@ export default function ConnectionsPage() {
                     </>
                   )}
                   {!isConnected && (
-                    <button
-                      onClick={() => connectProvider(provider.id)}
-                      disabled={connecting === provider.id}
-                      className="rounded-lg bg-accent px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-                    >
-                      {connecting === provider.id ? 'Connecting...' : 'Connect'}
-                    </button>
+                    <span className="rounded-lg bg-surface px-4 py-1.5 text-xs font-medium text-text-tertiary">
+                      Coming soon
+                    </span>
                   )}
                 </div>
               </div>

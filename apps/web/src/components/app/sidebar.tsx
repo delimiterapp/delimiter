@@ -8,7 +8,7 @@ import { BreadcrumbSwitcher } from './breadcrumb-switcher'
 const navItems = [
   { label: 'Overview', href: '/dashboard', icon: 'overview' },
   { label: 'Providers', href: '/dashboard/providers', icon: 'providers' },
-  { label: 'Credits', href: '/dashboard/credits', icon: 'credits' },
+  { label: 'Spend', href: '/dashboard/spend', icon: 'credits' },
   { label: 'Connections', href: '/dashboard/connections', icon: 'connections' },
   { label: 'Fallbacks', href: '/dashboard/fallbacks', icon: 'fallbacks' },
   { label: 'Alerts', href: '/dashboard/alerts', icon: 'alerts' },
@@ -81,14 +81,14 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   }
 
   return (
-    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-white">
+    <aside className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-white">
       {/* Project switcher header */}
       <div className="border-b border-border px-4 py-3">
         <BreadcrumbSwitcher />
       </div>
 
       {/* Navigation */}
-      <nav className="sidebar-scroll flex-1 overflow-y-auto px-3 py-3">
+      <nav className="flex-1 overflow-y-auto px-3 py-3">
         <ul className="space-y-0.5">
           {navItems.map((item) => {
             const isActive = item.href === '/dashboard'
@@ -115,8 +115,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
         </ul>
       </nav>
 
-      {/* Bottom section */}
-      <div className="border-t border-border px-3 py-3 space-y-0.5">
+      {/* Bottom section — always visible */}
+      <div className="shrink-0 border-t border-border px-3 py-3 space-y-0.5">
         <Link
           href="/dashboard/settings"
           className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition-colors ${

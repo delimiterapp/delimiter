@@ -143,7 +143,7 @@ export default function CreditsPage() {
   useEffect(() => {
     if (!activeProject) return
     setLoading(true)
-    fetch(`/api/dashboard/credits?projectId=${activeProject.id}`)
+    fetch(`/api/dashboard/spend?projectId=${activeProject.id}`)
       .then((r) => r.json())
       .then(setData)
       .finally(() => setLoading(false))
@@ -166,9 +166,9 @@ export default function CreditsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold">No credit data yet</h2>
+          <h2 className="text-lg font-semibold">No spend data yet</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
-            Credit balance monitoring works two ways: automatically from SDK response headers,
+            Spend monitoring works two ways: automatically from SDK response headers,
             or by connecting your provider accounts for billing API access.
           </p>
           <a
@@ -188,7 +188,7 @@ export default function CreditsPage() {
   return (
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Credits</h1>
+        <h1 className="text-lg font-semibold">Spend</h1>
         {data.creditAlerts > 0 && (
           <span className="inline-flex items-center gap-1.5 rounded-lg bg-red/10 px-3 py-1.5 text-xs font-medium text-red">
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

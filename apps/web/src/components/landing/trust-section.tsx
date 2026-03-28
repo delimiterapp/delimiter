@@ -1,7 +1,7 @@
 const items = [
   {
     label: 'API keys',
-    description: 'Never touches your API keys — you create your client, we just wrap it',
+    description: 'Never touches your API keys — the SDK only reads response headers, not request headers where keys live',
   },
   {
     label: 'Requests',

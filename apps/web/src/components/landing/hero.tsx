@@ -20,12 +20,14 @@ export function Hero() {
           Open source
         </AnimatedBorderPill>
         <h1 className="text-4xl font-bold leading-[1.15] tracking-tight sm:text-5xl">
-          Rate limit monitoring
+          Never get an
           <br />
-          <span className="text-text-secondary">for AI apps.</span>
+          <span className="text-text-secondary">AI blackout.</span>
         </h1>
         <p className="mt-4 text-lg text-text-secondary">
-          Two lines of code. Every provider. One dashboard.
+          Monitor rate limits and spend across every AI provider.
+          <br />
+          Two lines of code. One dashboard.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
           <ScrambleButton

@@ -1,14 +1,14 @@
 import { ContentLayout } from '@/components/docs/content-layout'
 
 export default function Layout({ children }) {
-  return <ContentLayout section="DASHBOARD" page="CREDITS">{children}</ContentLayout>
+  return <ContentLayout section="DASHBOARD" page="SPEND">{children}</ContentLayout>
 }
 
-# Credits
+# Spend
 
-The Credits page shows credit balance data from two sources: SDK response headers and connected provider billing APIs.
+The Spend page shows balance and spend data from two sources: SDK response headers and connected provider billing APIs.
 
-## SDK Credit Data
+## SDK Spend Data
 
 For providers that include credit information in response headers (e.g., OpenRouter), the SDK automatically parses and reports:
 
