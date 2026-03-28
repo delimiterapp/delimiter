@@ -120,7 +120,7 @@ delimiter.init('${activeProject.key}')`}
       {/* Credit balance banner */}
       {data?.creditSummary && data.creditSummary.length > 0 && (
         <Link
-          href="/dashboard/credits"
+          href="/dashboard/spend"
           className="mb-6 flex items-center gap-4 rounded-xl border border-border bg-white p-4 transition-colors hover:border-accent/20"
         >
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-light">

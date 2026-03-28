@@ -83,21 +83,21 @@ One dashboard. Two layers of protection.
 delimiter.init('dlm_your_project_key', { app: 'my-production-app' })
 ```
 
-### Credit Balances (via Provider Connections)
+### Spend Monitoring (via Provider Connections)
 
 Connect your provider accounts to monitor credit balances. Delimiter never stores your credentials — authentication is handled via Pipedream Connect.
 
-**Balance Monitoring** — Remaining credits, period spend, burn rate per hour.
+**Balance Monitoring** — Remaining balance, period spend, burn rate per hour.
 
 **Projected Depletion** — "Your OpenAI balance hits zero in 18 hours" with color-coded urgency.
 
-**Blackout Alerts** — Alerts fire when balances cross warning/critical thresholds, same as rate limits. Credits running out = chat blackout.
+**Blackout Alerts** — Alerts fire when balances cross warning/critical thresholds, same as rate limits. Balance running out = AI blackout.
 
 Supported connections: **OpenAI**, **Anthropic**, **OpenRouter**, **xAI (Grok)**. More coming.
 
 ### Alerts
 
-Every threshold crossing logged: timestamp, provider, metric (requests, tokens, or credits), current value vs. limit. Warn at 70%, critical at 90% (configurable).
+Every threshold crossing logged: timestamp, provider, metric (requests, tokens, or spend), current value vs. limit. Warn at 70%, critical at 90% (configurable).
 
 ## What The SDK Never Does
 
@@ -134,7 +134,7 @@ Delimiter auto-detects any AI provider at the network layer. No plugins, no per-
 
 | | SDK (Passive) | Provider Connections |
 |---|---|---|
-| **What it monitors** | Rate limits (requests, tokens) | Credit balances, spend |
+| **What it monitors** | Rate limits (requests, tokens) | Balances, spend |
 | **How it works** | Reads HTTP response headers | Polls provider billing APIs |
 | **Setup** | `delimiter.init('key')` — 2 lines | Click "Connect" in dashboard |
 | **Credentials** | Never sees your API keys | Via Pipedream Connect (you authenticate directly with provider) |
