@@ -55,7 +55,7 @@ export default function LogsPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-lg font-semibold">Logs</h1>
         <div className="flex gap-2">

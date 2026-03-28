@@ -61,7 +61,7 @@ export default function SettingsPage() {
   if (!activeProject) return null
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <h1 className="mb-6 text-lg font-semibold">Settings</h1>
 
       <div className="space-y-6">

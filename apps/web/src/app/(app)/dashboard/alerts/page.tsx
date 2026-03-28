@@ -97,7 +97,7 @@ export default function AlertsPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <h1 className="mb-6 text-lg font-semibold">Alerts</h1>
 
       {/* Tabs */}

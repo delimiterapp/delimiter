@@ -67,13 +67,13 @@ export default function ProvidersPage() {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full flex-col md:flex-row">
       {/* Provider list */}
-      <div className="w-52 shrink-0 border-r border-border bg-white p-3">
+      <div className={`shrink-0 border-b border-border bg-white p-3 md:w-52 md:border-b-0 md:border-r ${selectedProvider ? 'hidden md:block' : ''}`}>
         <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
           Providers
         </div>
-        <ul className="space-y-0.5">
+        <ul className="flex flex-wrap gap-1 md:flex-col md:gap-0 md:space-y-0.5">
           {providers.map((p) => {
             const isActive = selectedProvider === p.provider
             const color =
@@ -101,20 +101,32 @@ export default function ProvidersPage() {
       </div>
 
       {/* Detail panel */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-4 md:p-8">
         {!selectedProvider ? (
           <div className="flex h-full items-center justify-center">
             <p className="text-sm text-text-tertiary">Select a provider to view details</p>
           </div>
-        ) : !detail?.latest ? (
+        ) : !detail ? (
+          <div className="flex h-full items-center justify-center">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
+          </div>
+        ) : !detail.latest ? (
           <div className="flex h-full items-center justify-center">
             <p className="text-sm text-text-tertiary">No data for {selectedProvider} yet</p>
           </div>
         ) : (
           <div>
-            <div className="mb-6 flex items-center gap-4">
-              <h1 className="text-lg font-semibold capitalize">{detail.provider}</h1>
-              <span className="text-xs text-text-tertiary">{detail.totalReports} reports in 24h</span>
+            <div className="mb-6">
+              <a href="/dashboard/providers" className="mb-2 inline-flex items-center gap-1 text-xs text-text-tertiary hover:text-text-primary md:hidden">
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                All providers
+              </a>
+              <div className="flex items-center gap-4">
+                <h1 className="text-lg font-semibold capitalize">{detail.provider}</h1>
+                <span className="text-xs text-text-tertiary">{detail.totalReports} reports in 24h</span>
+              </div>
             </div>
 
             {/* Usage overview */}

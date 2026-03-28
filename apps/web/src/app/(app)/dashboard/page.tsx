@@ -101,7 +101,7 @@ delimiter.init('${activeProject.key}')`}
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-lg font-semibold">Overview</h1>
         {data && data.recentAlerts > 0 && (
@@ -128,7 +128,7 @@ delimiter.init('${activeProject.key}')`}
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
             </svg>
           </div>
-          <div className="flex flex-1 items-center gap-6">
+          <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-2">
             {data.creditSummary.map((c) => {
               const pct = c.creditsLimit ? ((c.creditsLimit - c.creditsRemaining) / c.creditsLimit) * 100 : null
               const isLow = pct != null && pct >= 80
