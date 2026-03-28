@@ -42,6 +42,8 @@ export const navigation: NavSection[] = [
     icon: "layout",
     items: [
       { title: "Overview", href: "/dashboard/overview" },
+      { title: "Credits", href: "/dashboard/credits" },
+      { title: "Connections", href: "/dashboard/connections" },
       { title: "Alerts", href: "/dashboard/alerts" },
     ],
   },

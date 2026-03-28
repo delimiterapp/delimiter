@@ -1,11 +1,11 @@
 # Delimiter
 
-**Rate limit monitoring for AI apps.**
+**Sentry for AI apps. Prevent chat blackouts before they happen.**
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/@delimiter/sdk.svg)](https://www.npmjs.com/package/@delimiter/sdk)
 
-Delimiter is a lightweight SDK that monitors your AI API rate limits across every provider in one dashboard. Two lines of code. Zero maintenance. Never touches your API keys.
+Delimiter monitors everything that can take your AI app offline — rate limit exhaustion, credit depletion, provider outages. Two lines of code. Never touches your API keys.
 
 [delimiter.app](https://delimiter.app)
 
@@ -13,11 +13,11 @@ Delimiter is a lightweight SDK that monitors your AI API rate limits across ever
 
 ## The Problem
 
-Every AI provider has rate limits. When you hit them, your app breaks — users get errors, production goes down.
+Your AI app goes dark for two reasons: you hit rate limits, or your credits run out. Both are silent killers — you find out when users are already seeing error screens.
 
-Today there's no unified way to monitor rate limits across providers. OpenAI shows limits in their console. Anthropic shows theirs. You find out you've hit a limit when your app is already returning 429s.
+Rate limits are scattered across provider dashboards. Credit balances live in separate billing consoles. There's no single place that tells you "your OpenAI balance hits zero in 12 hours" or "you're at 90% of your Anthropic request limit."
 
-Delimiter reads the rate limit headers that every AI API already returns on every response, aggregates them, and shows you — across all providers — how close you are to the edge.
+Delimiter monitors both — rate limits from SDK response headers, credit balances from provider billing APIs — and alerts you before blackouts happen.
 
 ## How It Works
 
@@ -39,7 +39,7 @@ This means Delimiter works with any AI SDK, any framework (LangChain, Vercel AI 
 
 ### 1. Sign in at [delimiter.app](https://delimiter.app)
 
-Passkey auth — no passwords. Click, biometric confirms, you're in.
+GitHub OAuth — one click, you're in.
 
 ### 2. Copy your project key from the dashboard
 
@@ -67,15 +67,15 @@ Your dashboard lights up. Add a new provider later? Just start using it — Deli
 
 ## What You See
 
-One screen. One glance.
+One dashboard. Two layers of protection.
 
-**Provider Health Cards** — A row of cards, one per connected provider. Each shows a health ring: green (<50% of limit), yellow (50–80%), red (80%+). You see across all providers in one second.
+### Rate Limits (via SDK)
 
-**Usage Bars** — Click any provider card to expand. Requests per minute, tokens per minute, tokens per day — each as a progress bar showing current vs. limit.
+**Provider Health Cards** — A row of cards, one per provider. Health ring: green (<50%), yellow (50–80%), red (80%+). All providers at a glance.
 
-**Timeline** — 24-hour usage chart across all providers. Spikes are visible immediately. Hover for exact numbers.
+**Usage Bars** — Requests per minute, tokens per minute — each as a progress bar showing current vs. limit.
 
-**Alert Log** — Every threshold crossing logged: timestamp, provider, which limit, which app, current value vs. limit.
+**Timeline** — 24-hour usage chart. Spikes visible immediately.
 
 **Multi-App Support** — Tag each SDK instance with an app name:
 
@@ -83,7 +83,21 @@ One screen. One glance.
 delimiter.init('dlm_your_project_key', { app: 'my-production-app' })
 ```
 
-Dashboard shows which app is consuming what percentage of your limits. You know exactly which app to throttle.
+### Credit Balances (via Provider Connections)
+
+Connect your provider accounts to monitor credit balances. Delimiter never stores your credentials — authentication is handled via Pipedream Connect.
+
+**Balance Monitoring** — Remaining credits, period spend, burn rate per hour.
+
+**Projected Depletion** — "Your OpenAI balance hits zero in 18 hours" with color-coded urgency.
+
+**Blackout Alerts** — Alerts fire when balances cross warning/critical thresholds, same as rate limits. Credits running out = chat blackout.
+
+Supported connections: **OpenAI**, **Anthropic**, **OpenRouter**, **xAI (Grok)**. More coming.
+
+### Alerts
+
+Every threshold crossing logged: timestamp, provider, metric (requests, tokens, or credits), current value vs. limit. Warn at 70%, critical at 90% (configurable).
 
 ## What The SDK Never Does
 
@@ -116,16 +130,16 @@ Delimiter auto-detects any AI provider at the network layer. No plugins, no per-
 
 ...and any provider that speaks HTTP. The list grows with every SDK update — your code doesn't change.
 
-## Alerts
+## Two Tiers of Monitoring
 
-Configure thresholds in the dashboard. Defaults: warn at 70%, critical at 90%.
-
-Notification channels:
-- **Email** — built in
-- **Slack** — webhook URL
-- **Webhook** — any HTTP endpoint
-
-Alerts fire when any provider crosses your threshold. You get a message before your app starts returning 429s.
+| | SDK (Passive) | Provider Connections |
+|---|---|---|
+| **What it monitors** | Rate limits (requests, tokens) | Credit balances, spend |
+| **How it works** | Reads HTTP response headers | Polls provider billing APIs |
+| **Setup** | `delimiter.init('key')` — 2 lines | Click "Connect" in dashboard |
+| **Credentials** | Never sees your API keys | Via Pipedream Connect (you authenticate directly with provider) |
+| **Data freshness** | Real-time (every API call) | Polled (15–30 min intervals) |
+| **Blackout type** | Rate limit exhaustion (429s) | Credit depletion (account suspended) |
 
 ## Pricing
 
@@ -152,7 +166,7 @@ delimiter/
             └── lib/          # DB, auth, alerts
 ```
 
-**Stack:** pnpm monorepo, Turborepo, TypeScript everywhere. SDK built with tsup (CJS + ESM). Web app is Next.js + Tailwind + Prisma + Postgres (Neon). Passkey auth via WebAuthn. Charts via Recharts.
+**Stack:** pnpm monorepo, Turborepo, TypeScript everywhere. SDK built with tsup (CJS + ESM). Web app is Next.js + Tailwind + Prisma + Postgres (Neon). GitHub OAuth. Provider connections via Pipedream Connect.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup.
 
