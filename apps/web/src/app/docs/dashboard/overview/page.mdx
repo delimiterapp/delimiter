@@ -42,6 +42,20 @@ Color matches health status (green to yellow to red gradient). Updates in real t
 
 Every threshold crossing is logged. Shows: timestamp, provider, metric, threshold crossed, current value / limit. Color-coded: yellow for warning, red for critical.
 
+## Credit Balance Banner
+
+If any connected provider has low credit balance, a banner appears at the top of the overview with:
+
+- Provider name and current balance
+- **Low** badge when 80%+ of credits consumed
+- Link to the full Credits page for details
+
+Credit data comes from two sources: SDK response headers (real-time) and connected provider billing APIs (polled every 15–30 min). See [Credits](/docs/dashboard/credits) and [Connections](/docs/dashboard/connections) for details.
+
+## Provider Hints
+
+When the SDK initializes, it scans `process.env` for known AI provider API key variable names (e.g., `OPENAI_API_KEY`). These "hints" cause provider cards to appear immediately on the dashboard — before any API calls are made. Once real traffic flows, the cards update with live data.
+
 ## SDK Info
 
 - Your project key (always visible, with copy button)

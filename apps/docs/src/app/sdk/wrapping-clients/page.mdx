@@ -1,49 +1,63 @@
 import { ContentLayout } from '@/components/docs/content-layout'
 
 export default function Layout({ children }) {
-  return <ContentLayout section="SDK" page="WRAPPING CLIENTS">{children}</ContentLayout>
+  return <ContentLayout section="SDK" page="HOW IT WORKS">{children}</ContentLayout>
 }
 
-# Wrapping Clients
+# How It Works
 
-## delimiter.wrap()
+## Auto-instrumentation
 
-Takes an AI provider client and returns a proxied version with identical types and API.
+When you call `delimiter.init()`, the SDK patches Node's HTTP layer — `globalThis.fetch`, `http.request`, and `https.request`. This is the same technique used by Datadog, Sentry, and New Relic.
 
-```typescript
-const openai = delimiter.wrap(new OpenAI({ apiKey: '...' }))
-const anthropic = delimiter.wrap(new Anthropic({ apiKey: '...' }))
-```
+No wrapping. No per-provider setup. One call at startup and you're done.
 
-## How it works internally
+## Request interception
 
-1. `delimiter.wrap(client)` returns a deep JavaScript Proxy around your AI client
-2. Property access (like `openai.chat.completions`) is proxied recursively
-3. When a method is called (like `.create()`), the Proxy wraps the return value
-4. If the return value is a Promise, the Proxy attaches a `.then()` handler
-5. The handler reads rate limit headers from the response object
-6. A fire-and-forget POST sends the parsed headers to the Delimiter API
-7. The original response is returned to your code, unchanged
+On every outbound HTTP request, the SDK checks the destination URL against a list of known AI provider domains:
 
-## Provider auto-detection
+| Domain | Provider |
+| --- | --- |
+| `api.openai.com` | OpenAI |
+| `api.anthropic.com` | Anthropic |
+| `generativelanguage.googleapis.com` | Google Gemini |
+| `api.mistral.ai` | Mistral |
+| `api.cohere.com` | Cohere |
+| `api.groq.com` | Groq |
+| `api.deepseek.com` | DeepSeek |
+| `api.x.ai` | xAI |
+| `api.perplexity.ai` | Perplexity |
+| `api.together.xyz` | Together AI |
+| `api.fireworks.ai` | Fireworks AI |
+| `api.replicate.com` | Replicate |
+| `*.openai.azure.com` | Azure OpenAI |
+| `bedrock-runtime.*.amazonaws.com` | Amazon Bedrock |
+| `openrouter.ai` | OpenRouter |
 
-The SDK automatically detects the provider from the client instance. No configuration needed — just pass the client to `wrap()`.
+If the URL doesn't match a known provider, the request passes through untouched — zero overhead. New providers are added with every SDK update.
 
-- OpenAI clients are detected by the presence of `chat.completions`
-- Anthropic clients are detected by the presence of `messages`
+## Response header extraction
 
-## Multiple providers
+When a response comes back from a known provider, the SDK reads rate-limit and credit headers:
 
-You can wrap as many clients as you want. All report to the same dashboard under the same project key.
+- **Rate limits**: `x-ratelimit-limit-requests`, `x-ratelimit-remaining-requests`, `x-ratelimit-limit-tokens`, `x-ratelimit-remaining-tokens`, etc.
+- **Credits** (where available): `x-ratelimit-limit-credits`, `x-ratelimit-remaining-credits`, `x-request-cost`
 
-```typescript
-const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY }))
-const anthropic = delimiter.wrap(new Anthropic({ apiKey: process.env.ANTHROPIC_KEY }))
-```
+Provider-specific header formats (e.g., Anthropic's `anthropic-ratelimit-*` prefix) are handled automatically.
 
-## What the proxy doesn't change
+## Async reporting
 
-- All methods, properties, and types are preserved
-- Error handling works exactly as before
-- Streaming responses work exactly as before
-- The only addition: rate limit headers are read and reported after each response
+A fire-and-forget POST sends the parsed headers to the Delimiter API. This never blocks your application — the original response is returned to your code immediately.
+
+If the report fails to send, it's silently dropped. Your application is never affected.
+
+## Provider hints
+
+On init, the SDK also scans `process.env` for common AI provider API key environment variable names (e.g., `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`). These "provider hints" are sent to the dashboard so your providers appear immediately — before any API calls are made.
+
+## Why auto-instrumentation?
+
+- **Zero maintenance.** Add Anthropic 6 months later — don't touch Delimiter. The dashboard just shows it.
+- **Framework agnostic.** Works with the official SDKs, LangChain, Vercel AI SDK, LiteLLM, or raw `fetch()` calls.
+- **No peer dependencies.** The SDK doesn't need to know about `openai` or `@anthropic-ai/sdk` packages. It works at the HTTP layer.
+- **Drop-in.** Two lines of code in your entry point. Deploy and forget.

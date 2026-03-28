@@ -48,3 +48,17 @@ Development (debug logging):
 delimiter.init('dlm_key', { debug: true })
 ```
 
+## Debug mode
+
+When `debug: true`, the SDK logs to the console:
+
+- Provider detection events (which domains were matched)
+- Header parsing results (rate limits and credits extracted)
+- Report send status (success or failure for each POST)
+
+Useful for verifying that Delimiter is intercepting your API calls correctly.
+
+## Provider hints
+
+On init, the SDK scans `process.env` for common AI provider API key environment variables (e.g., `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`). If found, the SDK sends "provider hints" to the dashboard so your providers appear immediately — before any API calls are made.
+

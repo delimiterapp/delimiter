@@ -35,8 +35,16 @@ Authorization: Bearer dlm_your_project_key
     "tokens_remaining": 1456000,
     "reset_requests_ms": 43000,
     "reset_tokens_ms": 12000
+  },
+  "credits": {
+    "credits_limit": 100.00,
+    "credits_remaining": 42.50,
+    "request_cost": 0.003
   }
 }
+```
+
+The `credits` field is optional — it's included when the provider returns credit/cost headers (e.g., OpenRouter). The `limits` fields may be null for providers that don't return rate-limit headers, but the report is still sent so the provider is tracked.
 ```
 
 ## Response

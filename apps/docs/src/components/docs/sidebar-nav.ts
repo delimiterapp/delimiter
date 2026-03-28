@@ -24,7 +24,7 @@ export const navigation: NavSection[] = [
     icon: "code",
     items: [
       { title: "Configuration", href: "/sdk/configuration" },
-      { title: "Wrapping Clients", href: "/sdk/wrapping-clients" },
+      { title: "How It Works", href: "/sdk/wrapping-clients" },
       { title: "Multi-App Tagging", href: "/sdk/multi-app-tagging" },
       { title: "TypeScript", href: "/sdk/typescript" },
     ],
