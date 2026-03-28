@@ -10,14 +10,15 @@ interface HealthRingProps {
 export function HealthRing({ percentage, size = 80, strokeWidth = 6, label }: HealthRingProps) {
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
-  const hasData = percentage != null && percentage > 0
-  const filled = hasData ? (percentage / 100) * circumference : 0
+  const hasData = percentage != null
+  const pct = percentage ?? 0
+  const filled = (pct / 100) * circumference
   const offset = circumference - filled
 
   const color = !hasData
     ? 'var(--color-text-tertiary)'
-    : percentage >= 80 ? 'var(--color-red)'
-    : percentage >= 50 ? 'var(--color-yellow)'
+    : pct >= 80 ? 'var(--color-red)'
+    : pct >= 50 ? 'var(--color-yellow)'
     : 'var(--color-green)'
 
   return (
@@ -31,7 +32,7 @@ export function HealthRing({ percentage, size = 80, strokeWidth = 6, label }: He
           stroke="var(--color-surface)"
           strokeWidth={strokeWidth}
         />
-        {hasData && (
+        {hasData && pct > 0 && (
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -48,7 +49,7 @@ export function HealthRing({ percentage, size = 80, strokeWidth = 6, label }: He
       </svg>
       <div className="absolute text-center">
         <div className="text-sm font-semibold" style={{ color }}>
-          {hasData ? `${Math.round(percentage)}%` : '—'}
+          {hasData ? `${Math.round(pct)}%` : '—'}
         </div>
         {label && <div className="text-[10px] text-text-tertiary">{label}</div>}
       </div>
