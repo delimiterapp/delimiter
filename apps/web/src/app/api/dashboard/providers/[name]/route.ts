@@ -68,7 +68,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     provider,
     latest: latest ? { limits: latest.limits, model: latest.model, timestamp: latest.timestamp } : null,
     timeline: buckets,
-    models: models.map((m) => ({ model: m.model || 'unknown', count: m._count.id })),
+    models: models
+      .filter((m) => m.model != null)
+      .map((m) => ({ model: m.model!, count: m._count.id })),
     totalReports: reports.length,
   })
 }
