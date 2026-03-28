@@ -23,7 +23,15 @@ export async function GET(request: NextRequest) {
   // Get latest report per provider
   const providerData = await Promise.all(
     providers.map(async ({ provider }) => {
+      // Prefer the latest report with real rate limit data; fall back to any report
       const latest = await db.rateLimitReport.findFirst({
+        where: {
+          projectId,
+          provider,
+          NOT: { model: null },
+        },
+        orderBy: { timestamp: 'desc' },
+      }) ?? await db.rateLimitReport.findFirst({
         where: { projectId, provider },
         orderBy: { timestamp: 'desc' },
       })
@@ -44,7 +52,9 @@ export async function GET(request: NextRequest) {
         limits,
         requestsUsage,
         tokensUsage,
-        overallUsage: Math.max(requestsUsage ?? 0, tokensUsage ?? 0),
+        overallUsage: requestsUsage != null || tokensUsage != null
+          ? Math.max(requestsUsage ?? 0, tokensUsage ?? 0)
+          : null,
       }
     })
   )

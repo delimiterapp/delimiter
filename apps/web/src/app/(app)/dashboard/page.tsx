@@ -12,7 +12,7 @@ type ProviderData = {
   limits: Record<string, number | null>
   requestsUsage: number | null
   tokensUsage: number | null
-  overallUsage: number
+  overallUsage: number | null
 }
 
 type OverviewData = {

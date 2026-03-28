@@ -3,6 +3,7 @@ import { instrument, restore } from './instrument'
 import { detectProviderFromClient } from './providers'
 import { parseHeaders, hasLimits } from './headers'
 import { sendReport } from './reporter'
+import { sendProviderHints } from './hints'
 
 // Re-export types for consumers
 export type { DelimiterOptions, RateLimitReport, RateLimits } from './types'
@@ -44,6 +45,7 @@ export const delimiter = {
 
     if (_config.enabled) {
       instrument(_config)
+      sendProviderHints(_config)
     }
   },
 

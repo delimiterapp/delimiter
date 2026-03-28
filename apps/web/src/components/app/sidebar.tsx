@@ -57,7 +57,7 @@ function NavIcon({ icon, className }: { icon: string; className: string }) {
   }
 }
 
-export function Sidebar() {
+export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   const pathname = usePathname()
   const { user } = useApp()
 
@@ -85,6 +85,7 @@ export function Sidebar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  onClick={onNavigate}
                   className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition-colors ${
                     isActive
                       ? 'bg-accent-light font-medium text-accent'
