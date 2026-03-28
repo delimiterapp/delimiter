@@ -23,7 +23,7 @@ Delimiter prevents two types of chat blackouts:
 
 When you call `delimiter.init()`, the SDK hooks into Node's HTTP layer. Every outbound request is checked against known AI provider domains (`api.openai.com`, `api.anthropic.com`, etc.). When a match is found, Delimiter reads rate-limit and credit headers from the response.
 
-**Provider Connections:** Connect your provider accounts in the dashboard to monitor credit balances directly from billing APIs. Delimiter never stores your credentials — authentication is handled via Pipedream Connect.
+**Provider Connections:** Connect your provider accounts in the dashboard to monitor credit balances directly from billing APIs. Delimiter never stores your credentials — authentication is handled via a secure credential broker.
 
 Reporting is async and fire-and-forget. Your application code runs exactly as it did before, with zero overhead in the critical path.
 
@@ -65,7 +65,7 @@ New providers are added to the SDK's detection list over time. When a new provid
 | | SDK (Passive) | Provider Connections |
 |---|---|---|
 | **What it monitors** | Rate limits (requests, tokens) + credit headers | Credit balances, spend |
-| **How it works** | Reads HTTP response headers | Polls provider billing APIs via Pipedream Connect |
+| **How it works** | Reads HTTP response headers | Polls provider billing APIs securely |
 | **Setup** | `delimiter.init('key')` — 2 lines | Click "Connect" in dashboard |
 | **Credentials** | Never sees your API keys | You authenticate directly with provider |
 | **Data freshness** | Real-time (every API call) | Polled (15–30 min intervals) |
@@ -76,4 +76,4 @@ Delimiter has three parts:
 
 - **SDK** (npm package) — hooks into the HTTP layer at startup, detects AI provider API calls by domain, extracts rate-limit and credit headers from responses, and reports them asynchronously.
 - **Dashboard** (web app) — receives reports from the SDK, aggregates the data, and displays your rate limit and credit usage in real-time.
-- **Provider Connections** — optional billing API integration via Pipedream Connect for credit balance monitoring on providers that don't expose credits in response headers.
+- **Provider Connections** — optional billing API integration for spend monitoring on providers that don't expose cost data in response headers.

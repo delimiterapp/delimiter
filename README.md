@@ -85,7 +85,7 @@ delimiter.init('dlm_your_project_key', { app: 'my-production-app' })
 
 ### Spend Monitoring (via Provider Connections)
 
-Connect your provider accounts to monitor credit balances. Delimiter never stores your credentials — authentication is handled via Pipedream Connect.
+Connect your provider accounts to monitor spend. Delimiter never stores your credentials — you authenticate directly with each provider.
 
 **Balance Monitoring** — Remaining balance, period spend, burn rate per hour.
 
@@ -137,7 +137,7 @@ Delimiter auto-detects any AI provider at the network layer. No plugins, no per-
 | **What it monitors** | Rate limits (requests, tokens) | Balances, spend |
 | **How it works** | Reads HTTP response headers | Polls provider billing APIs |
 | **Setup** | `delimiter.init('key')` — 2 lines | Click "Connect" in dashboard |
-| **Credentials** | Never sees your API keys | Via Pipedream Connect (you authenticate directly with provider) |
+| **Credentials** | Never sees your API keys | You authenticate directly with provider |
 | **Data freshness** | Real-time (every API call) | Polled (15–30 min intervals) |
 | **Blackout type** | Rate limit exhaustion (429s) | Credit depletion (account suspended) |
 
@@ -166,7 +166,7 @@ delimiter/
             └── lib/          # DB, auth, alerts
 ```
 
-**Stack:** pnpm monorepo, Turborepo, TypeScript everywhere. SDK built with tsup (CJS + ESM). Web app is Next.js + Tailwind + Prisma + Postgres (Neon). GitHub OAuth. Provider connections via Pipedream Connect.
+**Stack:** pnpm monorepo, Turborepo, TypeScript everywhere. SDK built with tsup (CJS + ESM). Web app is Next.js + Tailwind + Prisma + Postgres (Neon). GitHub OAuth. Provider connections for spend monitoring.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup.
 

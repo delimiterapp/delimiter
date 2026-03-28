@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useApp } from '@/components/app/app-context'
+import { createFrontendClient, type ConnectResult } from '@pipedream/sdk/browser'
 
 type SupportedProvider = {
   id: string
@@ -47,7 +48,7 @@ function formatCurrency(n: number | null): string {
 }
 
 export default function ConnectionsPage() {
-  const { activeProject } = useApp()
+  const { activeProject, user } = useApp()
   const [data, setData] = useState<ConnectionsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [polling, setPolling] = useState<string | null>(null)
@@ -63,10 +64,55 @@ export default function ConnectionsPage() {
       .finally(() => setLoading(false))
   }, [activeProject?.id])
 
-  async function connectProvider(_providerId: string) {
-    // Pipedream Connect integration coming soon.
-    // When ready, this will open Pipedream's embedded auth popup:
-    // client.connectAccount({ app: provider.pipedreamApp })
+  const pdClientRef = useRef<ReturnType<typeof createFrontendClient> | null>(null)
+
+  function getPdClient() {
+    if (!pdClientRef.current) {
+      pdClientRef.current = createFrontendClient({
+        projectEnvironment: (process.env.NEXT_PUBLIC_PIPEDREAM_ENVIRONMENT as 'development' | 'production') || 'development',
+        externalUserId: user?.id ?? '',
+        tokenCallback: async () => {
+          const res = await fetch('/api/connections/token', { method: 'POST' })
+          return res.json()
+        },
+      })
+    }
+    return pdClientRef.current
+  }
+
+  async function connectProvider(providerId: string) {
+    if (!activeProject) return
+    setConnecting(providerId)
+
+    const provider = data?.supportedProviders.find((p) => p.id === providerId)
+    if (!provider) { setConnecting(null); return }
+
+    try {
+      const pd = getPdClient()
+      await pd.connectAccount({
+        app: provider.pipedreamApp,
+        onSuccess: async ({ id: accountId }: ConnectResult) => {
+          // Store the Pipedream account ID in our DB
+          await fetch('/api/connections', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              projectId: activeProject.id,
+              provider: providerId,
+              pipedreamAccountId: accountId,
+            }),
+          })
+
+          // Refresh connections list
+          const res = await fetch(`/api/connections?projectId=${activeProject.id}`)
+          const updated = await res.json()
+          setData(updated)
+          setConnecting(null)
+        },
+      })
+    } catch {
+      setConnecting(null)
+    }
   }
 
   async function disconnectProvider(providerId: string) {
@@ -125,7 +171,7 @@ export default function ConnectionsPage() {
         <h1 className="text-lg font-semibold">Connect Providers</h1>
         <p className="mt-1 text-sm text-text-secondary">
           Connect your AI provider accounts to monitor credit balances and prevent blackouts from depleted funds.
-          Delimiter never stores your credentials — authentication is handled securely via Pipedream Connect.
+          Delimiter never stores your credentials — you authenticate directly with each provider.
         </p>
       </div>
 
@@ -187,9 +233,13 @@ export default function ConnectionsPage() {
                     </>
                   )}
                   {!isConnected && (
-                    <span className="rounded-lg bg-surface px-4 py-1.5 text-xs font-medium text-text-tertiary">
-                      Coming soon
-                    </span>
+                    <button
+                      onClick={() => connectProvider(provider.id)}
+                      disabled={connecting === provider.id}
+                      className="rounded-lg bg-accent px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+                    >
+                      {connecting === provider.id ? 'Connecting...' : 'Connect'}
+                    </button>
                   )}
                 </div>
               </div>
