@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { app, provider, model, timestamp, limits } = body
+    const { app, provider, model, timestamp, limits, credits } = body
 
     if (!provider || !limits) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -60,6 +60,22 @@ export async function POST(request: NextRequest) {
         limits,
       },
     })
+
+    // Store credit/balance snapshot if present
+    if (credits && (credits.credits_limit != null || credits.credits_remaining != null || credits.request_cost != null)) {
+      await db.usageCredit.create({
+        data: {
+          projectId: project.id,
+          provider,
+          app: app || 'default',
+          model: model || null,
+          creditsLimit: credits.credits_limit ?? null,
+          creditsRemaining: credits.credits_remaining ?? null,
+          requestCost: credits.request_cost ?? null,
+          timestamp: timestamp ? new Date(timestamp) : new Date(),
+        },
+      })
+    }
 
     // Check alert rules
     const rules = await db.alertRule.findMany({
@@ -132,6 +148,39 @@ export async function POST(request: NextRequest) {
               threshold: rule.warnAt,
               current: used,
               limit: l.tokens_limit,
+              percentage: pct,
+            },
+          })
+        }
+      }
+
+      // Check credit balance — low balance is a blackout risk
+      if (credits && credits.credits_limit && credits.credits_remaining != null) {
+        const spent = credits.credits_limit - credits.credits_remaining
+        const pct = (spent / credits.credits_limit) * 100
+        if (pct >= rule.criticalAt) {
+          await db.alertEvent.create({
+            data: {
+              projectId: project.id,
+              provider,
+              app: app || 'default',
+              metric: 'credits',
+              threshold: rule.criticalAt,
+              current: spent,
+              limit: credits.credits_limit,
+              percentage: pct,
+            },
+          })
+        } else if (pct >= rule.warnAt) {
+          await db.alertEvent.create({
+            data: {
+              projectId: project.id,
+              provider,
+              app: app || 'default',
+              metric: 'credits',
+              threshold: rule.warnAt,
+              current: spent,
+              limit: credits.credits_limit,
               percentage: pct,
             },
           })

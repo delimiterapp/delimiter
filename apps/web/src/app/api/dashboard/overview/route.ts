@@ -74,10 +74,32 @@ export async function GET(request: NextRequest) {
     },
   })
 
+  // Get latest credit snapshot per provider
+  const creditProviders = await db.usageCredit.findMany({
+    where: { projectId },
+    distinct: ['provider'],
+    select: { provider: true },
+  })
+  const creditSummary = await Promise.all(
+    creditProviders.map(async ({ provider }) => {
+      const latest = await db.usageCredit.findFirst({
+        where: { projectId, provider },
+        orderBy: { timestamp: 'desc' },
+      })
+      if (!latest || latest.creditsRemaining == null) return null
+      return {
+        provider,
+        creditsRemaining: latest.creditsRemaining,
+        creditsLimit: latest.creditsLimit,
+      }
+    })
+  )
+
   return NextResponse.json({
     providers: providerData.filter(Boolean),
     apps: apps.map((a) => a.app),
     recentAlerts,
+    creditSummary: creditSummary.filter(Boolean),
     hasData: providers.length > 0,
   })
 }

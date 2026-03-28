@@ -29,6 +29,16 @@ export interface RateLimits {
   reset_tokens_ms: number | null
 }
 
+/** Credit/balance data extracted from provider response headers */
+export interface UsageCredits {
+  /** Total credit balance (e.g. $100.00) */
+  credits_limit: number | null
+  /** Remaining credit balance */
+  credits_remaining: number | null
+  /** Cost of this individual request (if reported by provider) */
+  request_cost: number | null
+}
+
 /** The report payload sent to the Delimiter API */
 export interface RateLimitReport {
   app: string
@@ -36,6 +46,8 @@ export interface RateLimitReport {
   model: string | null
   timestamp: string
   limits: RateLimits
+  /** Credit/balance data — optional, only present when provider exposes it */
+  credits?: UsageCredits | null
 }
 
 /** Header getter abstraction for both fetch Response and Node http headers */
