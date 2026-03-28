@@ -71,7 +71,7 @@ function NavIcon({ icon, className }: { icon: string; className: string }) {
   }
 }
 
-export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
+export function Sidebar({ onNavigate, onClose }: { onNavigate?: () => void; onClose?: () => void } = {}) {
   const pathname = usePathname()
   const { user } = useApp()
 
@@ -81,10 +81,19 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   }
 
   return (
-    <aside className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-white">
+    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-white">
       {/* Project switcher header */}
-      <div className="border-b border-border px-4 py-3">
-        <BreadcrumbSwitcher />
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <BreadcrumbSwitcher />
+        </div>
+        {onClose && (
+          <button onClick={onClose} className="ml-2 shrink-0 rounded-md p-1 text-text-tertiary hover:bg-surface hover:text-text-primary md:hidden">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -119,6 +128,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
       <div className="shrink-0 border-t border-border px-3 py-3 space-y-0.5">
         <Link
           href="/dashboard/settings"
+          onClick={onNavigate}
           className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition-colors ${
             pathname.startsWith('/dashboard/settings')
               ? 'bg-accent-light font-medium text-accent'
