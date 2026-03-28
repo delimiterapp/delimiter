@@ -81,7 +81,7 @@ export function Sidebar({ onNavigate, onClose }: { onNavigate?: () => void; onCl
   }
 
   return (
-    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-white">
+    <aside className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-white">
       {/* Project switcher header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="min-w-0 flex-1">

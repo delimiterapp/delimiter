@@ -166,22 +166,21 @@ export default function ConnectionsPage() {
   )
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-2">
         <h1 className="text-lg font-semibold">Connect Providers</h1>
         <p className="mt-1 text-sm text-text-secondary">
           Connect your AI provider accounts to monitor credit balances and prevent blackouts from depleted funds.
-          Delimiter never stores your credentials — you authenticate directly with each provider.
         </p>
       </div>
 
       {/* Trust banner */}
-      <div className="my-6 flex items-start gap-3 rounded-lg border border-accent/20 bg-accent-light px-4 py-3">
+      <div className="my-4 flex items-start gap-3 rounded-lg border border-accent/20 bg-accent-light px-3 py-2.5 md:my-6 md:px-4 md:py-3">
         <svg className="mt-0.5 h-4 w-4 shrink-0 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
         </svg>
         <div className="text-xs text-accent">
-          <span className="font-medium">Your keys stay with you.</span> When you connect a provider, you authenticate directly with them.
+          <span className="font-medium">Your keys stay with you.</span> You authenticate directly with each provider.
           Delimiter only receives read-only billing data — never your API keys or credentials.
         </div>
       </div>
@@ -195,58 +194,56 @@ export default function ConnectionsPage() {
           return (
             <div
               key={provider.id}
-              className="rounded-xl border border-border bg-white p-5"
+              className="rounded-xl border border-border bg-white p-4 md:p-5"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface text-sm font-bold capitalize text-text-secondary">
-                    {provider.name[0]}
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface text-sm font-bold capitalize text-text-secondary">
+                  {provider.name[0]}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{provider.name}</span>
+                    {connection && <StatusBadge status={connection.status} />}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{provider.name}</span>
-                      {connection && <StatusBadge status={connection.status} />}
-                    </div>
-                    <div className="mt-0.5 text-xs text-text-tertiary">
-                      {provider.keyType} — {provider.keyHint}
-                    </div>
+                  <div className="mt-0.5 truncate text-xs text-text-tertiary">
+                    {provider.keyType} — {provider.keyHint}
                   </div>
                 </div>
+              </div>
 
-                <div className="flex items-center gap-2">
-                  {isConnected && (
-                    <>
-                      <button
-                        onClick={() => pollProvider(provider.id)}
-                        disabled={polling === provider.id}
-                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface disabled:opacity-50"
-                      >
-                        {polling === provider.id ? 'Polling...' : 'Refresh'}
-                      </button>
-                      <button
-                        onClick={() => disconnectProvider(provider.id)}
-                        disabled={disconnecting === provider.id}
-                        className="rounded-lg border border-red/30 px-3 py-1.5 text-xs font-medium text-red transition-colors hover:bg-red/5 disabled:opacity-50"
-                      >
-                        {disconnecting === provider.id ? 'Disconnecting...' : 'Disconnect'}
-                      </button>
-                    </>
-                  )}
-                  {!isConnected && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {isConnected && (
+                  <>
                     <button
-                      onClick={() => connectProvider(provider.id)}
-                      disabled={connecting === provider.id}
-                      className="rounded-lg bg-accent px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+                      onClick={() => pollProvider(provider.id)}
+                      disabled={polling === provider.id}
+                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface disabled:opacity-50"
                     >
-                      {connecting === provider.id ? 'Connecting...' : 'Connect'}
+                      {polling === provider.id ? 'Polling...' : 'Refresh'}
                     </button>
-                  )}
-                </div>
+                    <button
+                      onClick={() => disconnectProvider(provider.id)}
+                      disabled={disconnecting === provider.id}
+                      className="rounded-lg border border-red/30 px-3 py-1.5 text-xs font-medium text-red transition-colors hover:bg-red/5 disabled:opacity-50"
+                    >
+                      {disconnecting === provider.id ? 'Disconnecting...' : 'Disconnect'}
+                    </button>
+                  </>
+                )}
+                {!isConnected && (
+                  <button
+                    onClick={() => connectProvider(provider.id)}
+                    disabled={connecting === provider.id}
+                    className="rounded-lg bg-accent px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+                  >
+                    {connecting === provider.id ? 'Connecting...' : 'Connect'}
+                  </button>
+                )}
               </div>
 
               {/* Connection data */}
               {isConnected && connection && (
-                <div className="mt-4 flex items-center gap-6 border-t border-border pt-4">
+                <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-3">
                   {connection.balance != null && (
                     <div>
                       <div className="text-[11px] font-medium text-text-tertiary">Balance</div>
@@ -268,9 +265,9 @@ export default function ConnectionsPage() {
                     </div>
                   )}
                   {connection.lastError && (
-                    <div className="flex-1">
+                    <div className="w-full">
                       <div className="text-[11px] font-medium text-red">Error</div>
-                      <div className="text-xs text-red">{connection.lastError}</div>
+                      <div className="break-words text-xs text-red">{connection.lastError}</div>
                     </div>
                   )}
                   {!connection.lastPolledAt && !connection.lastError && (
@@ -282,7 +279,7 @@ export default function ConnectionsPage() {
               )}
 
               {/* Capabilities */}
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {provider.capabilities.includes('balance') && (
                   <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] font-medium text-text-tertiary">
                     Credit balance

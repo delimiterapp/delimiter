@@ -42,11 +42,11 @@ function ShellContent({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Desktop sidebar */}
-      <div className="hidden md:block">
+      <div className="hidden md:flex md:h-screen md:shrink-0">
         <Sidebar />
       </div>
 
-      <main className="flex-1 overflow-y-auto bg-surface">
+      <main className="min-h-0 flex-1 overflow-y-auto bg-surface">
         {children}
       </main>
     </div>

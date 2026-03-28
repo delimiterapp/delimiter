@@ -92,7 +92,7 @@ export default function FallbacksPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold">Fallback Chain</h1>
