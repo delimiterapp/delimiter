@@ -6,7 +6,7 @@ export default function Layout({ children }) {
 
 # Alerts
 
-Get notified before your app starts returning 429 errors.
+Get notified before your app goes dark — whether from rate limit exhaustion or credit depletion.
 
 ## Thresholds
 
@@ -15,7 +15,7 @@ Configure in the dashboard settings:
 - **Warning threshold**: default 70%
 - **Critical threshold**: default 90%
 
-Alerts fire when any provider's usage crosses a threshold.
+Alerts fire when any provider's usage crosses a threshold. This applies to both rate limits (requests, tokens) and credit balances.
 
 ## Notification channels
 
@@ -39,6 +39,10 @@ Each alert includes:
   "timestamp": "2025-01-15T14:23:01.456Z"
 }
 ```
+
+## Credit depletion alerts
+
+Credit balance alerts work the same way. When a provider's credit usage crosses the warning or critical threshold, an alert fires with `"metric": "credits"`. This covers both SDK-detected credit data (from response headers) and connected provider billing data.
 
 ## Alert log
 

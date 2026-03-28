@@ -24,7 +24,7 @@ export const navigation: NavSection[] = [
     icon: "code",
     items: [
       { title: "Configuration", href: "/sdk/configuration" },
-      { title: "Wrapping Clients", href: "/sdk/wrapping-clients" },
+      { title: "How It Works", href: "/sdk/wrapping-clients" },
       { title: "Multi-App Tagging", href: "/sdk/multi-app-tagging" },
       { title: "TypeScript", href: "/sdk/typescript" },
     ],
@@ -42,6 +42,8 @@ export const navigation: NavSection[] = [
     icon: "layout",
     items: [
       { title: "Overview", href: "/dashboard/overview" },
+      { title: "Credits", href: "/dashboard/credits" },
+      { title: "Connections", href: "/dashboard/connections" },
       { title: "Alerts", href: "/dashboard/alerts" },
     ],
   },

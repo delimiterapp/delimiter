@@ -10,9 +10,7 @@ Get Delimiter monitoring your AI rate limits in under 2 minutes.
 
 ## 1. Sign in at delimiter.app
 
-Passkey auth — no passwords. Click, biometric confirms, you're in.
-
-New accounts are created automatically on first passkey registration. There is no separate sign-up step.
+GitHub OAuth — one click, you're in. No passwords, no separate sign-up step.
 
 ## 2. Copy your project key
 
@@ -26,7 +24,7 @@ This key identifies your project — it's not a secret, but keep it private.
 npm install @delimiter/sdk
 ```
 
-## 4. Wrap your AI clients
+## 4. Initialize Delimiter
 
 ```typescript
 import { delimiter } from '@delimiter/sdk'
@@ -34,17 +32,21 @@ import OpenAI from 'openai'
 
 delimiter.init('dlm_your_project_key')
 
-const openai = delimiter.wrap(new OpenAI({ apiKey: process.env.OPENAI_KEY }))
+// Use your AI clients as normal — Delimiter monitors automatically
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY })
 
-// Use it exactly as before
 const response = await openai.chat.completions.create({
   model: 'gpt-4o',
   messages: [{ role: 'user', content: 'Hello' }]
 })
 ```
 
-That's it. Three lines added to your existing code — `import`, `init`, and `wrap`.
+That's it. Two lines added to your existing code — `import` and `init`. Delimiter hooks into the HTTP layer and monitors all AI API calls automatically.
 
 ## 5. Dashboard lights up
 
 The moment your first API call completes, your dashboard shows real-time rate limit data. Health cards appear for each provider, showing your current usage against the provider's limits.
+
+## 6. (Optional) Connect providers for credit monitoring
+
+For credit balance monitoring, connect your provider accounts in the dashboard under **Connections**. Delimiter never stores your credentials — authentication is handled securely via Pipedream Connect. You authenticate directly with each provider, and Delimiter receives read-only billing data.

@@ -1,8 +1,8 @@
 # @delimiter/sdk
 
-Lightweight rate limit monitoring for AI APIs. Initialize once, monitor everything — [delimiter.app](https://delimiter.app).
+Sentry for AI apps. Prevent chat blackouts before they happen — [delimiter.app](https://delimiter.app).
 
-Zero interference. Zero latency. Zero maintenance. Never touches your API keys.
+Monitors rate limits and credit balances across all your AI providers. Zero interference. Zero latency. Never touches your API keys.
 
 ## Install
 
@@ -102,6 +102,29 @@ After every AI API call, the SDK extracts rate limit headers and sends a report:
 ```
 
 This is sent as an async fire-and-forget POST. It never blocks your API call. If the report fails to send, it's silently dropped.
+
+## Credit Balance Tracking
+
+For providers that include credit/cost data in response headers (e.g., OpenRouter), the SDK automatically parses and reports credit balances alongside rate limits:
+
+```json
+{
+  "credits": {
+    "credits_limit": 100.00,
+    "credits_remaining": 42.50,
+    "request_cost": 0.003
+  }
+}
+```
+
+Credit data is included in the same report when available. The dashboard uses this to calculate burn rate, projected depletion time, and trigger balance alerts.
+
+**Supported credit headers:**
+- `x-ratelimit-limit-credits` — Total credit limit
+- `x-ratelimit-remaining-credits` — Remaining balance
+- `x-request-cost` / `x-usage-cost` — Cost of the last request
+
+For providers that don't expose credit headers, connect your provider account in the dashboard for billing API monitoring.
 
 ## Supported Providers
 

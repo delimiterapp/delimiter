@@ -8,15 +8,22 @@ export default function Layout({ children }) {
 
 ## What is Delimiter?
 
-Delimiter is a lightweight SDK that monitors AI API rate limits across providers in one dashboard. Two lines of code, zero maintenance — Delimiter automatically detects every AI provider your app talks to.
+Delimiter is Sentry for AI apps. It monitors everything that can take your AI app offline — rate limit exhaustion, credit depletion, provider outages. Two lines of code, zero maintenance — Delimiter automatically detects every AI provider your app talks to.
 
 ## How it works
 
-The flow is simple:
+Delimiter prevents two types of chat blackouts:
+
+1. **Rate limit exhaustion** (429 errors) — monitored via SDK response headers, real-time
+2. **Credit depletion** (account suspended) — monitored via provider billing APIs, polled every 15–30 min
+
+**SDK flow:**
 
 **Your App** → **AI Provider** → **Response** → **Delimiter reads headers** → **Dashboard updates**
 
-When you call `delimiter.init()`, the SDK hooks into Node's HTTP layer. Every outbound request is checked against known AI provider domains (`api.openai.com`, `api.anthropic.com`, etc.). When a match is found, Delimiter reads the rate-limit headers from the response — headers that providers already include on every response.
+When you call `delimiter.init()`, the SDK hooks into Node's HTTP layer. Every outbound request is checked against known AI provider domains (`api.openai.com`, `api.anthropic.com`, etc.). When a match is found, Delimiter reads rate-limit and credit headers from the response.
+
+**Provider Connections:** Connect your provider accounts in the dashboard to monitor credit balances directly from billing APIs. Delimiter never stores your credentials — authentication is handled via Pipedream Connect.
 
 Reporting is async and fire-and-forget. Your application code runs exactly as it did before, with zero overhead in the critical path.
 
@@ -53,9 +60,20 @@ Delimiter works at the network layer — any AI provider that returns rate-limit
 
 New providers are added to the SDK's detection list over time. When a new provider is added, your existing `delimiter.init()` call picks it up automatically — no code changes.
 
+## Two tiers of monitoring
+
+| | SDK (Passive) | Provider Connections |
+|---|---|---|
+| **What it monitors** | Rate limits (requests, tokens) + credit headers | Credit balances, spend |
+| **How it works** | Reads HTTP response headers | Polls provider billing APIs via Pipedream Connect |
+| **Setup** | `delimiter.init('key')` — 2 lines | Click "Connect" in dashboard |
+| **Credentials** | Never sees your API keys | You authenticate directly with provider |
+| **Data freshness** | Real-time (every API call) | Polled (15–30 min intervals) |
+
 ## Architecture
 
-Delimiter has two parts:
+Delimiter has three parts:
 
-- **SDK** (npm package) — hooks into the HTTP layer at startup, detects AI provider API calls by domain, extracts rate-limit headers from responses, and reports them asynchronously to the Delimiter backend.
-- **Dashboard** (web app) — receives reports from the SDK, aggregates the data, and displays your rate limit usage in real-time.
+- **SDK** (npm package) — hooks into the HTTP layer at startup, detects AI provider API calls by domain, extracts rate-limit and credit headers from responses, and reports them asynchronously.
+- **Dashboard** (web app) — receives reports from the SDK, aggregates the data, and displays your rate limit and credit usage in real-time.
+- **Provider Connections** — optional billing API integration via Pipedream Connect for credit balance monitoring on providers that don't expose credits in response headers.

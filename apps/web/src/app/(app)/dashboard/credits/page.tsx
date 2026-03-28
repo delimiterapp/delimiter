@@ -20,8 +20,19 @@ type ProviderCredit = {
   timeline: CreditTimeline[]
 }
 
+type ConnectedProvider = {
+  provider: string
+  balance: number | null
+  creditLimit: number | null
+  periodSpend: number | null
+  periodStart: string | null
+  lastPolledAt: string | null
+  source: 'billing-api'
+}
+
 type CreditsData = {
   providers: ProviderCredit[]
+  connectedProviders: ConnectedProvider[]
   creditAlerts: number
   hasData: boolean
 }
@@ -157,22 +168,18 @@ export default function CreditsPage() {
           </div>
           <h2 className="text-lg font-semibold">No credit data yet</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
-            Credit balance tracking activates automatically when your AI provider includes
-            balance or cost headers in API responses. Providers like OpenRouter expose this data by default.
+            Credit balance monitoring works two ways: automatically from SDK response headers,
+            or by connecting your provider accounts for billing API access.
           </p>
-          <div className="mt-6 rounded-lg border border-border bg-surface p-4 text-left text-sm">
-            <div className="font-medium text-text-primary mb-2">Supported providers</div>
-            <ul className="space-y-1 text-text-secondary text-xs">
-              <li className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-green" />
-                <span className="font-medium">OpenRouter</span> — credit balance + per-request cost
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-text-tertiary" />
-                <span>More providers coming as they add cost headers</span>
-              </li>
-            </ul>
-          </div>
+          <a
+            href="/dashboard/connections"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+            </svg>
+            Connect providers for balance monitoring
+          </a>
         </div>
       </div>
     )
@@ -192,7 +199,60 @@ export default function CreditsPage() {
         )}
       </div>
 
-      {/* Provider credit cards */}
+      {/* Connected provider balances (from billing APIs) */}
+      {data.connectedProviders && data.connectedProviders.length > 0 && (
+        <div className="mb-6">
+          <div className="mb-3 flex items-center gap-2">
+            <h2 className="text-sm font-medium text-text-secondary">Connected Providers</h2>
+            <span className="rounded-full bg-accent-light px-2 py-0.5 text-[10px] font-medium text-accent">
+              via billing API
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {data.connectedProviders.map((c) => {
+              const pct = c.creditLimit && c.balance != null
+                ? ((c.creditLimit - c.balance) / c.creditLimit) * 100
+                : null
+              const isLow = pct != null && pct >= 80
+              const isDepleted = c.balance != null && c.balance <= 0
+
+              return (
+                <div
+                  key={c.provider}
+                  className={`rounded-xl border p-4 ${isDepleted ? 'border-red/30 bg-red/5' : isLow ? 'border-yellow/30 bg-yellow/5' : 'border-border bg-white'}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium capitalize">{c.provider}</span>
+                    {isDepleted && (
+                      <span className="rounded-full bg-red/10 px-2 py-0.5 text-[10px] font-bold text-red">BLACKOUT RISK</span>
+                    )}
+                    {isLow && !isDepleted && (
+                      <span className="rounded-full bg-yellow/10 px-2 py-0.5 text-[10px] font-bold text-yellow">LOW</span>
+                    )}
+                  </div>
+                  <div className="mt-2">
+                    {c.balance != null && (
+                      <div className="text-lg font-bold">{formatCurrency(c.balance)}</div>
+                    )}
+                    {c.periodSpend != null && (
+                      <div className="text-xs text-text-tertiary">
+                        {formatCurrency(c.periodSpend)} spent this period
+                      </div>
+                    )}
+                  </div>
+                  {c.lastPolledAt && (
+                    <div className="mt-2 text-[10px] text-text-tertiary">
+                      Updated {new Date(c.lastPolledAt).toLocaleString()}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* SDK credit data (from response headers) */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {data.providers.map((p) => {
           const spent = p.creditsLimit && p.creditsRemaining != null

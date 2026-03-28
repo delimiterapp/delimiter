@@ -116,9 +116,24 @@ export async function GET(request: NextRequest) {
     },
   })
 
+  // Get connected provider billing data
+  const connections = await db.providerConnection.findMany({
+    where: { projectId, status: 'connected' },
+  })
+  const connectedProviders = connections.map((c) => ({
+    provider: c.provider,
+    balance: c.balance,
+    creditLimit: c.creditLimit,
+    periodSpend: c.periodSpend,
+    periodStart: c.periodStart,
+    lastPolledAt: c.lastPolledAt,
+    source: 'billing-api' as const,
+  }))
+
   return NextResponse.json({
     providers: providerCredits.filter(Boolean),
+    connectedProviders,
     creditAlerts,
-    hasData: providers.length > 0,
+    hasData: providers.length > 0 || connections.length > 0,
   })
 }

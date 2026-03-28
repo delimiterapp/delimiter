@@ -1,0 +1,44 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="DASHBOARD" page="CONNECTIONS">{children}</ContentLayout>
+}
+
+# Provider Connections
+
+Connect your AI provider accounts to monitor credit balances and prevent blackouts from depleted funds.
+
+## How it works
+
+Delimiter uses **Pipedream Connect** as a credential broker. When you connect a provider:
+
+1. You authenticate directly with the provider via Pipedream's embedded auth flow
+2. Delimiter never sees or stores your credentials
+3. Pipedream securely proxies read-only billing API calls on your behalf
+4. Delimiter receives only billing data (balances, spend) — never API keys
+
+## Supported providers
+
+| Provider | Key Type | Capabilities |
+|----------|----------|-------------|
+| **OpenAI** | Admin API Key | Credit balance, period spend |
+| **Anthropic** | Admin API Key | Credit balance, period spend |
+| **OpenRouter** | API Key | Credit balance, period spend |
+| **xAI (Grok)** | Management Key (Read-only) | Credit balance |
+
+More providers are added regularly.
+
+## Connecting a provider
+
+1. Go to **Dashboard → Connections**
+2. Click **Connect** next to the provider
+3. Authenticate with the provider in the Pipedream popup
+4. Click **Refresh** to fetch initial billing data
+
+Once connected, billing data is polled automatically every 15–30 minutes.
+
+## Security
+
+- **Your keys stay with you.** You authenticate directly with each provider through Pipedream Connect. Delimiter never receives your API keys or credentials.
+- **Read-only access.** Delimiter only requests billing/usage data — it cannot create API keys, make API calls on your behalf, or modify your account.
+- **Disconnect anytime.** Click Disconnect to immediately revoke access. The Pipedream token is invalidated.

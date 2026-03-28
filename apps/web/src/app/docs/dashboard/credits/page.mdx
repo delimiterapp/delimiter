@@ -1,0 +1,42 @@
+import { ContentLayout } from '@/components/docs/content-layout'
+
+export default function Layout({ children }) {
+  return <ContentLayout section="DASHBOARD" page="CREDITS">{children}</ContentLayout>
+}
+
+# Credits
+
+The Credits page shows credit balance data from two sources: SDK response headers and connected provider billing APIs.
+
+## SDK Credit Data
+
+For providers that include credit information in response headers (e.g., OpenRouter), the SDK automatically parses and reports:
+
+- **Credits Remaining** — Current balance
+- **Credits Limit** — Total credit limit
+- **Request Cost** — Cost of the last API call
+- **24h Spend** — Total spend over the last 24 hours
+- **Burn Rate** — Dollars per hour based on recent usage
+- **Projected Depletion** — Estimated time until credits hit zero at the current burn rate
+
+Each provider gets a health ring showing balance usage percentage: green (under 50%), yellow (50–80%), red (above 80%).
+
+## Connected Provider Balances
+
+When you connect provider accounts via the **Connections** page, the Credits page also shows billing API data:
+
+- **Balance** — Current credit balance from the provider's billing API
+- **Period Spend** — How much has been spent in the current billing period
+- **BLACKOUT RISK** badge — Appears when balance is at or near zero
+- **LOW** badge — Appears when 80%+ of credits are consumed
+
+Connected provider data is polled every 15–30 minutes, compared to the SDK's real-time header data.
+
+## Alerts
+
+Credit balance alerts use the same threshold system as rate limits:
+
+- **Warning** at 70% of credits consumed
+- **Critical** at 90% of credits consumed
+
+These thresholds are configurable in your project settings.
