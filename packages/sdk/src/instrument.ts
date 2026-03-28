@@ -1,6 +1,6 @@
 import type { DelimiterConfig } from './types'
 import { detectProvider } from './providers'
-import { parseHeaders, hasLimits } from './headers'
+import { parseHeaders, hasLimits, parseCredits, hasCredits } from './headers'
 import { sendReport, setOriginalFetch } from './reporter'
 
 // Store originals for restore()
@@ -74,9 +74,11 @@ function patchFetch(config: DelimiterConfig): void {
 
     return _originalFetch!.call(globalThis, input, init).then((response: Response) => {
       try {
-        const limits = parseHeaders(provider, fetchHeaderGetter(response))
+        const getter = fetchHeaderGetter(response)
+        const limits = parseHeaders(provider, getter)
+        const credits = parseCredits(provider, getter)
         if (config.debug) {
-          console.log(`[delimiter] intercepted fetch to ${provider}`, { url, model, hasLimits: hasLimits(limits), limits })
+          console.log(`[delimiter] intercepted fetch to ${provider}`, { url, model, hasLimits: hasLimits(limits), limits, credits })
         }
         sendReport(config, {
           app: config.app,
@@ -84,6 +86,7 @@ function patchFetch(config: DelimiterConfig): void {
           model,
           timestamp: new Date().toISOString(),
           limits,
+          credits: hasCredits(credits) ? credits : null,
         })
       } catch {
         // Never interfere with the response
@@ -170,9 +173,11 @@ function patchNodeHttp(config: DelimiterConfig): void {
           try {
             const bodyStr = bodyChunks.length > 0 ? Buffer.concat(bodyChunks).toString('utf-8') : null
             const model = extractModel(bodyStr)
-            const limits = parseHeaders(provider, nodeHeaderGetter(res.headers))
+            const getter = nodeHeaderGetter(res.headers)
+            const limits = parseHeaders(provider, getter)
+            const credits = parseCredits(provider, getter)
             if (config.debug) {
-              console.log(`[delimiter] intercepted http request to ${provider}`, { url, model, hasLimits: hasLimits(limits), limits })
+              console.log(`[delimiter] intercepted http request to ${provider}`, { url, model, hasLimits: hasLimits(limits), limits, credits })
             }
             sendReport(config, {
               app: config.app,
@@ -180,6 +185,7 @@ function patchNodeHttp(config: DelimiterConfig): void {
               model,
               timestamp: new Date().toISOString(),
               limits,
+              credits: hasCredits(credits) ? credits : null,
             })
           } catch {
             // Never interfere with the response

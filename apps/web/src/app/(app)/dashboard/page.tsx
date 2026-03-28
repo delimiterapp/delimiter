@@ -15,10 +15,17 @@ type ProviderData = {
   overallUsage: number | null
 }
 
+type CreditSummary = {
+  provider: string
+  creditsRemaining: number
+  creditsLimit: number | null
+}
+
 type OverviewData = {
   providers: ProviderData[]
   apps: string[]
   recentAlerts: number
+  creditSummary: CreditSummary[]
   hasData: boolean
 }
 
@@ -109,6 +116,40 @@ delimiter.init('${activeProject.key}')`}
           </Link>
         )}
       </div>
+
+      {/* Credit balance banner */}
+      {data?.creditSummary && data.creditSummary.length > 0 && (
+        <Link
+          href="/dashboard/credits"
+          className="mb-6 flex items-center gap-4 rounded-xl border border-border bg-white p-4 transition-colors hover:border-accent/20"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-light">
+            <svg className="h-4.5 w-4.5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+            </svg>
+          </div>
+          <div className="flex flex-1 items-center gap-6">
+            {data.creditSummary.map((c) => {
+              const pct = c.creditsLimit ? ((c.creditsLimit - c.creditsRemaining) / c.creditsLimit) * 100 : null
+              const isLow = pct != null && pct >= 80
+              return (
+                <div key={c.provider} className="flex items-center gap-2">
+                  <span className="text-xs font-medium capitalize text-text-secondary">{c.provider}</span>
+                  <span className={`text-sm font-semibold ${isLow ? 'text-red' : ''}`}>
+                    ${c.creditsRemaining.toFixed(2)}
+                  </span>
+                  {isLow && (
+                    <span className="rounded-full bg-red/10 px-1.5 py-0.5 text-[10px] font-medium text-red">Low</span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+          <svg className="h-4 w-4 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+        </Link>
+      )}
 
       {/* Provider health cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

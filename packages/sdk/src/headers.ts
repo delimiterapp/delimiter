@@ -1,4 +1,4 @@
-import type { HeaderGetter, RateLimits } from './types'
+import type { HeaderGetter, RateLimits, UsageCredits } from './types'
 
 /** Parse a duration string like "43s", "1m30s", "2h" into milliseconds */
 function parseDuration(str: string): number | null {
@@ -94,4 +94,51 @@ export function parseHeaders(provider: string, get: HeaderGetter): RateLimits {
  */
 export function hasLimits(limits: RateLimits): boolean {
   return Object.values(limits).some((v) => v !== null)
+}
+
+// ─── Credit / balance header parsing ─────────────────────────────────
+
+/**
+ * OpenRouter exposes credit balance via OpenAI-style headers:
+ *   x-ratelimit-limit-credits, x-ratelimit-remaining-credits
+ * Also reports per-request cost via x-request-cost or x-usage-cost.
+ */
+function parseOpenRouterCredits(get: HeaderGetter): UsageCredits {
+  return {
+    credits_limit: num(get('x-ratelimit-limit-credits')),
+    credits_remaining: num(get('x-ratelimit-remaining-credits')),
+    request_cost: num(get('x-request-cost')) ?? num(get('x-usage-cost')),
+  }
+}
+
+/**
+ * Generic credit parser — checks common header patterns across providers.
+ * Many providers are starting to include cost/credit headers.
+ */
+function parseGenericCredits(get: HeaderGetter): UsageCredits {
+  return {
+    credits_limit: num(get('x-ratelimit-limit-credits')) ?? num(get('x-credits-limit')),
+    credits_remaining: num(get('x-ratelimit-remaining-credits')) ?? num(get('x-credits-remaining')),
+    request_cost: num(get('x-request-cost')) ?? num(get('x-usage-cost')) ?? num(get('x-cost')),
+  }
+}
+
+/** Provider → credit parser mapping */
+const CREDIT_PARSERS: Record<string, (get: HeaderGetter) => UsageCredits> = {
+  openrouter: parseOpenRouterCredits,
+}
+
+/**
+ * Parse credit/balance headers from a response for the given provider.
+ */
+export function parseCredits(provider: string, get: HeaderGetter): UsageCredits {
+  const parser = CREDIT_PARSERS[provider] ?? parseGenericCredits
+  return parser(get)
+}
+
+/**
+ * Check if the parsed credits contain any meaningful data.
+ */
+export function hasCredits(credits: UsageCredits): boolean {
+  return Object.values(credits).some((v) => v !== null)
 }

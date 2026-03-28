@@ -1,12 +1,12 @@
 import type { DelimiterConfig, DelimiterOptions, RateLimitReport } from './types'
 import { instrument, restore } from './instrument'
 import { detectProviderFromClient } from './providers'
-import { parseHeaders, hasLimits } from './headers'
+import { parseHeaders, hasLimits, parseCredits, hasCredits } from './headers'
 import { sendReport } from './reporter'
 import { sendProviderHints } from './hints'
 
 // Re-export types for consumers
-export type { DelimiterOptions, RateLimitReport, RateLimits } from './types'
+export type { DelimiterOptions, RateLimitReport, RateLimits, UsageCredits } from './types'
 
 let _config: DelimiterConfig | null = null
 
@@ -181,7 +181,8 @@ function interceptWrapResponse(
   if (!headerGetter) return
 
   const limits = parseHeaders(provider, headerGetter)
-  if (!hasLimits(limits)) return
+  const credits = parseCredits(provider, headerGetter)
+  if (!hasLimits(limits) && !hasCredits(credits)) return
 
   // Extract model from the first argument (usually the params object)
   let model: string | null = null
@@ -203,5 +204,6 @@ function interceptWrapResponse(
     model,
     timestamp: new Date().toISOString(),
     limits,
+    credits: hasCredits(credits) ? credits : null,
   })
 }
