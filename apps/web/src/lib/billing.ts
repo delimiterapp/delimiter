@@ -19,6 +19,39 @@ export interface BillingSnapshot {
 }
 
 /**
+ * Extract a user-friendly error message from a Pipedream proxy error.
+ * Pipedream SDK throws PipedreamError with raw status codes and response bodies.
+ * We parse these to surface the upstream provider's actual error message.
+ */
+function extractProxyErrorMessage(err: unknown): string {
+  if (!(err instanceof Error)) return 'Unknown error'
+
+  // PipedreamError has a `body` property with the upstream response
+  const pdErr = err as Error & { statusCode?: number; body?: unknown }
+
+  if (pdErr.body && typeof pdErr.body === 'object') {
+    const body = pdErr.body as Record<string, unknown>
+
+    // Provider error format (Anthropic/OpenAI): { error: { type, message } }
+    if (body.error && typeof body.error === 'object') {
+      const nested = body.error as Record<string, unknown>
+      if (typeof nested.message === 'string') {
+        if (nested.type === 'authentication_error') {
+          return `Authentication failed: ${nested.message}. Ensure you are using an Admin API Key (not a regular API key).`
+        }
+        return `${nested.type}: ${nested.message}`
+      }
+    }
+
+    // Generic message field
+    if (typeof body.message === 'string') return body.message
+  }
+
+  // Fall back to the raw Error message but clean up the PipedreamError format
+  return err.message
+}
+
+/**
  * Call an external API via Pipedream Connect Proxy.
  * Pipedream injects the user's stored credentials automatically.
  */
@@ -29,13 +62,17 @@ async function proxyGet(
   headers?: Record<string, string>,
 ): Promise<unknown> {
   const pd = getPipedreamClient()
-  const resp = await pd.proxy.get({
-    externalUserId,
-    accountId,
-    url,
-    headers: headers ?? {},
-  })
-  return resp
+  try {
+    const resp = await pd.proxy.get({
+      externalUserId,
+      accountId,
+      url,
+      headers: headers ?? {},
+    })
+    return resp
+  } catch (err) {
+    throw new Error(extractProxyErrorMessage(err))
+  }
 }
 
 // ─── Provider-specific billing fetchers ──────────────────────────

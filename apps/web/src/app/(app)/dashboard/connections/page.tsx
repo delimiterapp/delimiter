@@ -103,6 +103,16 @@ export default function ConnectionsPage() {
             }),
           })
 
+          // Auto-poll to verify the connection works immediately
+          await fetch('/api/connections/poll', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              projectId: activeProject.id,
+              provider: providerId,
+            }),
+          })
+
           // Refresh connections list
           const res = await fetch(`/api/connections?projectId=${activeProject.id}`)
           const updated = await res.json()
