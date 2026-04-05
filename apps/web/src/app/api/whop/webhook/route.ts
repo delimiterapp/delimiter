@@ -55,36 +55,48 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
-  const event = JSON.parse(body)
+  let event: Record<string, unknown>
+  try {
+    event = JSON.parse(body)
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
   // Whop uses "action" in v5 SDK format
-  const eventType = event.action || event.event
+  const eventType = (event.action || event.event) as string | undefined
+
+  const data = event.data as Record<string, unknown> | undefined
+  const metadata = data?.metadata as Record<string, unknown> | undefined
 
   // Handle payment/membership completion
   if (eventType === 'membership.went_valid' || eventType === 'payment.succeeded') {
-    // metadata is on the membership/payment data object
-    const userId = event.data?.metadata?.user_id
-    if (userId) {
-      try {
-        await db.user.update({
-          where: { id: userId },
-          data: {
-            plan: 'pro',
-            onboardingComplete: true,
-          },
-        })
-        console.log(`Upgraded user ${userId} to pro via Whop webhook`)
-      } catch (err) {
-        console.error(`Failed to upgrade user ${userId}:`, err)
-      }
-    } else {
-      console.warn('Whop webhook received but no user_id in metadata:', JSON.stringify(event.data?.metadata))
+    const userId = metadata?.user_id as string | undefined
+    if (!userId) {
+      console.error('Whop webhook missing user_id in metadata — payment may not be attributed:', JSON.stringify(metadata))
+      return NextResponse.json(
+        { error: 'Missing user_id in metadata' },
+        { status: 422 }
+      )
+    }
+
+    try {
+      await db.user.update({
+        where: { id: userId },
+        data: {
+          plan: 'pro',
+          onboardingComplete: true,
+        },
+      })
+      console.log(`Upgraded user ${userId} to pro via Whop webhook`)
+    } catch (err) {
+      console.error(`Failed to upgrade user ${userId}:`, err)
+      return NextResponse.json({ error: 'Failed to upgrade user' }, { status: 500 })
     }
   }
 
   // Handle cancellation/expiry
   if (eventType === 'membership.went_invalid') {
-    const userId = event.data?.metadata?.user_id
+    const userId = metadata?.user_id as string | undefined
     if (userId) {
       try {
         await db.user.update({
@@ -94,6 +106,7 @@ export async function POST(req: NextRequest) {
         console.log(`Downgraded user ${userId} to free via Whop webhook`)
       } catch (err) {
         console.error(`Failed to downgrade user ${userId}:`, err)
+        return NextResponse.json({ error: 'Failed to downgrade user' }, { status: 500 })
       }
     }
   }
