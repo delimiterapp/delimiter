@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { randomBytes } from 'crypto'
-import { cookies } from 'next/headers'
 
 export async function GET() {
   const clientId = process.env.GITHUB_CLIENT_ID
@@ -10,15 +9,6 @@ export async function GET() {
 
   const state = randomBytes(32).toString('hex')
 
-  const cookieStore = await cookies()
-  cookieStore.set('oauth_state', state, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 10, // 10 minutes
-    path: '/',
-  })
-
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/github/callback`,
@@ -26,5 +16,14 @@ export async function GET() {
     state,
   })
 
-  return NextResponse.redirect(`https://github.com/login/oauth/authorize?${params}`)
+  const response = NextResponse.redirect(`https://github.com/login/oauth/authorize?${params}`)
+  response.cookies.set('oauth_state', state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 10,
+    path: '/',
+  })
+
+  return response
 }

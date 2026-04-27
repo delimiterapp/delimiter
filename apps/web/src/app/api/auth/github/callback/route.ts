@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { db } from '@/lib/db'
-import { createSession } from '@/lib/session'
+import { createSessionToken, SESSION_COOKIE_OPTIONS } from '@/lib/session'
 import { generateProjectKey } from '@/lib/project-key'
 
 export async function GET(request: NextRequest) {
@@ -13,10 +13,11 @@ export async function GET(request: NextRequest) {
   // Verify state
   const cookieStore = await cookies()
   const storedState = cookieStore.get('oauth_state')?.value
-  cookieStore.delete('oauth_state')
 
   if (!code || !state || state !== storedState) {
-    return NextResponse.redirect(`${appUrl}/sign-in?error=invalid_state`)
+    const errorResponse = NextResponse.redirect(`${appUrl}/sign-in?error=invalid_state`)
+    errorResponse.cookies.delete('oauth_state')
+    return errorResponse
   }
 
   // Exchange code for access token
@@ -108,8 +109,11 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  await createSession(user.id)
+  const sessionToken = await createSessionToken(user.id)
 
   const redirectTo = user.onboardingComplete ? '/dashboard' : '/onboarding'
-  return NextResponse.redirect(`${appUrl}${redirectTo}`)
+  const response = NextResponse.redirect(`${appUrl}${redirectTo}`)
+  response.cookies.set('session', sessionToken, SESSION_COOKIE_OPTIONS)
+  response.cookies.delete('oauth_state')
+  return response
 }
