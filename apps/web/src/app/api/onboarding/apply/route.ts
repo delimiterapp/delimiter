@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     where: { id: session.userId },
     data: {
       plan: 'free',
-      onboardingComplete: true,
       orgName,
     },
   })
