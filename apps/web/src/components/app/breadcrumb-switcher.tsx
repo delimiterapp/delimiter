@@ -148,7 +148,7 @@ export function BreadcrumbSwitcher() {
               </div>
               <h2 className="text-xl font-bold">Upgrade to Pro</h2>
               <p className="mt-2 text-sm text-text-secondary">
-                The free plan includes 1 project. Upgrade to create unlimited projects and unlock higher event limits.
+                The free plan includes 1 project. Upgrade to create unlimited projects and deeper provider monitoring.
               </p>
             </div>
 
@@ -161,7 +161,7 @@ export function BreadcrumbSwitcher() {
                 </div>
               </div>
               <ul className="mt-4 space-y-2.5">
-                {['Unlimited projects', 'Unlimited providers & API keys', '50,000 events/month', 'Fallback chains', 'Slack, webhook & email alerts', 'Priority support'].map((f) => (
+                {['Unlimited projects', 'Unlimited providers and keys', 'Advanced provider sync', 'Spend and rate-limit alerts', 'Slack, webhook and email alerts', 'Priority support'].map((f) => (
                   <li key={f} className="flex items-center gap-2 text-sm text-text-secondary">
                     <svg className="h-4 w-4 shrink-0 text-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />

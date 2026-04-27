@@ -10,9 +10,7 @@ const navItems = [
   { label: 'Providers', href: '/dashboard/providers', icon: 'providers' },
   { label: 'Spend', href: '/dashboard/spend', icon: 'credits' },
   { label: 'Connections', href: '/dashboard/connections', icon: 'connections' },
-  { label: 'Fallbacks', href: '/dashboard/fallbacks', icon: 'fallbacks' },
   { label: 'Alerts', href: '/dashboard/alerts', icon: 'alerts' },
-  { label: 'Logs', href: '/dashboard/logs', icon: 'logs' },
 ]
 
 function NavIcon({ icon, className }: { icon: string; className: string }) {
@@ -41,22 +39,10 @@ function NavIcon({ icon, className }: { icon: string; className: string }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
         </svg>
       )
-    case 'fallbacks':
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-        </svg>
-      )
     case 'alerts':
       return (
         <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-        </svg>
-      )
-    case 'logs':
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       )
     case 'settings':

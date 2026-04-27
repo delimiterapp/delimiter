@@ -134,6 +134,6 @@ export async function GET(request: NextRequest) {
     providers: providerCredits.filter(Boolean),
     connectedProviders,
     creditAlerts,
-    hasData: providers.length > 0 || connections.length > 0,
+    hasData: connections.length > 0,
   })
 }

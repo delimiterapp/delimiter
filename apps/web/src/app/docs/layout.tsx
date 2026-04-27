@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     default: 'Docs',
     template: '%s — Delimiter Docs',
   },
-  description: 'Developer documentation for Delimiter — AI rate limit monitoring SDK',
+  description: 'Developer documentation for Delimiter provider monitoring',
 }
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {

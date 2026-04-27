@@ -65,11 +65,10 @@ export default function SettingsPage() {
       <h1 className="mb-6 text-lg font-semibold">Settings</h1>
 
       <div className="space-y-6">
-        {/* Project key */}
         <div className="rounded-xl border border-border bg-white p-5">
-          <h2 className="text-sm font-medium">Project Key</h2>
+          <h2 className="text-sm font-medium">Workspace Key</h2>
           <p className="mt-1 text-xs text-text-tertiary">
-            Use this key to initialize the Delimiter SDK.
+            Advanced telemetry key. Provider spend monitoring does not require this key.
           </p>
           <div className="mt-3 flex items-center gap-3">
             <code className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 font-mono text-sm">
@@ -115,7 +114,7 @@ export default function SettingsPage() {
         <div className="rounded-xl border border-red/30 bg-white p-5">
           <h2 className="text-sm font-medium text-red">Danger Zone</h2>
           <p className="mt-1 text-xs text-text-tertiary">
-            Deleting a project removes all associated data, alerts, and fallback configurations.
+            Deleting a project removes all associated provider connections, alerts, and stored snapshots.
           </p>
           <div className="mt-3">
             {confirmDelete ? (

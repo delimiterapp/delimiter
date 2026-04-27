@@ -1,0 +1,339 @@
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { useApp } from '@/components/app/app-context'
+import { ProviderLogo } from '@/components/app/provider-logo'
+import { capabilityLabel, getProvider } from '@/lib/provider-catalog'
+
+type ProviderKeyInfo = {
+  id: string
+  provider: string
+  label: string | null
+  status: string
+  lastValidatedAt: string | null
+}
+
+type Connection = {
+  id: string
+  provider: string
+  status: string
+  lastPolledAt: string | null
+  lastError: string | null
+  balance: number | null
+  creditLimit: number | null
+  periodSpend: number | null
+  periodStart: string | null
+}
+
+function formatCurrency(value: number | null): string {
+  if (value == null) return '—'
+  return `$${value.toFixed(2)}`
+}
+
+export default function ProviderConnectionPage() {
+  const { activeProject } = useApp()
+  const params = useParams<{ provider: string }>()
+  const providerId = params.provider
+  const provider = getProvider(providerId)
+
+  const [key, setKey] = useState<ProviderKeyInfo | null>(null)
+  const [connection, setConnection] = useState<Connection | null>(null)
+  const [credential, setCredential] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [connecting, setConnecting] = useState(false)
+  const [polling, setPolling] = useState(false)
+  const [removing, setRemoving] = useState(false)
+  const [error, setError] = useState('')
+
+  const isAws = providerId === 'bedrock'
+  const isConnected = key?.status === 'valid' && connection?.status === 'connected'
+
+  async function refresh() {
+    if (!activeProject || !provider) return
+    const response = await fetch(`/api/provider-keys?projectId=${activeProject.id}`)
+    const data = await response.json()
+    setKey((data.keys ?? []).find((item: ProviderKeyInfo) => item.provider === provider.id) ?? null)
+    setConnection((data.connections ?? []).find((item: Connection) => item.provider === provider.id) ?? null)
+  }
+
+  useEffect(() => {
+    if (!activeProject || !provider) return
+    setLoading(true)
+    refresh().finally(() => setLoading(false))
+  }, [activeProject?.id, provider?.id])
+
+  async function handleConnect() {
+    if (!activeProject || !provider || !credential.trim()) return
+    setConnecting(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/provider-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: activeProject.id,
+          provider: provider.id,
+          apiKey: credential.trim(),
+        }),
+      })
+      const data = await response.json()
+
+      if (!response.ok || data.providerKey?.status !== 'valid') {
+        throw new Error(data.error || 'Could not connect provider')
+      }
+
+      setCredential('')
+      await refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Connection failed')
+    } finally {
+      setConnecting(false)
+    }
+  }
+
+  async function handlePoll() {
+    if (!activeProject || !provider) return
+    setPolling(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/connections/poll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: activeProject.id, provider: provider.id }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Sync failed')
+      await refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sync failed')
+    } finally {
+      setPolling(false)
+    }
+  }
+
+  async function handleDisconnect() {
+    if (!activeProject || !provider) return
+    setRemoving(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/provider-keys', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: activeProject.id, provider: provider.id }),
+      })
+      if (!response.ok) throw new Error('Could not disconnect provider')
+      setKey(null)
+      setConnection(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not disconnect provider')
+    } finally {
+      setRemoving(false)
+    }
+  }
+
+  const metricCards = useMemo(() => {
+    if (!connection) return []
+    return [
+      { label: 'Period Spend', value: formatCurrency(connection.periodSpend) },
+      { label: 'Balance', value: formatCurrency(connection.balance) },
+      { label: 'Credit Limit', value: formatCurrency(connection.creditLimit) },
+      { label: 'Last Sync', value: connection.lastPolledAt ? new Date(connection.lastPolledAt).toLocaleString() : 'Pending' },
+    ]
+  }, [connection])
+
+  if (!provider) {
+    return (
+      <div className="flex h-full items-center justify-center p-8">
+        <div className="text-center">
+          <h1 className="text-lg font-semibold">Provider not found</h1>
+          <Link href="/dashboard/connections" className="mt-4 inline-flex rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-white">
+            Back to connections
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center p-8">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-full bg-surface">
+      <div className="mx-auto max-w-5xl p-4 md:p-8">
+        <Link href="/dashboard/connections" className="mb-6 inline-flex items-center gap-1 text-sm text-text-secondary transition-colors hover:text-text-primary">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          </svg>
+          Connections
+        </Link>
+
+        <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
+          <div className="border-b border-border bg-white px-6 py-10 text-center md:px-10">
+            <div className="mx-auto flex max-w-md items-center justify-center gap-4">
+              <div className="relative">
+                <ProviderLogo providerId={provider.id} size="xl" />
+                <div className="absolute inset-0 animate-ping rounded-xl border border-accent/20" />
+              </div>
+              <div className="flex flex-1 items-center gap-1">
+                <div className="h-px flex-1 bg-border" />
+                <div className="h-2 w-2 rounded-full bg-accent" />
+                <div className="h-px flex-1 bg-border" />
+              </div>
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-border bg-white shadow-sm">
+                <img src="/logo.png" alt="Delimiter" className="h-7 w-auto" />
+              </div>
+            </div>
+            <h1 className="mt-8 text-2xl font-semibold tracking-tight">Connect {provider.name}</h1>
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-text-secondary">{provider.description}</p>
+            <div className="mt-4 flex flex-wrap justify-center gap-1.5">
+              {provider.capabilities.map((capability) => (
+                <span key={capability} className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-medium text-text-secondary">
+                  {capabilityLabel(capability)}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-0 md:grid-cols-[1fr_360px]">
+            <div className="p-6 md:p-8">
+              {isConnected ? (
+                <div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green/10 text-green">
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-base font-semibold">{provider.name} is connected</h2>
+                      <p className="mt-0.5 text-sm text-text-secondary">Delimiter will sync reporting data from this provider.</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {metricCards.map((card) => (
+                      <div key={card.label} className="rounded-xl border border-border bg-surface/50 p-4">
+                        <div className="text-xs font-medium text-text-tertiary">{card.label}</div>
+                        <div className="mt-1 text-sm font-semibold">{card.value}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {provider.statusNote && (
+                    <div className="mt-5 rounded-lg border border-yellow/20 bg-yellow/5 px-4 py-3 text-xs leading-5 text-text-secondary">
+                      {provider.statusNote}
+                    </div>
+                  )}
+
+                  {connection?.lastError && (
+                    <div className="mt-5 rounded-lg bg-red/5 px-4 py-3 text-xs leading-5 text-red">{connection.lastError}</div>
+                  )}
+
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <button
+                      onClick={handlePoll}
+                      disabled={polling}
+                      className="rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-text-primary/90 disabled:opacity-50"
+                    >
+                      {polling ? 'Syncing...' : 'Sync now'}
+                    </button>
+                    <button
+                      onClick={handleDisconnect}
+                      disabled={removing}
+                      className="rounded-lg border border-red/30 px-4 py-2 text-sm font-medium text-red transition-colors hover:bg-red/5 disabled:opacity-50"
+                    >
+                      {removing ? 'Disconnecting...' : 'Disconnect'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <h2 className="text-base font-semibold">Add monitoring credential</h2>
+                  <p className="mt-1 text-sm leading-6 text-text-secondary">{provider.keyHint}</p>
+
+                  <div className="mt-5">
+                    <label className="mb-1.5 block text-sm font-medium">{provider.keyType}</label>
+                    {isAws ? (
+                      <textarea
+                        value={credential}
+                        onChange={(event) => setCredential(event.target.value)}
+                        placeholder="Paste role ARN or read-only credential JSON"
+                        rows={7}
+                        className="w-full resize-none rounded-lg border border-border bg-white px-3.5 py-2.5 font-mono text-sm transition-colors focus:border-accent focus:outline-none"
+                        autoFocus
+                      />
+                    ) : (
+                      <input
+                        type="password"
+                        value={credential}
+                        onChange={(event) => setCredential(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' && credential.trim()) handleConnect()
+                        }}
+                        placeholder={`Paste your ${provider.keyType}`}
+                        className="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm transition-colors focus:border-accent focus:outline-none"
+                        autoFocus
+                      />
+                    )}
+                  </div>
+
+                  <div className="mt-4 rounded-lg border border-border/70 bg-surface/50 px-4 py-3 text-xs leading-5 text-text-secondary">
+                    {provider.securityNote}
+                  </div>
+
+                  {error && <div className="mt-4 rounded-lg bg-red/5 px-4 py-3 text-xs text-red">{error}</div>}
+
+                  <button
+                    onClick={handleConnect}
+                    disabled={!credential.trim() || connecting}
+                    className="shine-hover mt-6 rounded-lg bg-text-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90 disabled:opacity-40"
+                  >
+                    {connecting ? 'Connecting...' : `Connect ${provider.name}`}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <aside className="border-t border-border bg-surface/60 p-6 md:border-l md:border-t-0 md:p-8">
+              <h2 className="text-sm font-semibold">Setup checklist</h2>
+              <ol className="mt-4 space-y-3">
+                {provider.setupSteps.map((step, index) => (
+                  <li key={step} className="flex gap-3 text-sm leading-6 text-text-secondary">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold text-text-primary ring-1 ring-border">
+                      {index + 1}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="mt-6 rounded-xl border border-border bg-white p-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">What Delimiter tracks</div>
+                <div className="mt-3 space-y-2">
+                  {provider.capabilities.map((capability) => (
+                    <div key={capability} className="flex items-center gap-2 text-sm text-text-secondary">
+                      <svg className="h-4 w-4 text-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                      </svg>
+                      {capabilityLabel(capability)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

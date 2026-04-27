@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     template: '%s — Delimiter',
   },
   description:
-    'Know your AI rate limits before your app does. Three lines of code. Every provider. One dashboard.',
+    'Monitor AI spend, usage, balances, and rate limits across every provider.',
   icons: {
     icon: '/icon.png',
   },

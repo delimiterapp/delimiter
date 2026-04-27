@@ -95,11 +95,31 @@ export async function GET(request: NextRequest) {
     })
   )
 
+  const connections = await db.providerConnection.findMany({
+    where: { projectId },
+    orderBy: { createdAt: 'asc' },
+  })
+
+  const connectedProviders = connections.map((connection) => ({
+    provider: connection.provider,
+    status: connection.status,
+    balance: connection.balance,
+    creditLimit: connection.creditLimit,
+    periodSpend: connection.periodSpend,
+    periodStart: connection.periodStart,
+    lastPolledAt: connection.lastPolledAt,
+    lastError: connection.lastError,
+  }))
+
+  const totalPeriodSpend = connections.reduce((sum, connection) => sum + (connection.periodSpend ?? 0), 0)
+
   return NextResponse.json({
     providers: providerData.filter(Boolean),
     apps: apps.map((a) => a.app),
     recentAlerts,
     creditSummary: creditSummary.filter(Boolean),
-    hasData: providers.length > 0,
+    connectedProviders,
+    totalPeriodSpend,
+    hasData: connections.length > 0,
   })
 }

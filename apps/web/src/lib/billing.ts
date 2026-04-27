@@ -1,3 +1,5 @@
+import { PROVIDER_CATALOG } from './provider-catalog'
+
 export interface BillingSnapshot {
   balance: number | null
   creditLimit: number | null
@@ -111,43 +113,27 @@ async function pollXAI(apiKey: string): Promise<BillingSnapshot> {
   }
 }
 
+async function pollPendingProvider(apiKey: string): Promise<BillingSnapshot> {
+  if (!apiKey.trim()) throw new Error('Credential is required')
+
+  return {
+    balance: null,
+    creditLimit: null,
+    periodSpend: null,
+    periodStart: null,
+  }
+}
+
 const POLLERS: Record<string, (apiKey: string) => Promise<BillingSnapshot>> = {
   openai: pollOpenAI,
   anthropic: pollAnthropic,
   openrouter: pollOpenRouter,
   xai: pollXAI,
+  google: pollPendingProvider,
+  bedrock: pollPendingProvider,
 }
 
-export const SUPPORTED_PROVIDERS = [
-  {
-    id: 'openai',
-    name: 'OpenAI',
-    keyType: 'Admin API Key',
-    keyHint: 'Generate at platform.openai.com/settings/organization/admin-keys',
-    capabilities: ['period_spend'],
-  },
-  {
-    id: 'anthropic',
-    name: 'Anthropic',
-    keyType: 'Admin API Key',
-    keyHint: 'Generate in Claude Console under Organization Settings',
-    capabilities: ['period_spend'],
-  },
-  {
-    id: 'openrouter',
-    name: 'OpenRouter',
-    keyType: 'API Key',
-    keyHint: 'Available at openrouter.ai/settings/keys',
-    capabilities: ['balance', 'period_spend'],
-  },
-  {
-    id: 'xai',
-    name: 'xAI (Grok)',
-    keyType: 'Management Key (Read-only)',
-    keyHint: 'Generate at console.x.ai with Read permission',
-    capabilities: ['balance'],
-  },
-] as const
+export const SUPPORTED_PROVIDERS = PROVIDER_CATALOG
 
 export type SupportedProviderId = typeof SUPPORTED_PROVIDERS[number]['id']
 
