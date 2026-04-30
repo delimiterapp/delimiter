@@ -14,13 +14,18 @@ export interface CreditBalanceContext {
 }
 
 async function fetchOpenAISpend(apiKey: string, sinceTs: number, untilTs: number): Promise<number> {
+  if (sinceTs >= untilTs) return 0
+
   const headers = { Authorization: `Bearer ${apiKey}` }
   let spend = 0
   let url: string | null = `https://api.openai.com/v1/organization/costs?start_time=${sinceTs}&end_time=${untilTs}&bucket_width=1d&limit=30`
 
   while (url) {
     const res = await fetch(url, { headers })
-    if (!res.ok) throw new Error(`OpenAI API error: ${res.status}`)
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      throw new Error(`OpenAI API error: ${res.status} ${body}`.trim())
+    }
 
     const page = await res.json() as {
       data?: { results?: { amount?: { value?: number } }[] }[]
@@ -61,23 +66,32 @@ async function pollOpenAI(apiKey: string, creditCtx?: CreditBalanceContext): Pro
   startOfMonth.setHours(0, 0, 0, 0)
   const monthStart = Math.floor(startOfMonth.getTime() / 1000)
 
-  const periodSpend = await fetchOpenAISpend(apiKey, monthStart, now)
+  let periodSpend: number | null = null
+  try {
+    periodSpend = await fetchOpenAISpend(apiKey, monthStart, now)
+  } catch {
+    // costs endpoint may require admin key
+  }
 
   let balance: number | null = null
   let creditLimit: number | null = null
   if (creditCtx) {
     creditLimit = creditCtx.creditBalanceEntry
-    const sinceTs = Math.floor(creditCtx.creditBalanceAsOf.getTime() / 1000)
-    if (sinceTs >= monthStart && sinceTs < now) {
-      balance = creditCtx.creditBalanceEntry - periodSpend
-    } else if (sinceTs >= now) {
+    if (periodSpend == null) {
       balance = creditCtx.creditBalanceEntry
     } else {
-      try {
-        const spendSince = await fetchOpenAISpend(apiKey, sinceTs, now)
-        balance = creditCtx.creditBalanceEntry - spendSince
-      } catch {
+      const sinceTs = Math.floor(creditCtx.creditBalanceAsOf.getTime() / 1000)
+      if (sinceTs >= monthStart && sinceTs < now) {
         balance = creditCtx.creditBalanceEntry - periodSpend
+      } else if (sinceTs >= now) {
+        balance = creditCtx.creditBalanceEntry
+      } else {
+        try {
+          const spendSince = await fetchOpenAISpend(apiKey, sinceTs, now)
+          balance = creditCtx.creditBalanceEntry - spendSince
+        } catch {
+          balance = creditCtx.creditBalanceEntry - periodSpend
+        }
       }
     }
   }
@@ -85,19 +99,24 @@ async function pollOpenAI(apiKey: string, creditCtx?: CreditBalanceContext): Pro
   return {
     balance,
     creditLimit,
-    periodSpend: Number.isFinite(periodSpend) ? periodSpend : null,
+    periodSpend: periodSpend != null && Number.isFinite(periodSpend) ? periodSpend : null,
     periodStart: startOfMonth,
   }
 }
 
 async function fetchAnthropicSpend(apiKey: string, since: Date, until: Date): Promise<number> {
+  if (since >= until) return 0
+
   const headers = { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' }
   let spend = 0
   let url: string | null = `https://api.anthropic.com/v1/organizations/cost_report?starting_at=${since.toISOString()}&ending_at=${until.toISOString()}&bucket_width=1d&limit=100`
 
   while (url) {
     const res = await fetch(url, { headers })
-    if (!res.ok) throw new Error(`Anthropic API error: ${res.status}`)
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      throw new Error(`Anthropic API error: ${res.status} ${body}`.trim())
+    }
 
     const page = await res.json() as {
       data?: { results?: { amount?: string }[] }[]
@@ -135,13 +154,20 @@ async function pollAnthropic(apiKey: string, creditCtx?: CreditBalanceContext): 
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-  const periodSpend = await fetchAnthropicSpend(apiKey, startOfMonth, now)
+  let periodSpend: number | null = null
+  try {
+    periodSpend = await fetchAnthropicSpend(apiKey, startOfMonth, now)
+  } catch {
+    // cost_report requires admin key — if the user's key lacks permission, continue with null
+  }
 
   let balance: number | null = null
   let creditLimit: number | null = null
   if (creditCtx) {
     creditLimit = creditCtx.creditBalanceEntry
-    if (creditCtx.creditBalanceAsOf >= now) {
+    if (periodSpend == null) {
+      balance = creditCtx.creditBalanceEntry
+    } else if (creditCtx.creditBalanceAsOf >= now) {
       balance = creditCtx.creditBalanceEntry
     } else if (creditCtx.creditBalanceAsOf >= startOfMonth) {
       balance = creditCtx.creditBalanceEntry - periodSpend
@@ -158,7 +184,7 @@ async function pollAnthropic(apiKey: string, creditCtx?: CreditBalanceContext): 
   return {
     balance,
     creditLimit,
-    periodSpend: Number.isFinite(periodSpend) ? periodSpend : null,
+    periodSpend: periodSpend != null && Number.isFinite(periodSpend) ? periodSpend : null,
     periodStart: startOfMonth,
   }
 }
