@@ -68,11 +68,17 @@ async function pollOpenAI(apiKey: string, creditCtx?: CreditBalanceContext): Pro
   if (creditCtx) {
     creditLimit = creditCtx.creditBalanceEntry
     const sinceTs = Math.floor(creditCtx.creditBalanceAsOf.getTime() / 1000)
-    if (sinceTs >= now) {
+    if (sinceTs >= monthStart && sinceTs < now) {
+      balance = creditCtx.creditBalanceEntry - periodSpend
+    } else if (sinceTs >= now) {
       balance = creditCtx.creditBalanceEntry
     } else {
-      const spendSince = await fetchOpenAISpend(apiKey, sinceTs, now)
-      balance = creditCtx.creditBalanceEntry - spendSince
+      try {
+        const spendSince = await fetchOpenAISpend(apiKey, sinceTs, now)
+        balance = creditCtx.creditBalanceEntry - spendSince
+      } catch {
+        balance = creditCtx.creditBalanceEntry - periodSpend
+      }
     }
   }
 
@@ -137,9 +143,15 @@ async function pollAnthropic(apiKey: string, creditCtx?: CreditBalanceContext): 
     creditLimit = creditCtx.creditBalanceEntry
     if (creditCtx.creditBalanceAsOf >= now) {
       balance = creditCtx.creditBalanceEntry
+    } else if (creditCtx.creditBalanceAsOf >= startOfMonth) {
+      balance = creditCtx.creditBalanceEntry - periodSpend
     } else {
-      const spendSince = await fetchAnthropicSpend(apiKey, creditCtx.creditBalanceAsOf, now)
-      balance = creditCtx.creditBalanceEntry - spendSince
+      try {
+        const spendSince = await fetchAnthropicSpend(apiKey, creditCtx.creditBalanceAsOf, now)
+        balance = creditCtx.creditBalanceEntry - spendSince
+      } catch {
+        balance = creditCtx.creditBalanceEntry - periodSpend
+      }
     }
   }
 
