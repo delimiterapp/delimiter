@@ -68,8 +68,12 @@ async function pollOpenAI(apiKey: string, creditCtx?: CreditBalanceContext): Pro
   if (creditCtx) {
     creditLimit = creditCtx.creditBalanceEntry
     const sinceTs = Math.floor(creditCtx.creditBalanceAsOf.getTime() / 1000)
-    const spendSince = await fetchOpenAISpend(apiKey, sinceTs, now)
-    balance = creditCtx.creditBalanceEntry - spendSince
+    if (sinceTs >= now) {
+      balance = creditCtx.creditBalanceEntry
+    } else {
+      const spendSince = await fetchOpenAISpend(apiKey, sinceTs, now)
+      balance = creditCtx.creditBalanceEntry - spendSince
+    }
   }
 
   return {
@@ -131,8 +135,12 @@ async function pollAnthropic(apiKey: string, creditCtx?: CreditBalanceContext): 
   let creditLimit: number | null = null
   if (creditCtx) {
     creditLimit = creditCtx.creditBalanceEntry
-    const spendSince = await fetchAnthropicSpend(apiKey, creditCtx.creditBalanceAsOf, now)
-    balance = creditCtx.creditBalanceEntry - spendSince
+    if (creditCtx.creditBalanceAsOf >= now) {
+      balance = creditCtx.creditBalanceEntry
+    } else {
+      const spendSince = await fetchAnthropicSpend(apiKey, creditCtx.creditBalanceAsOf, now)
+      balance = creditCtx.creditBalanceEntry - spendSince
+    }
   }
 
   return {
@@ -253,10 +261,12 @@ async function pollBedrock(apiKey: string, creditCtx?: CreditBalanceContext): Pr
   let creditLimit: number | null = null
   if (creditCtx) {
     creditLimit = creditCtx.creditBalanceEntry
-    const sincePeriod = {
-      Start: creditCtx.creditBalanceAsOf.toISOString().split('T')[0],
-      End: endDate.toISOString().split('T')[0],
-    }
+    const sinceDay = creditCtx.creditBalanceAsOf.toISOString().split('T')[0]
+    const endDay = endDate.toISOString().split('T')[0]
+    if (sinceDay >= endDay) {
+      balance = creditCtx.creditBalanceEntry
+    } else {
+    const sincePeriod = { Start: sinceDay, End: endDay }
     try {
       const creditsResponse = await ceClient.send(new GetCostAndUsageCommand({
         TimePeriod: sincePeriod,
@@ -271,6 +281,7 @@ async function pollBedrock(apiKey: string, creditCtx?: CreditBalanceContext): Pr
       balance = creditCtx.creditBalanceEntry - creditsBurned
     } catch {
       balance = null
+    }
     }
   }
 
