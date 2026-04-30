@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function ConsolePage() {
-  redirect('/dashboard/connections')
+  redirect('/dashboard/providers')
 }

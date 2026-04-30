@@ -80,7 +80,7 @@ export default function SpendPage() {
             Connect provider reporting credentials to sync spend, balances, and billing-period usage.
           </p>
           <Link
-            href="/dashboard/connections"
+            href="/dashboard/providers"
             className="mt-6 inline-flex rounded-lg bg-text-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90"
           >
             Connect providers
@@ -97,7 +97,7 @@ export default function SpendPage() {
           <h1 className="text-lg font-semibold">Spend</h1>
           <p className="mt-1 text-sm text-text-secondary">Billing-period spend and balances from connected provider accounts.</p>
         </div>
-        <Link href="/dashboard/connections" className="rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-text-primary/90">
+        <Link href="/dashboard/providers" className="rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-text-primary/90">
           Add provider
         </Link>
       </div>
@@ -134,7 +134,7 @@ export default function SpendPage() {
           return (
             <Link
               key={connection.provider}
-              href={`/dashboard/connections/${connection.provider}`}
+              href={`/dashboard/providers/${connection.provider}`}
               className="rounded-xl border border-border bg-white p-5 transition-colors hover:border-accent/30"
             >
               <div className="flex items-start justify-between gap-3">

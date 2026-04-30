@@ -188,8 +188,8 @@ export default function ProviderConnectionPage() {
       <div className="flex h-full items-center justify-center p-8">
         <div className="text-center">
           <h1 className="text-lg font-semibold">Provider not found</h1>
-          <Link href="/dashboard/connections" className="mt-4 inline-flex rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-white">
-            Back to connections
+          <Link href="/dashboard/providers" className="mt-4 inline-flex rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-white">
+            Back to providers
           </Link>
         </div>
       </div>
@@ -207,12 +207,17 @@ export default function ProviderConnectionPage() {
   return (
     <div className="min-h-full bg-surface">
       <div className="mx-auto max-w-5xl p-4 md:p-8">
-        <Link href="/dashboard/connections" className="mb-6 inline-flex items-center gap-1 text-sm text-text-secondary transition-colors hover:text-text-primary">
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+        <nav className="mb-6 flex items-center gap-1.5 text-sm text-text-secondary">
+          <Link href="/dashboard" className="transition-colors hover:text-text-primary">Dashboard</Link>
+          <svg className="h-3.5 w-3.5 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
           </svg>
-          Connections
-        </Link>
+          <Link href="/dashboard/providers" className="transition-colors hover:text-text-primary">Providers</Link>
+          <svg className="h-3.5 w-3.5 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+          <span className="font-medium text-text-primary">{provider.name}</span>
+        </nav>
 
         <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
           <div className="border-b border-border bg-white px-6 py-10 text-center md:px-10">

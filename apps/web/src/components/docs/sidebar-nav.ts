@@ -43,7 +43,7 @@ export const navigation: NavSection[] = [
     items: [
       { title: "Overview", href: "/docs/dashboard/overview" },
       { title: "Spend", href: "/docs/dashboard/spend" },
-      { title: "Connections", href: "/docs/dashboard/connections" },
+      { title: "Providers", href: "/docs/dashboard/providers" },
       { title: "Alerts", href: "/docs/dashboard/alerts" },
     ],
   },

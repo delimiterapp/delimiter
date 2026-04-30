@@ -7,9 +7,8 @@ import { BreadcrumbSwitcher } from './breadcrumb-switcher'
 
 const navItems = [
   { label: 'Overview', href: '/dashboard', icon: 'overview' },
-  { label: 'Providers', href: '/dashboard/providers', icon: 'providers' },
+  { label: 'Providers', href: '/dashboard/providers', icon: 'connections' },
   { label: 'Spend', href: '/dashboard/spend', icon: 'credits' },
-  { label: 'Connections', href: '/dashboard/connections', icon: 'connections' },
   { label: 'Alerts', href: '/dashboard/alerts', icon: 'alerts' },
 ]
 
@@ -19,12 +18,6 @@ function NavIcon({ icon, className }: { icon: string; className: string }) {
       return (
         <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-        </svg>
-      )
-    case 'providers':
-      return (
-        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
         </svg>
       )
     case 'credits':

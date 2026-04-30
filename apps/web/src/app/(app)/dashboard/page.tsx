@@ -76,7 +76,7 @@ export default function OverviewPage() {
             {PROVIDER_CATALOG.slice(0, 3).map((provider) => (
               <Link
                 key={provider.id}
-                href={`/dashboard/connections/${provider.id}`}
+                href={`/dashboard/providers/${provider.id}`}
                 className="rounded-xl border border-border bg-white p-4 text-left transition-colors hover:border-accent/30"
               >
                 <ProviderLogo providerId={provider.id} />
@@ -86,7 +86,7 @@ export default function OverviewPage() {
             ))}
           </div>
           <Link
-            href="/dashboard/connections"
+            href="/dashboard/providers"
             className="shine-hover mt-8 rounded-lg bg-text-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90"
           >
             View all providers
@@ -106,7 +106,7 @@ export default function OverviewPage() {
           </p>
         </div>
         <Link
-          href="/dashboard/connections"
+          href="/dashboard/providers"
           className="rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-text-primary/90"
         >
           Add provider
@@ -143,7 +143,7 @@ export default function OverviewPage() {
               return (
                 <Link
                   key={connection.provider}
-                  href={`/dashboard/connections/${connection.provider}`}
+                  href={`/dashboard/providers/${connection.provider}`}
                   className="rounded-xl border border-border bg-white p-4 transition-colors hover:border-accent/30"
                 >
                   <div className="flex items-start gap-3">
@@ -185,7 +185,7 @@ export default function OverviewPage() {
             {nextProviders.map((provider) => (
               <Link
                 key={provider.id}
-                href={`/dashboard/connections/${provider.id}`}
+                href={`/dashboard/providers/${provider.id}`}
                 className="flex items-center gap-3 rounded-xl border border-border bg-white p-3 transition-colors hover:border-accent/30"
               >
                 <ProviderLogo providerId={provider.id} />
