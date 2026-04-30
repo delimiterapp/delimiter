@@ -165,23 +165,17 @@ export default function ProviderConnectionPage() {
     }
   }
 
+  const hasManualCredit = connection?.creditBalanceEntry != null
   const metricCards = useMemo(() => {
     if (!connection) return []
-    if (isAws) {
-      return [
-        { label: 'Bedrock Spend', value: formatCurrency(connection.periodSpend) },
-        { label: 'Credits Remaining', value: formatCurrency(connection.balance) },
-        { label: 'Credits Applied', value: formatCurrency(connection.creditLimit) },
-        { label: 'Last Sync', value: connection.lastPolledAt ? new Date(connection.lastPolledAt).toLocaleString() : 'Pending' },
-      ]
-    }
-    return [
+    const cards = [
       { label: 'Period Spend', value: formatCurrency(connection.periodSpend) },
-      { label: 'Balance', value: formatCurrency(connection.balance) },
-      { label: 'Credit Limit', value: formatCurrency(connection.creditLimit) },
+      { label: hasManualCredit ? 'Credits Remaining' : 'Balance', value: formatCurrency(connection.balance) },
+      { label: hasManualCredit ? 'Credits Applied' : 'Credit Limit', value: formatCurrency(connection.creditLimit) },
       { label: 'Last Sync', value: connection.lastPolledAt ? new Date(connection.lastPolledAt).toLocaleString() : 'Pending' },
     ]
-  }, [connection, isAws])
+    return cards
+  }, [connection, hasManualCredit])
 
   if (!provider) {
     return (
@@ -271,36 +265,34 @@ export default function ProviderConnectionPage() {
                     ))}
                   </div>
 
-                  {isAws && (
-                    <div className="mt-5 rounded-xl border border-border bg-surface/50 p-4">
-                      <div className="text-xs font-medium text-text-tertiary">
-                        {connection?.creditBalanceEntry != null
-                          ? `Credit balance set ${connection.creditBalanceAsOf ? new Date(connection.creditBalanceAsOf).toLocaleDateString() : ''} — ${formatCurrency(connection.creditBalanceEntry)}`
-                          : 'Set your AWS credit balance to track remaining credits'}
-                      </div>
-                      <div className="mt-2 flex gap-2">
-                        <input
-                          type="text"
-                          value={creditInput}
-                          onChange={(event) => setCreditInput(event.target.value)}
-                          placeholder={connection?.creditBalanceEntry != null ? 'Update balance' : 'e.g. 40530'}
-                          className="flex-1 rounded-lg border border-border bg-white px-3 py-1.5 text-sm transition-colors focus:border-accent focus:outline-none"
-                        />
-                        <button
-                          onClick={handleSaveCreditBalance}
-                          disabled={!creditInput.trim() || savingCredit}
-                          className="rounded-lg bg-text-primary px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90 disabled:opacity-40"
-                        >
-                          {savingCredit ? 'Saving...' : 'Set'}
-                        </button>
-                      </div>
-                      <p className="mt-1.5 text-[11px] text-text-tertiary">
-                        Check AWS Billing &gt; Credits for the total remaining. Delimiter tracks spend from this point forward.
-                      </p>
+                  <div className="mt-5 rounded-xl border border-border bg-surface/50 p-4">
+                    <div className="text-xs font-medium text-text-tertiary">
+                      {connection?.creditBalanceEntry != null
+                        ? `Credit balance set ${connection.creditBalanceAsOf ? new Date(connection.creditBalanceAsOf).toLocaleDateString() : ''} — ${formatCurrency(connection.creditBalanceEntry)}`
+                        : 'Set your credit balance to track remaining credits'}
                     </div>
-                  )}
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        type="text"
+                        value={creditInput}
+                        onChange={(event) => setCreditInput(event.target.value)}
+                        placeholder={connection?.creditBalanceEntry != null ? 'Update balance' : 'e.g. 500'}
+                        className="flex-1 rounded-lg border border-border bg-white px-3 py-1.5 text-sm transition-colors focus:border-accent focus:outline-none"
+                      />
+                      <button
+                        onClick={handleSaveCreditBalance}
+                        disabled={!creditInput.trim() || savingCredit}
+                        className="rounded-lg bg-text-primary px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90 disabled:opacity-40"
+                      >
+                        {savingCredit ? 'Saving...' : 'Set'}
+                      </button>
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-text-tertiary">
+                      Enter your total credit balance. Delimiter tracks spend from this point forward.
+                    </p>
+                  </div>
 
-                  {provider.statusNote && !isAws && (
+                  {provider.statusNote && (
                     <div className="mt-5 rounded-lg border border-yellow/20 bg-yellow/5 px-4 py-3 text-xs leading-5 text-text-secondary">
                       {provider.statusNote}
                     </div>

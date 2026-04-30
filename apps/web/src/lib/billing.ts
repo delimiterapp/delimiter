@@ -13,16 +13,10 @@ export interface CreditBalanceContext {
   creditBalanceAsOf: Date
 }
 
-async function pollOpenAI(apiKey: string): Promise<BillingSnapshot> {
-  const now = Math.floor(Date.now() / 1000)
-  const startOfMonth = new Date()
-  startOfMonth.setDate(1)
-  startOfMonth.setHours(0, 0, 0, 0)
-  const monthStart = Math.floor(startOfMonth.getTime() / 1000)
-
+async function fetchOpenAISpend(apiKey: string, sinceTs: number, untilTs: number): Promise<number> {
   const headers = { Authorization: `Bearer ${apiKey}` }
-  let periodSpend = 0
-  let url: string | null = `https://api.openai.com/v1/organization/costs?start_time=${monthStart}&end_time=${now}&bucket_width=1d&limit=30`
+  let spend = 0
+  let url: string | null = `https://api.openai.com/v1/organization/costs?start_time=${sinceTs}&end_time=${untilTs}&bucket_width=1d&limit=30`
 
   while (url) {
     const res = await fetch(url, { headers })
@@ -38,7 +32,7 @@ async function pollOpenAI(apiKey: string): Promise<BillingSnapshot> {
       for (const bucket of page.data) {
         if (bucket.results) {
           for (const result of bucket.results) {
-            periodSpend += Number(result.amount?.value ?? 0)
+            spend += Number(result.amount?.value ?? 0)
           }
         }
       }
@@ -46,8 +40,8 @@ async function pollOpenAI(apiKey: string): Promise<BillingSnapshot> {
 
     if (page.has_more && page.next_page) {
       const base = new URL(`https://api.openai.com/v1/organization/costs`)
-      base.searchParams.set('start_time', String(monthStart))
-      base.searchParams.set('end_time', String(now))
+      base.searchParams.set('start_time', String(sinceTs))
+      base.searchParams.set('end_time', String(untilTs))
       base.searchParams.set('bucket_width', '1d')
       base.searchParams.set('limit', '30')
       base.searchParams.set('page', page.next_page)
@@ -57,21 +51,39 @@ async function pollOpenAI(apiKey: string): Promise<BillingSnapshot> {
     }
   }
 
+  return spend
+}
+
+async function pollOpenAI(apiKey: string, creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
+  const now = Math.floor(Date.now() / 1000)
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0, 0, 0, 0)
+  const monthStart = Math.floor(startOfMonth.getTime() / 1000)
+
+  const periodSpend = await fetchOpenAISpend(apiKey, monthStart, now)
+
+  let balance: number | null = null
+  let creditLimit: number | null = null
+  if (creditCtx) {
+    creditLimit = creditCtx.creditBalanceEntry
+    const sinceTs = Math.floor(creditCtx.creditBalanceAsOf.getTime() / 1000)
+    const spendSince = await fetchOpenAISpend(apiKey, sinceTs, now)
+    balance = creditCtx.creditBalanceEntry - spendSince
+  }
+
   return {
-    balance: null,
-    creditLimit: null,
+    balance,
+    creditLimit,
     periodSpend: Number.isFinite(periodSpend) ? periodSpend : null,
     periodStart: startOfMonth,
   }
 }
 
-async function pollAnthropic(apiKey: string): Promise<BillingSnapshot> {
-  const now = new Date()
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-
+async function fetchAnthropicSpend(apiKey: string, since: Date, until: Date): Promise<number> {
   const headers = { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' }
-  let periodSpend = 0
-  let url: string | null = `https://api.anthropic.com/v1/organizations/cost_report?starting_at=${startOfMonth.toISOString()}&ending_at=${now.toISOString()}&bucket_width=1d&limit=100`
+  let spend = 0
+  let url: string | null = `https://api.anthropic.com/v1/organizations/cost_report?starting_at=${since.toISOString()}&ending_at=${until.toISOString()}&bucket_width=1d&limit=100`
 
   while (url) {
     const res = await fetch(url, { headers })
@@ -87,7 +99,7 @@ async function pollAnthropic(apiKey: string): Promise<BillingSnapshot> {
       for (const bucket of page.data) {
         if (bucket.results) {
           for (const result of bucket.results) {
-            periodSpend += Number(result.amount ?? 0)
+            spend += Number(result.amount ?? 0)
           }
         }
       }
@@ -95,8 +107,8 @@ async function pollAnthropic(apiKey: string): Promise<BillingSnapshot> {
 
     if (page.has_more && page.next_page) {
       const base = new URL('https://api.anthropic.com/v1/organizations/cost_report')
-      base.searchParams.set('starting_at', startOfMonth.toISOString())
-      base.searchParams.set('ending_at', now.toISOString())
+      base.searchParams.set('starting_at', since.toISOString())
+      base.searchParams.set('ending_at', until.toISOString())
       base.searchParams.set('bucket_width', '1d')
       base.searchParams.set('limit', '100')
       base.searchParams.set('page', page.next_page)
@@ -106,15 +118,32 @@ async function pollAnthropic(apiKey: string): Promise<BillingSnapshot> {
     }
   }
 
+  return spend
+}
+
+async function pollAnthropic(apiKey: string, creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  const periodSpend = await fetchAnthropicSpend(apiKey, startOfMonth, now)
+
+  let balance: number | null = null
+  let creditLimit: number | null = null
+  if (creditCtx) {
+    creditLimit = creditCtx.creditBalanceEntry
+    const spendSince = await fetchAnthropicSpend(apiKey, creditCtx.creditBalanceAsOf, now)
+    balance = creditCtx.creditBalanceEntry - spendSince
+  }
+
   return {
-    balance: null,
-    creditLimit: null,
+    balance,
+    creditLimit,
     periodSpend: Number.isFinite(periodSpend) ? periodSpend : null,
     periodStart: startOfMonth,
   }
 }
 
-async function pollOpenRouter(apiKey: string): Promise<BillingSnapshot> {
+async function pollOpenRouter(apiKey: string, _creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
   const res = await fetch('https://openrouter.ai/api/v1/credits', {
     headers: { Authorization: `Bearer ${apiKey}` },
   })
@@ -133,7 +162,7 @@ async function pollOpenRouter(apiKey: string): Promise<BillingSnapshot> {
   }
 }
 
-async function pollXAI(apiKey: string): Promise<BillingSnapshot> {
+async function pollXAI(apiKey: string, _creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
   const teamsRes = await fetch('https://management-api.x.ai/v1/teams', {
     headers: { Authorization: `Bearer ${apiKey}` },
   })
@@ -159,7 +188,7 @@ async function pollXAI(apiKey: string): Promise<BillingSnapshot> {
   }
 }
 
-async function pollPendingProvider(apiKey: string): Promise<BillingSnapshot> {
+async function pollPendingProvider(apiKey: string, _creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
   if (!apiKey.trim()) throw new Error('Credential is required')
 
   return {
