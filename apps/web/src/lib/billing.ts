@@ -8,6 +8,11 @@ export interface BillingSnapshot {
   periodStart: Date | null
 }
 
+export interface CreditBalanceContext {
+  creditBalanceEntry: number
+  creditBalanceAsOf: Date
+}
+
 async function pollOpenAI(apiKey: string): Promise<BillingSnapshot> {
   const now = Math.floor(Date.now() / 1000)
   const startOfMonth = new Date()
@@ -137,7 +142,7 @@ function parseAwsCredential(raw: string): { accessKeyId: string; secretAccessKey
   }
 }
 
-async function pollBedrock(apiKey: string): Promise<BillingSnapshot> {
+async function pollBedrock(apiKey: string, creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
   const creds = parseAwsCredential(apiKey)
   const credentials = { accessKeyId: creds.accessKeyId, secretAccessKey: creds.secretAccessKey }
 
@@ -145,20 +150,18 @@ async function pollBedrock(apiKey: string): Promise<BillingSnapshot> {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const endDate = new Date(now)
   endDate.setDate(endDate.getDate() + 1)
-  const timePeriod = {
+  const monthPeriod = {
     Start: startOfMonth.toISOString().split('T')[0],
     End: endDate.toISOString().split('T')[0],
   }
 
   const ceClient = new CostExplorerClient({ region: 'us-east-1', credentials })
 
-  // Bedrock usage appears under two kinds of service names:
-  //   "Amazon Bedrock" (direct API) and Marketplace entries like
-  //   "Claude Opus 4.6 (Amazon Bedrock Edition)".
-  // UnblendedCost nets out credits (showing $0 for credit-covered accounts),
-  // so we query Usage record type only to get gross pre-credit spend.
+  // Bedrock usage appears under Marketplace entries like
+  // "Claude Opus 4.6 (Amazon Bedrock Edition)", not "Amazon Bedrock".
+  // Query RECORD_TYPE=Usage to get gross spend before credit offsets.
   const grossResponse = await ceClient.send(new GetCostAndUsageCommand({
-    TimePeriod: timePeriod,
+    TimePeriod: monthPeriod,
     Granularity: 'MONTHLY',
     Metrics: ['UnblendedCost'],
     Filter: { Dimensions: { Key: 'RECORD_TYPE', Values: ['Usage'] } },
@@ -175,32 +178,42 @@ async function pollBedrock(apiKey: string): Promise<BillingSnapshot> {
     }
   }
 
-  // Get total credits applied across the whole account this period.
-  // Credit records have negative amounts — we take the absolute value.
-  let totalCreditsApplied = 0
-  try {
-    const creditsResponse = await ceClient.send(new GetCostAndUsageCommand({
-      TimePeriod: timePeriod,
-      Granularity: 'MONTHLY',
-      Metrics: ['UnblendedCost'],
-      Filter: { Dimensions: { Key: 'RECORD_TYPE', Values: ['Credit'] } },
-    }))
-    for (const result of creditsResponse.ResultsByTime ?? []) {
-      totalCreditsApplied += Math.abs(parseFloat(result.Total?.UnblendedCost?.Amount ?? '0'))
+  // If user entered a credit balance, calculate remaining by querying
+  // total credits consumed (all services) since that date.
+  let balance: number | null = null
+  let creditLimit: number | null = null
+  if (creditCtx) {
+    creditLimit = creditCtx.creditBalanceEntry
+    const sincePeriod = {
+      Start: creditCtx.creditBalanceAsOf.toISOString().split('T')[0],
+      End: endDate.toISOString().split('T')[0],
     }
-  } catch {
-    // Credits query may not be available on all accounts
+    try {
+      const creditsResponse = await ceClient.send(new GetCostAndUsageCommand({
+        TimePeriod: sincePeriod,
+        Granularity: 'MONTHLY',
+        Metrics: ['UnblendedCost'],
+        Filter: { Dimensions: { Key: 'RECORD_TYPE', Values: ['Credit'] } },
+      }))
+      let creditsBurned = 0
+      for (const result of creditsResponse.ResultsByTime ?? []) {
+        creditsBurned += Math.abs(parseFloat(result.Total?.UnblendedCost?.Amount ?? '0'))
+      }
+      balance = creditCtx.creditBalanceEntry - creditsBurned
+    } catch {
+      balance = null
+    }
   }
 
   return {
-    balance: totalCreditsApplied > 0 ? totalCreditsApplied - periodSpend : null,
-    creditLimit: totalCreditsApplied > 0 ? totalCreditsApplied : null,
+    balance,
+    creditLimit,
     periodSpend,
     periodStart: startOfMonth,
   }
 }
 
-const POLLERS: Record<string, (apiKey: string) => Promise<BillingSnapshot>> = {
+const POLLERS: Record<string, (apiKey: string, creditCtx?: CreditBalanceContext) => Promise<BillingSnapshot>> = {
   openai: pollOpenAI,
   anthropic: pollAnthropic,
   openrouter: pollOpenRouter,
@@ -213,8 +226,8 @@ export const SUPPORTED_PROVIDERS = PROVIDER_CATALOG
 
 export type SupportedProviderId = typeof SUPPORTED_PROVIDERS[number]['id']
 
-export async function pollBillingData(provider: string, apiKey: string): Promise<BillingSnapshot> {
+export async function pollBillingData(provider: string, apiKey: string, creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
   const poller = POLLERS[provider]
   if (!poller) throw new Error(`No billing poller for provider: ${provider}`)
-  return poller(apiKey)
+  return poller(apiKey, creditCtx)
 }

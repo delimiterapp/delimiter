@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/session'
 import { decrypt } from '@/lib/crypto'
-import { pollBillingData } from '@/lib/billing'
+import { pollBillingData, type CreditBalanceContext } from '@/lib/billing'
 
 export async function POST(request: NextRequest) {
   const session = await getSession()
@@ -27,7 +27,16 @@ export async function POST(request: NextRequest) {
 
   try {
     const apiKey = decrypt(providerKey.encryptedKey)
-    const snapshot = await pollBillingData(provider, apiKey)
+
+    let creditCtx: CreditBalanceContext | undefined
+    if (connection?.creditBalanceEntry != null && connection.creditBalanceAsOf != null) {
+      creditCtx = {
+        creditBalanceEntry: connection.creditBalanceEntry,
+        creditBalanceAsOf: connection.creditBalanceAsOf,
+      }
+    }
+
+    const snapshot = await pollBillingData(provider, apiKey, creditCtx)
 
     await db.providerKey.update({
       where: { id: providerKey.id },

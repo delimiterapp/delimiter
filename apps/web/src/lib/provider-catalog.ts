@@ -136,12 +136,6 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
           ],
           Resource: '*',
         },
-        {
-          Sid: 'AccountBudgetRead',
-          Effect: 'Allow',
-          Action: ['budgets:ViewBudget'],
-          Resource: '*',
-        },
       ],
     }, null, 2),
   },

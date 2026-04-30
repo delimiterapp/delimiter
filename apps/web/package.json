@@ -16,12 +16,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock": "^3.1039.0",
-    "@aws-sdk/client-budgets": "^3.1039.0",
-    "@aws-sdk/client-cloudwatch": "^3.1039.0",
     "@aws-sdk/client-cost-explorer": "^3.1039.0",
-    "@aws-sdk/client-service-quotas": "^3.1039.0",
-    "@aws-sdk/client-sts": "^3.1039.0",
     "@mdx-js/loader": "^3",
     "@mdx-js/react": "^3",
     "@next/mdx": "^15",

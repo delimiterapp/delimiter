@@ -110,19 +110,21 @@ model ProviderKey {
 }
 
 model ProviderConnection {
-  id                String   @id @default(cuid())
-  projectId         String
-  provider          String
-  status            String   @default("connected")
-  lastPolledAt      DateTime?
-  lastError         String?
-  balance           Float?
-  creditLimit       Float?
-  periodSpend       Float?
-  periodStart       DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id                   String    @id @default(cuid())
+  projectId            String
+  provider             String
+  status               String    @default("connected")
+  lastPolledAt         DateTime?
+  lastError            String?
+  balance              Float?
+  creditLimit          Float?
+  periodSpend          Float?
+  periodStart          DateTime?
+  creditBalanceEntry   Float?
+  creditBalanceAsOf    DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  project              Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, provider])
   @@index([projectId])

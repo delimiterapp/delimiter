@@ -25,6 +25,8 @@ type Connection = {
   creditLimit: number | null
   periodSpend: number | null
   periodStart: string | null
+  creditBalanceEntry: number | null
+  creditBalanceAsOf: string | null
 }
 
 function formatCurrency(value: number | null): string {
@@ -47,6 +49,8 @@ export default function ProviderConnectionPage() {
   const [removing, setRemoving] = useState(false)
   const [error, setError] = useState('')
   const [policyCopied, setPolicyCopied] = useState(false)
+  const [creditInput, setCreditInput] = useState('')
+  const [savingCredit, setSavingCredit] = useState(false)
 
   const isAws = providerId === 'bedrock'
   const isConnected = key?.status === 'valid' && connection?.status === 'connected'
@@ -134,6 +138,30 @@ export default function ProviderConnectionPage() {
       setError(err instanceof Error ? err.message : 'Could not disconnect provider')
     } finally {
       setRemoving(false)
+    }
+  }
+
+  async function handleSaveCreditBalance() {
+    if (!activeProject || !provider || !creditInput.trim()) return
+    const value = parseFloat(creditInput.replace(/[^0-9.]/g, ''))
+    if (!Number.isFinite(value) || value <= 0) return
+    setSavingCredit(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/connections/credit-balance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: activeProject.id, provider: provider.id, creditBalance: value }),
+      })
+      if (!response.ok) throw new Error('Could not save credit balance')
+      setCreditInput('')
+      await refresh()
+      await handlePoll()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save credit balance')
+    } finally {
+      setSavingCredit(false)
     }
   }
 
@@ -238,7 +266,36 @@ export default function ProviderConnectionPage() {
                     ))}
                   </div>
 
-                  {provider.statusNote && (
+                  {isAws && (
+                    <div className="mt-5 rounded-xl border border-border bg-surface/50 p-4">
+                      <div className="text-xs font-medium text-text-tertiary">
+                        {connection?.creditBalanceEntry != null
+                          ? `Credit balance set ${connection.creditBalanceAsOf ? new Date(connection.creditBalanceAsOf).toLocaleDateString() : ''} — ${formatCurrency(connection.creditBalanceEntry)}`
+                          : 'Set your AWS credit balance to track remaining credits'}
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        <input
+                          type="text"
+                          value={creditInput}
+                          onChange={(event) => setCreditInput(event.target.value)}
+                          placeholder={connection?.creditBalanceEntry != null ? 'Update balance' : 'e.g. 40530'}
+                          className="flex-1 rounded-lg border border-border bg-white px-3 py-1.5 text-sm transition-colors focus:border-accent focus:outline-none"
+                        />
+                        <button
+                          onClick={handleSaveCreditBalance}
+                          disabled={!creditInput.trim() || savingCredit}
+                          className="rounded-lg bg-text-primary px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90 disabled:opacity-40"
+                        >
+                          {savingCredit ? 'Saving...' : 'Set'}
+                        </button>
+                      </div>
+                      <p className="mt-1.5 text-[11px] text-text-tertiary">
+                        Check AWS Billing &gt; Credits for the total remaining. Delimiter tracks spend from this point forward.
+                      </p>
+                    </div>
+                  )}
+
+                  {provider.statusNote && !isAws && (
                     <div className="mt-5 rounded-lg border border-yellow/20 bg-yellow/5 px-4 py-3 text-xs leading-5 text-text-secondary">
                       {provider.statusNote}
                     </div>
