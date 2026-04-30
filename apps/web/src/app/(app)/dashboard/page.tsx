@@ -47,7 +47,30 @@ export default function OverviewPage() {
     setLoading(true)
     fetch(`/api/dashboard/overview?projectId=${activeProject.id}`)
       .then((response) => response.json())
-      .then(setData)
+      .then((overview: OverviewData) => {
+        setData(overview)
+
+        // Auto-poll stale providers (last sync > 1 hour ago)
+        const staleThreshold = Date.now() - 60 * 60 * 1000
+        const stale = overview.connectedProviders.filter(
+          (p) => p.lastPolledAt && new Date(p.lastPolledAt).getTime() < staleThreshold
+        )
+        if (stale.length > 0) {
+          Promise.allSettled(
+            stale.map((p) =>
+              fetch('/api/connections/poll', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ projectId: activeProject.id, provider: p.provider }),
+              })
+            )
+          ).then(() =>
+            fetch(`/api/dashboard/overview?projectId=${activeProject.id}`)
+              .then((r) => r.json())
+              .then(setData)
+          )
+        }
+      })
       .finally(() => setLoading(false))
   }, [activeProject?.id])
 
