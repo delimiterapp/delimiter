@@ -1,6 +1,4 @@
 import { CostExplorerClient, GetCostAndUsageCommand } from '@aws-sdk/client-cost-explorer'
-import { BudgetsClient, DescribeBudgetsCommand } from '@aws-sdk/client-budgets'
-import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts'
 import { PROVIDER_CATALOG } from './provider-catalog'
 
 export interface BillingSnapshot {
@@ -147,50 +145,56 @@ async function pollBedrock(apiKey: string): Promise<BillingSnapshot> {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const endDate = new Date(now)
   endDate.setDate(endDate.getDate() + 1)
+  const timePeriod = {
+    Start: startOfMonth.toISOString().split('T')[0],
+    End: endDate.toISOString().split('T')[0],
+  }
 
-  // Cost Explorer is global — always us-east-1
   const ceClient = new CostExplorerClient({ region: 'us-east-1', credentials })
-  const ceResponse = await ceClient.send(new GetCostAndUsageCommand({
-    TimePeriod: {
-      Start: startOfMonth.toISOString().split('T')[0],
-      End: endDate.toISOString().split('T')[0],
-    },
+
+  // Bedrock usage appears under two kinds of service names:
+  //   "Amazon Bedrock" (direct API) and Marketplace entries like
+  //   "Claude Opus 4.6 (Amazon Bedrock Edition)".
+  // UnblendedCost nets out credits (showing $0 for credit-covered accounts),
+  // so we query Usage record type only to get gross pre-credit spend.
+  const grossResponse = await ceClient.send(new GetCostAndUsageCommand({
+    TimePeriod: timePeriod,
     Granularity: 'MONTHLY',
     Metrics: ['UnblendedCost'],
-    Filter: {
-      Dimensions: { Key: 'SERVICE', Values: ['Amazon Bedrock'] },
-    },
+    Filter: { Dimensions: { Key: 'RECORD_TYPE', Values: ['Usage'] } },
+    GroupBy: [{ Type: 'DIMENSION', Key: 'SERVICE' }],
   }))
 
   let periodSpend = 0
-  for (const result of ceResponse.ResultsByTime ?? []) {
-    periodSpend += parseFloat(result.Total?.UnblendedCost?.Amount ?? '0')
-  }
-
-  let creditLimit: number | null = null
-  try {
-    const stsClient = new STSClient({ region: 'us-east-1', credentials })
-    const identity = await stsClient.send(new GetCallerIdentityCommand({}))
-    const accountId = identity.Account
-    if (accountId) {
-      const budgetsClient = new BudgetsClient({ region: 'us-east-1', credentials })
-      const budgetsResponse = await budgetsClient.send(new DescribeBudgetsCommand({
-        AccountId: accountId,
-      }))
-      for (const budget of budgetsResponse.Budgets ?? []) {
-        if (budget.BudgetLimit?.Amount) {
-          const limit = parseFloat(budget.BudgetLimit.Amount)
-          if (creditLimit === null || limit > creditLimit) creditLimit = limit
-        }
+  for (const result of grossResponse.ResultsByTime ?? []) {
+    for (const group of result.Groups ?? []) {
+      const service = ((group.Keys ?? [])[0] ?? '').toLowerCase()
+      if (service.includes('bedrock')) {
+        periodSpend += parseFloat(group.Metrics?.UnblendedCost?.Amount ?? '0')
       }
     }
+  }
+
+  // Get total credits applied across the whole account this period.
+  // Credit records have negative amounts — we take the absolute value.
+  let totalCreditsApplied = 0
+  try {
+    const creditsResponse = await ceClient.send(new GetCostAndUsageCommand({
+      TimePeriod: timePeriod,
+      Granularity: 'MONTHLY',
+      Metrics: ['UnblendedCost'],
+      Filter: { Dimensions: { Key: 'RECORD_TYPE', Values: ['Credit'] } },
+    }))
+    for (const result of creditsResponse.ResultsByTime ?? []) {
+      totalCreditsApplied += Math.abs(parseFloat(result.Total?.UnblendedCost?.Amount ?? '0'))
+    }
   } catch {
-    // Budgets access may not be configured — non-fatal
+    // Credits query may not be available on all accounts
   }
 
   return {
-    balance: creditLimit != null ? creditLimit - periodSpend : null,
-    creditLimit,
+    balance: totalCreditsApplied > 0 ? totalCreditsApplied - periodSpend : null,
+    creditLimit: totalCreditsApplied > 0 ? totalCreditsApplied : null,
     periodSpend,
     periodStart: startOfMonth,
   }

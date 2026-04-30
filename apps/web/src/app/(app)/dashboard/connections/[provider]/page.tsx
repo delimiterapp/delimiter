@@ -139,13 +139,21 @@ export default function ProviderConnectionPage() {
 
   const metricCards = useMemo(() => {
     if (!connection) return []
+    if (isAws) {
+      return [
+        { label: 'Bedrock Spend', value: formatCurrency(connection.periodSpend) },
+        { label: 'Credits Remaining', value: formatCurrency(connection.balance) },
+        { label: 'Credits Applied', value: formatCurrency(connection.creditLimit) },
+        { label: 'Last Sync', value: connection.lastPolledAt ? new Date(connection.lastPolledAt).toLocaleString() : 'Pending' },
+      ]
+    }
     return [
       { label: 'Period Spend', value: formatCurrency(connection.periodSpend) },
       { label: 'Balance', value: formatCurrency(connection.balance) },
       { label: 'Credit Limit', value: formatCurrency(connection.creditLimit) },
       { label: 'Last Sync', value: connection.lastPolledAt ? new Date(connection.lastPolledAt).toLocaleString() : 'Pending' },
     ]
-  }, [connection])
+  }, [connection, isAws])
 
   if (!provider) {
     return (
