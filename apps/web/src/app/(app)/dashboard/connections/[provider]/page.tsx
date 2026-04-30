@@ -46,6 +46,7 @@ export default function ProviderConnectionPage() {
   const [polling, setPolling] = useState(false)
   const [removing, setRemoving] = useState(false)
   const [error, setError] = useState('')
+  const [policyCopied, setPolicyCopied] = useState(false)
 
   const isAws = providerId === 'bedrock'
   const isConnected = key?.status === 'valid' && connection?.status === 'connected'
@@ -267,7 +268,7 @@ export default function ProviderConnectionPage() {
                       <textarea
                         value={credential}
                         onChange={(event) => setCredential(event.target.value)}
-                        placeholder="Paste role ARN or read-only credential JSON"
+                        placeholder='Paste credential JSON: {"accessKeyId":"...","secretAccessKey":"...","region":"us-east-1"}'
                         rows={7}
                         className="w-full resize-none rounded-lg border border-border bg-white px-3.5 py-2.5 font-mono text-sm transition-colors focus:border-accent focus:outline-none"
                         autoFocus
@@ -316,6 +317,30 @@ export default function ProviderConnectionPage() {
                   </li>
                 ))}
               </ol>
+
+              {provider.iamPolicy && (
+                <div className="mt-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-semibold">IAM Policy JSON</h2>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(provider.iamPolicy!)
+                        setPolicyCopied(true)
+                        setTimeout(() => setPolicyCopied(false), 2000)
+                      }}
+                      className="rounded-md px-2 py-1 text-xs font-medium text-text-secondary transition-colors hover:bg-white hover:text-text-primary"
+                    >
+                      {policyCopied ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <pre className="mt-2 max-h-64 overflow-auto rounded-lg border border-border bg-white p-3 font-mono text-[11px] leading-5 text-text-secondary">
+                    {provider.iamPolicy}
+                  </pre>
+                  <p className="mt-2 text-[11px] leading-4 text-text-tertiary">
+                    Paste this into IAM &gt; Policies &gt; Create policy &gt; JSON editor. Name it <span className="font-medium text-text-secondary">DelimiterBedrockReadOnly</span>.
+                  </p>
+                </div>
+              )}
 
               <div className="mt-6 rounded-xl border border-border bg-white p-4">
                 <div className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">What Delimiter tracks</div>

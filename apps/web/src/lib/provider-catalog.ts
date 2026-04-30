@@ -18,6 +18,7 @@ export type ProviderCatalogItem = {
   setupSteps: string[]
   securityNote: string
   statusNote?: string
+  iamPolicy?: string
 }
 
 export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
@@ -77,19 +78,72 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
     id: 'bedrock',
     name: 'AWS Bedrock',
     shortName: 'AWS',
-    keyType: 'Read-only IAM role or access JSON',
-    keyHint: 'Use a dedicated read-only IAM role/policy for Cost Explorer, CloudWatch, Service Quotas, and Bedrock metadata.',
+    keyType: 'Read-only IAM credential JSON',
+    keyHint: 'Dedicated read-only credential scoped to Bedrock spend, models, and quotas. Never use root keys.',
     capabilities: ['spend', 'usage', 'configured_limits', 'models'],
     accent: '#ff9900',
     bg: '#fff7ed',
-    description: 'Track Bedrock spend, CloudWatch usage, model quotas, throttles, and application/profile attribution.',
+    description: 'Track Bedrock-only spend via Cost Explorer, model invocation metrics from CloudWatch, Bedrock quota limits, available models, and account budget.',
     setupSteps: [
-      'Create a dedicated IAM role or access credential for Delimiter.',
-      'Grant read-only access to Cost Explorer, CloudWatch metrics, Service Quotas, and Bedrock model metadata.',
-      'Paste the role ARN or credential JSON here. Delimiter stores it encrypted and uses it only for monitoring.',
+      'In AWS IAM, create a new policy — copy the JSON below and name it DelimiterBedrockReadOnly.',
+      'Create a new IAM user (e.g. delimiter-monitor) with no console access. Attach the policy you just created.',
+      'Open the user\'s Security credentials tab, create an access key, and paste the credential JSON here.',
     ],
-    securityNote: 'Never paste AWS root keys. Use a dedicated read-only policy. Bedrock support is a first-class provider.',
+    securityNote: 'Never paste AWS root keys. Delimiter queries only Bedrock spend and metadata — not other AWS services. Use a dedicated IAM user you can revoke anytime.',
     statusNote: 'Initial connection stores the credential securely. Full Bedrock sync follows the IAM policy setup.',
+    iamPolicy: JSON.stringify({
+      Version: '2012-10-17',
+      Statement: [
+        {
+          Sid: 'BedrockSpendViaCostExplorer',
+          Effect: 'Allow',
+          Action: [
+            'ce:GetCostAndUsage',
+            'ce:GetCostForecast',
+            'ce:GetDimensionValues',
+          ],
+          Resource: '*',
+        },
+        {
+          Sid: 'BedrockCloudWatchMetrics',
+          Effect: 'Allow',
+          Action: [
+            'cloudwatch:GetMetricData',
+            'cloudwatch:GetMetricStatistics',
+            'cloudwatch:ListMetrics',
+          ],
+          Resource: '*',
+        },
+        {
+          Sid: 'BedrockQuotas',
+          Effect: 'Allow',
+          Action: [
+            'servicequotas:GetServiceQuota',
+            'servicequotas:ListServiceQuotas',
+          ],
+          Resource: '*',
+        },
+        {
+          Sid: 'BedrockModelMetadata',
+          Effect: 'Allow',
+          Action: [
+            'bedrock:ListFoundationModels',
+            'bedrock:GetFoundationModel',
+            'bedrock:ListProvisionedModelThroughputs',
+            'bedrock:GetProvisionedModelThroughput',
+            'bedrock:ListInferenceProfiles',
+            'bedrock:GetInferenceProfile',
+          ],
+          Resource: '*',
+        },
+        {
+          Sid: 'AccountBudgetRead',
+          Effect: 'Allow',
+          Action: ['budgets:ViewBudget'],
+          Resource: '*',
+        },
+      ],
+    }, null, 2),
   },
   {
     id: 'openrouter',
