@@ -106,9 +106,10 @@ export default function ConnectionsPage() {
           const isError = key?.status === 'invalid' || connection?.status === 'error'
 
           return (
-            <div
+            <Link
               key={provider.id}
-              className={`rounded-xl border bg-white p-5 transition-colors ${
+              href={`/dashboard/providers/${provider.id}`}
+              className={`block rounded-xl border bg-white p-5 transition-colors hover:border-accent/40 hover:shadow-sm ${
                 isError ? 'border-red/25' : isConnected ? 'border-green/25' : 'border-border'
               }`}
             >
@@ -165,27 +166,26 @@ export default function ConnectionsPage() {
               )}
 
               <div className="mt-5 flex flex-wrap gap-2">
-                <Link
-                  href={`/dashboard/providers/${provider.id}`}
-                  className={`rounded-lg px-4 py-2 text-xs font-medium transition-colors ${
-                    isConnected
-                      ? 'border border-border text-text-secondary hover:bg-surface'
-                      : 'bg-text-primary text-white hover:bg-text-primary/90'
-                  }`}
-                >
-                  {isConnected ? 'Manage' : 'Connect'}
-                </Link>
-                {isConnected && (
-                  <button
-                    onClick={() => handlePoll(provider.id)}
-                    disabled={polling === provider.id}
-                    className="rounded-lg border border-border px-4 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-surface disabled:opacity-50"
-                  >
-                    {polling === provider.id ? 'Syncing...' : 'Sync now'}
-                  </button>
+                {isConnected ? (
+                  <>
+                    <span className="rounded-lg border border-border px-4 py-2 text-xs font-medium text-text-secondary">
+                      Manage
+                    </span>
+                    <button
+                      onClick={(e) => { e.preventDefault(); handlePoll(provider.id) }}
+                      disabled={polling === provider.id}
+                      className="rounded-lg border border-border px-4 py-2 text-xs font-medium text-text-secondary transition-colors hover:bg-surface disabled:opacity-50"
+                    >
+                      {polling === provider.id ? 'Syncing...' : 'Sync now'}
+                    </button>
+                  </>
+                ) : (
+                  <span className="rounded-lg bg-text-primary px-4 py-2 text-xs font-medium text-white">
+                    Connect
+                  </span>
                 )}
               </div>
-            </div>
+            </Link>
           )
         })}
       </div>

@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useApp } from './app-context'
@@ -53,6 +54,18 @@ function NavIcon({ icon, className }: { icon: string; className: string }) {
 export function Sidebar({ onNavigate, onClose }: { onNavigate?: () => void; onClose?: () => void } = {}) {
   const pathname = usePathname()
   const { user } = useApp()
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+    if (userMenuOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [userMenuOpen])
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -118,8 +131,11 @@ export function Sidebar({ onNavigate, onClose }: { onNavigate?: () => void; onCl
           Settings
         </Link>
 
-        <div className="flex items-center justify-between rounded-lg px-2.5 py-2">
-          <div className="flex items-center gap-2.5 min-w-0">
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-surface"
+          >
             {user?.avatarUrl ? (
               <img src={user.avatarUrl} alt="" className="h-5 w-5 shrink-0 rounded-full" />
             ) : (
@@ -127,17 +143,29 @@ export function Sidebar({ onNavigate, onClose }: { onNavigate?: () => void; onCl
                 {(user?.name || user?.email)?.[0]?.toUpperCase() || '?'}
               </div>
             )}
-            <span className="truncate text-[13px] text-text-secondary">{user?.name || user?.githubUsername || user?.email}</span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="shrink-0 text-text-tertiary transition-colors hover:text-text-primary"
-            title="Sign out"
-          >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+            <span className="min-w-0 flex-1 truncate text-[13px] text-text-secondary">{user?.name || user?.githubUsername || user?.email}</span>
+            <svg className={`h-3 w-3 shrink-0 text-text-tertiary transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
             </svg>
           </button>
+
+          {userMenuOpen && (
+            <div className="absolute bottom-full left-0 right-0 mb-1 rounded-lg border border-border bg-white py-1 shadow-lg">
+              <div className="px-3 py-2 border-b border-border">
+                <div className="text-[13px] font-medium text-text-primary">{user?.name || user?.githubUsername}</div>
+                {user?.email && <div className="text-[11px] text-text-tertiary">{user.email}</div>}
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center gap-2 px-3 py-2 text-[13px] text-text-secondary transition-colors hover:bg-surface hover:text-text-primary"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                </svg>
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </aside>

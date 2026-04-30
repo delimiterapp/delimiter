@@ -201,18 +201,6 @@ export default function ProviderConnectionPage() {
   return (
     <div className="min-h-full bg-surface">
       <div className="mx-auto max-w-5xl p-4 md:p-8">
-        <nav className="mb-6 flex items-center gap-1.5 text-sm text-text-secondary">
-          <Link href="/dashboard" className="transition-colors hover:text-text-primary">Dashboard</Link>
-          <svg className="h-3.5 w-3.5 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-          </svg>
-          <Link href="/dashboard/providers" className="transition-colors hover:text-text-primary">Providers</Link>
-          <svg className="h-3.5 w-3.5 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-          </svg>
-          <span className="font-medium text-text-primary">{provider.name}</span>
-        </nav>
-
         <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
           <div className="border-b border-border bg-white px-6 py-10 text-center md:px-10">
             <div className="mx-auto flex max-w-md items-center justify-center gap-4">
