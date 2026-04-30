@@ -182,27 +182,44 @@ async function pollOpenRouter(apiKey: string, _creditCtx?: CreditBalanceContext)
   }
 }
 
-async function pollXAI(apiKey: string, _creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
-  const teamsRes = await fetch('https://management-api.x.ai/v1/teams', {
+async function pollXAI(apiKey: string, creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
+  // Regular API keys (xai-*): validate via api.x.ai, no billing access
+  const keyInfoRes = await fetch('https://api.x.ai/v1/api-key', {
     headers: { Authorization: `Bearer ${apiKey}` },
   })
-  if (!teamsRes.ok) throw new Error(`xAI API error: ${teamsRes.status}`)
+  if (!keyInfoRes.ok) throw new Error(`xAI API error: ${keyInfoRes.status}`)
 
-  const teamsData = await teamsRes.json() as { data?: { id?: string }[] }
-  const teamId = teamsData.data?.[0]?.id
-  if (!teamId) throw new Error('No xAI team found')
+  const keyInfo = await keyInfoRes.json() as { team_id?: string }
+  const teamId = keyInfo.team_id
 
-  const balanceRes = await fetch(
-    `https://management-api.x.ai/v1/billing/teams/${teamId}/credit-balance`,
-    { headers: { Authorization: `Bearer ${apiKey}` } },
-  )
-  if (!balanceRes.ok) throw new Error(`xAI billing error: ${balanceRes.status}`)
+  let balance: number | null = null
+  let creditLimit: number | null = null
 
-  const balanceData = await balanceRes.json() as { balance?: number }
+  // Try management billing endpoints (works with management keys)
+  if (teamId) {
+    try {
+      const balanceRes = await fetch(
+        `https://management-api.x.ai/v1/billing/teams/${teamId}/prepaid/balance`,
+        { headers: { Authorization: `Bearer ${apiKey}` } },
+      )
+      if (balanceRes.ok) {
+        const balanceData = await balanceRes.json() as { total?: { val?: string } }
+        const cents = parseInt(balanceData.total?.val ?? '', 10)
+        if (Number.isFinite(cents)) balance = cents / 100
+      }
+    } catch {
+      // Regular API keys can't access billing — use manual credit balance
+    }
+  }
+
+  if (creditCtx) {
+    creditLimit = creditCtx.creditBalanceEntry
+    if (balance == null) balance = creditCtx.creditBalanceEntry
+  }
 
   return {
-    balance: balanceData.balance != null ? balanceData.balance / 100 : null,
-    creditLimit: null,
+    balance,
+    creditLimit,
     periodSpend: null,
     periodStart: null,
   }
