@@ -23,6 +23,7 @@
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "jose": "^6.2.2",
+    "liveline": "^0.0.7",
     "next": "^15",
     "pg": "^8.20.0",
     "react": "^19",

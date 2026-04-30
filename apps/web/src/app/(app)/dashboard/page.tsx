@@ -1,10 +1,16 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useApp } from '@/components/app/app-context'
 import { ProviderLogo } from '@/components/app/provider-logo'
 import { capabilityLabel, getProvider, PROVIDER_CATALOG } from '@/lib/provider-catalog'
+
+const Liveline = dynamic(() => import('liveline').then((m) => m.Liveline), {
+  ssr: false,
+  loading: () => <div className="h-[200px]" />,
+})
 
 type ConnectedProvider = {
   provider: string
@@ -16,10 +22,13 @@ type ConnectedProvider = {
   lastError: string | null
 }
 
+type SpendPoint = { time: number; value: number; provider: string }
+
 type OverviewData = {
   connectedProviders: ConnectedProvider[]
   totalPeriodSpend: number
   recentAlerts: number
+  spendTimeline: SpendPoint[]
   hasData: boolean
 }
 
@@ -47,6 +56,43 @@ export default function OverviewPage() {
   const nextProviders = PROVIDER_CATALOG.filter((provider) => !connectedIds.has(provider.id)).slice(0, 3)
   const connectedCount = connected.length
   const errorCount = connected.filter((provider) => provider.status === 'error').length
+
+  // Per-provider spend timelines for sparklines
+  const providerTimelines = useMemo(() => {
+    const raw = data?.spendTimeline ?? []
+    const byProvider = new Map<string, { time: number; value: number }[]>()
+    for (const p of raw) {
+      if (!byProvider.has(p.provider)) byProvider.set(p.provider, [])
+      byProvider.get(p.provider)!.push({ time: p.time, value: p.value })
+    }
+    return byProvider
+  }, [data])
+
+  // Aggregate spend timeline: sum all providers into a single series
+  const [spendWindow, setSpendWindow] = useState(604800)
+  const spendWindowRef = useRef(spendWindow)
+  spendWindowRef.current = spendWindow
+
+  const { spendLive, currentSpend } = useMemo(() => {
+    const raw = data?.spendTimeline ?? []
+    if (raw.length === 0) return { spendLive: [], currentSpend: 0 }
+
+    // Group by timestamp, sum across providers
+    const byTime = new Map<number, number>()
+    for (const p of raw) {
+      byTime.set(p.time, (byTime.get(p.time) ?? 0) + p.value)
+    }
+    const points = Array.from(byTime.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([time, value]) => ({ time, value }))
+
+    // Push a "now" point with total period spend
+    const now = Math.floor(Date.now() / 1000)
+    const total = data?.totalPeriodSpend ?? points[points.length - 1]?.value ?? 0
+    points.push({ time: now, value: total })
+
+    return { spendLive: points, currentSpend: total }
+  }, [data])
 
   if (loading) {
     return (
@@ -134,12 +180,51 @@ export default function OverviewPage() {
         </Link>
       </div>
 
+      {spendLive.length > 1 && (
+        <div className="mb-6 rounded-xl border border-border bg-white p-5">
+          <div className="mb-3 text-xs font-medium text-text-tertiary uppercase tracking-wide">Total Spend</div>
+          <div className="h-[200px]">
+            <Liveline
+              data={spendLive}
+              value={currentSpend}
+              window={spendWindow}
+              theme="light"
+              color="#6366f1"
+              grid
+              badge={false}
+              fill
+              pulse
+              momentum={false}
+              scrub
+              exaggerate
+              formatValue={(v: number) => `$${v.toFixed(2)}`}
+              formatTime={(t: number) => {
+                const d = new Date(t * 1000)
+                const w = spendWindowRef.current
+                if (w <= 86400) return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+                return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+              }}
+              windows={[
+                { label: '1mo', secs: 2592000 },
+                { label: '1w', secs: 604800 },
+                { label: '1d', secs: 86400 },
+                { label: '1h', secs: 3600 },
+              ]}
+              windowStyle="text"
+              onWindowChange={(secs: number) => setSpendWindow(secs)}
+              padding={{ top: 12, right: 60, bottom: 32, left: 12 }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="mb-3 text-sm font-medium text-text-secondary">Connected Providers</div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {connected.map((connection) => {
               const provider = getProvider(connection.provider)
+              const timeline = providerTimelines.get(connection.provider) ?? []
               return (
                 <Link
                   key={connection.provider}
@@ -157,10 +242,9 @@ export default function OverviewPage() {
                           {connection.status === 'error' ? 'Error' : 'Connected'}
                         </span>
                       </div>
-                      <div className="mt-1 text-xs text-text-tertiary">{provider?.description}</div>
                     </div>
                   </div>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="mt-3 grid grid-cols-2 gap-3">
                     <div>
                       <div className="text-[11px] font-medium text-text-tertiary">Period Spend</div>
                       <div className="mt-0.5 text-sm font-semibold">{formatCurrency(connection.periodSpend)}</div>
@@ -170,7 +254,26 @@ export default function OverviewPage() {
                       <div className="mt-0.5 text-sm font-semibold">{formatCurrency(connection.balance)}</div>
                     </div>
                   </div>
-                  <div className="mt-3 text-[10px] text-text-tertiary">
+                  {timeline.length > 1 && (
+                    <div className="mt-3 h-[32px]">
+                      <Liveline
+                        data={timeline}
+                        value={connection.periodSpend ?? 0}
+                        window={604800}
+                        theme="light"
+                        color={provider?.accent ?? '#6366f1'}
+                        fill
+                        pulse={false}
+                        momentum={false}
+                        scrub={false}
+                        grid={false}
+                        badge={false}
+                        exaggerate
+                        padding={{ top: 0, right: 4, bottom: 0, left: 4 }}
+                      />
+                    </div>
+                  )}
+                  <div className="mt-2 text-[10px] text-text-tertiary">
                     {connection.lastPolledAt ? `Synced ${new Date(connection.lastPolledAt).toLocaleString()}` : 'Ready for first sync'}
                   </div>
                 </Link>
