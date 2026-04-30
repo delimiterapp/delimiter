@@ -183,35 +183,54 @@ async function pollOpenRouter(apiKey: string, _creditCtx?: CreditBalanceContext)
 }
 
 async function pollXAI(apiKey: string, creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
-  // Regular API keys (xai-*): validate via api.x.ai, no billing access
-  const keyInfoRes = await fetch('https://api.x.ai/v1/api-key', {
-    headers: { Authorization: `Bearer ${apiKey}` },
-  })
-  if (!keyInfoRes.ok) {
-    const body = await keyInfoRes.json().catch(() => null) as { error?: string } | null
-    throw new Error(body?.error || `xAI API error: ${keyInfoRes.status}`)
-  }
+  const headers = { Authorization: `Bearer ${apiKey}` }
+  let teamId: string | undefined
 
-  const keyInfo = await keyInfoRes.json() as { team_id?: string }
-  const teamId = keyInfo.team_id
+  // Try management key validation first
+  const mgmtRes = await fetch('https://management-api.x.ai/auth/management-keys/validation', { headers })
+  if (mgmtRes.ok) {
+    const mgmt = await mgmtRes.json() as { teamId?: string; scopeId?: string }
+    teamId = mgmt.teamId || mgmt.scopeId
+  } else {
+    // Fall back to regular API key validation
+    const keyRes = await fetch('https://api.x.ai/v1/api-key', { headers })
+    if (!keyRes.ok) {
+      const body = await keyRes.json().catch(() => null) as { error?: string } | null
+      throw new Error(body?.error || `xAI API error: ${keyRes.status}`)
+    }
+    const keyInfo = await keyRes.json() as { team_id?: string }
+    teamId = keyInfo.team_id
+  }
 
   let balance: number | null = null
   let creditLimit: number | null = null
+  let periodSpend: number | null = null
 
-  // Try management billing endpoints (works with management keys)
   if (teamId) {
     try {
       const balanceRes = await fetch(
         `https://management-api.x.ai/v1/billing/teams/${teamId}/prepaid/balance`,
-        { headers: { Authorization: `Bearer ${apiKey}` } },
+        { headers },
       )
       if (balanceRes.ok) {
-        const balanceData = await balanceRes.json() as { total?: { val?: string } }
+        const balanceData = await balanceRes.json() as { total?: { val?: string }; changes?: { changeOrigin?: string; amount?: { val?: string } }[] }
         const cents = parseInt(balanceData.total?.val ?? '', 10)
-        if (Number.isFinite(cents)) balance = cents / 100
+        if (Number.isFinite(cents)) {
+          balance = Math.abs(cents) / 100
+          // Sum purchases as credit limit
+          let totalPurchased = 0
+          let totalSpent = 0
+          for (const c of balanceData.changes ?? []) {
+            const amt = parseInt(c.amount?.val ?? '0', 10)
+            if (c.changeOrigin === 'PURCHASE') totalPurchased += Math.abs(amt)
+            if (c.changeOrigin === 'SPEND') totalSpent += Math.abs(amt)
+          }
+          if (totalPurchased > 0) creditLimit = totalPurchased / 100
+          if (totalSpent > 0) periodSpend = totalSpent / 100
+        }
       }
     } catch {
-      // Regular API keys can't access billing — use manual credit balance
+      // Billing not accessible
     }
   }
 
@@ -223,7 +242,7 @@ async function pollXAI(apiKey: string, creditCtx?: CreditBalanceContext): Promis
   return {
     balance,
     creditLimit,
-    periodSpend: null,
+    periodSpend,
     periodStart: null,
   }
 }
