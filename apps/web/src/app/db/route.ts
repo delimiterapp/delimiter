@@ -47,6 +47,18 @@ CREATE TABLE IF NOT EXISTS "FallbackChain" (
   "id" TEXT NOT NULL PRIMARY KEY
 );
 
+CREATE TABLE IF NOT EXISTS "ProviderKey" (
+  "id" TEXT NOT NULL PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS "ProviderConnection" (
+  "id" TEXT NOT NULL PRIMARY KEY
+);
+
+CREATE TABLE IF NOT EXISTS "UsageCredit" (
+  "id" TEXT NOT NULL PRIMARY KEY
+);
+
 -- ============================================================
 -- 2. COLUMNS (add if not exists — handles migrations)
 -- ============================================================
@@ -104,6 +116,39 @@ ALTER TABLE "FallbackChain" ADD COLUMN IF NOT EXISTS "chain" JSONB NOT NULL DEFA
 ALTER TABLE "FallbackChain" ADD COLUMN IF NOT EXISTS "threshold" INTEGER NOT NULL DEFAULT 80;
 ALTER TABLE "FallbackChain" ADD COLUMN IF NOT EXISTS "enabled" BOOLEAN NOT NULL DEFAULT false;
 
+-- ProviderKey
+ALTER TABLE "ProviderKey" ADD COLUMN IF NOT EXISTS "projectId" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "ProviderKey" ADD COLUMN IF NOT EXISTS "provider" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "ProviderKey" ADD COLUMN IF NOT EXISTS "encryptedKey" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "ProviderKey" ADD COLUMN IF NOT EXISTS "label" TEXT;
+ALTER TABLE "ProviderKey" ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'pending';
+ALTER TABLE "ProviderKey" ADD COLUMN IF NOT EXISTS "lastValidatedAt" TIMESTAMP(3);
+ALTER TABLE "ProviderKey" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "ProviderKey" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+-- ProviderConnection
+ALTER TABLE "ProviderConnection" ADD COLUMN IF NOT EXISTS "projectId" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "ProviderConnection" ADD COLUMN IF NOT EXISTS "provider" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "ProviderConnection" ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'connected';
+ALTER TABLE "ProviderConnection" ADD COLUMN IF NOT EXISTS "lastPolledAt" TIMESTAMP(3);
+ALTER TABLE "ProviderConnection" ADD COLUMN IF NOT EXISTS "lastError" TEXT;
+ALTER TABLE "ProviderConnection" ADD COLUMN IF NOT EXISTS "balance" DOUBLE PRECISION;
+ALTER TABLE "ProviderConnection" ADD COLUMN IF NOT EXISTS "creditLimit" DOUBLE PRECISION;
+ALTER TABLE "ProviderConnection" ADD COLUMN IF NOT EXISTS "periodSpend" DOUBLE PRECISION;
+ALTER TABLE "ProviderConnection" ADD COLUMN IF NOT EXISTS "periodStart" TIMESTAMP(3);
+ALTER TABLE "ProviderConnection" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "ProviderConnection" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+-- UsageCredit
+ALTER TABLE "UsageCredit" ADD COLUMN IF NOT EXISTS "projectId" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "UsageCredit" ADD COLUMN IF NOT EXISTS "provider" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "UsageCredit" ADD COLUMN IF NOT EXISTS "app" TEXT NOT NULL DEFAULT 'default';
+ALTER TABLE "UsageCredit" ADD COLUMN IF NOT EXISTS "model" TEXT;
+ALTER TABLE "UsageCredit" ADD COLUMN IF NOT EXISTS "creditsLimit" DOUBLE PRECISION;
+ALTER TABLE "UsageCredit" ADD COLUMN IF NOT EXISTS "creditsRemaining" DOUBLE PRECISION;
+ALTER TABLE "UsageCredit" ADD COLUMN IF NOT EXISTS "requestCost" DOUBLE PRECISION;
+ALTER TABLE "UsageCredit" ADD COLUMN IF NOT EXISTS "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
 -- ============================================================
 -- 3. INDEXES (create if not exists)
 -- ============================================================
@@ -122,6 +167,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS "AlertRule_projectId_provider_key" ON "AlertRu
 CREATE INDEX IF NOT EXISTS "AlertEvent_projectId_timestamp_idx" ON "AlertEvent"("projectId", "timestamp");
 
 CREATE UNIQUE INDEX IF NOT EXISTS "FallbackChain_projectId_key" ON "FallbackChain"("projectId");
+
+CREATE UNIQUE INDEX IF NOT EXISTS "ProviderKey_projectId_provider_key" ON "ProviderKey"("projectId", "provider");
+CREATE INDEX IF NOT EXISTS "ProviderKey_projectId_idx" ON "ProviderKey"("projectId");
+
+CREATE UNIQUE INDEX IF NOT EXISTS "ProviderConnection_projectId_provider_key" ON "ProviderConnection"("projectId", "provider");
+CREATE INDEX IF NOT EXISTS "ProviderConnection_projectId_idx" ON "ProviderConnection"("projectId");
+
+CREATE INDEX IF NOT EXISTS "UsageCredit_projectId_timestamp_idx" ON "UsageCredit"("projectId", "timestamp");
+CREATE INDEX IF NOT EXISTS "UsageCredit_projectId_provider_idx" ON "UsageCredit"("projectId", "provider");
 
 -- ============================================================
 -- 4. FOREIGN KEYS (add if not exists via exception handling)
@@ -153,6 +207,24 @@ END $$;
 
 DO $$ BEGIN
   ALTER TABLE "FallbackChain" ADD CONSTRAINT "FallbackChain_projectId_fkey"
+    FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE "ProviderKey" ADD CONSTRAINT "ProviderKey_projectId_fkey"
+    FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE "ProviderConnection" ADD CONSTRAINT "ProviderConnection_projectId_fkey"
+    FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE "UsageCredit" ADD CONSTRAINT "UsageCredit_projectId_fkey"
     FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;

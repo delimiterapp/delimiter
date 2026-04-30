@@ -46,9 +46,7 @@ export default function SettingsPage() {
     if (!activeProject) return
     setDeleting(true)
     await fetch(`/api/projects/${activeProject.id}`, { method: 'DELETE' })
-    await refreshProjects()
-    // After refresh, check remaining projects
-    const remaining = projects.filter((p) => p.id !== activeProject.id)
+    const remaining = await refreshProjects()
     if (remaining.length > 0) {
       setActiveProject(remaining[0])
     } else {
