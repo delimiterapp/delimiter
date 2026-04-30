@@ -187,7 +187,10 @@ async function pollXAI(apiKey: string, creditCtx?: CreditBalanceContext): Promis
   const keyInfoRes = await fetch('https://api.x.ai/v1/api-key', {
     headers: { Authorization: `Bearer ${apiKey}` },
   })
-  if (!keyInfoRes.ok) throw new Error(`xAI API error: ${keyInfoRes.status}`)
+  if (!keyInfoRes.ok) {
+    const body = await keyInfoRes.json().catch(() => null) as { error?: string } | null
+    throw new Error(body?.error || `xAI API error: ${keyInfoRes.status}`)
+  }
 
   const keyInfo = await keyInfoRes.json() as { team_id?: string }
   const teamId = keyInfo.team_id
