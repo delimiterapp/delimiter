@@ -63,7 +63,7 @@ export default function OverviewPage() {
           <div className="mb-6 flex items-center gap-4">
             <ProviderLogo providerId="openai" size="lg" />
             <div className="h-px w-16 bg-border" />
-            <img src="/logo.png" alt="Delimiter" className="h-8 w-auto" />
+            <img src="/icon.svg" alt="Delimiter" className="h-8 w-8" />
             <div className="h-px w-16 bg-border" />
             <ProviderLogo providerId="bedrock" size="lg" />
           </div>

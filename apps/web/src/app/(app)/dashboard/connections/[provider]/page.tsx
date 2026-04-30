@@ -190,7 +190,7 @@ export default function ProviderConnectionPage() {
                 <div className="h-px flex-1 bg-border" />
               </div>
               <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-border bg-white shadow-sm">
-                <img src="/logo.png" alt="Delimiter" className="h-7 w-auto" />
+                <img src="/icon.svg" alt="Delimiter" className="h-9 w-9" />
               </div>
             </div>
             <h1 className="mt-8 text-2xl font-semibold tracking-tight">Connect {provider.name}</h1>
