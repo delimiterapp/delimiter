@@ -218,87 +218,78 @@ export default function OverviewPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="mb-3 text-sm font-medium text-text-secondary">Connected Providers</div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {connected.map((connection) => {
-              const provider = getProvider(connection.provider)
-              const timeline = providerTimelines.get(connection.provider) ?? []
-              return (
-                <Link
-                  key={connection.provider}
-                  href={`/dashboard/providers/${connection.provider}`}
-                  className="rounded-xl border border-border bg-white p-4 transition-colors hover:border-accent/30"
-                >
-                  <div className="flex items-start gap-3">
-                    <ProviderLogo providerId={connection.provider} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <div className="truncate text-sm font-medium">{provider?.name ?? connection.provider}</div>
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          connection.status === 'error' ? 'bg-red/10 text-red' : 'bg-green/10 text-green'
-                        }`}>
-                          {connection.status === 'error' ? 'Error' : 'Connected'}
-                        </span>
+      <div>
+        <div className="mb-3 text-sm font-medium text-text-secondary">Providers</div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {PROVIDER_CATALOG.map((catalogProvider) => {
+            const connection = connected.find((c) => c.provider === catalogProvider.id)
+            const timeline = providerTimelines.get(catalogProvider.id) ?? []
+            const isConnected = connection && connection.status !== 'error'
+            const isError = connection?.status === 'error'
+
+            return (
+              <Link
+                key={catalogProvider.id}
+                href={`/dashboard/providers/${catalogProvider.id}`}
+                className={`rounded-xl border bg-white p-4 transition-colors hover:border-accent/40 hover:shadow-sm ${
+                  isError ? 'border-red/25' : isConnected ? 'border-border' : 'border-dashed border-border'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <ProviderLogo providerId={catalogProvider.id} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <div className="truncate text-sm font-medium">{catalogProvider.name}</div>
+                      {isConnected && (
+                        <span className="rounded-full bg-green/10 px-2 py-0.5 text-[10px] font-medium text-green">Connected</span>
+                      )}
+                      {isError && (
+                        <span className="rounded-full bg-red/10 px-2 py-0.5 text-[10px] font-medium text-red">Error</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {connection ? (
+                  <>
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                      <div>
+                        <div className="text-[11px] font-medium text-text-tertiary">Period Spend</div>
+                        <div className="mt-0.5 text-sm font-semibold">{formatCurrency(connection.periodSpend)}</div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] font-medium text-text-tertiary">Balance</div>
+                        <div className="mt-0.5 text-sm font-semibold">{formatCurrency(connection.balance)}</div>
                       </div>
                     </div>
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-3">
-                    <div>
-                      <div className="text-[11px] font-medium text-text-tertiary">Period Spend</div>
-                      <div className="mt-0.5 text-sm font-semibold">{formatCurrency(connection.periodSpend)}</div>
+                    {timeline.length > 1 && (
+                      <div className="mt-3 h-[32px]">
+                        <Liveline
+                          data={timeline}
+                          value={connection.periodSpend ?? 0}
+                          window={604800}
+                          theme="light"
+                          color={catalogProvider.accent}
+                          fill
+                          pulse={false}
+                          momentum={false}
+                          scrub={false}
+                          grid={false}
+                          badge={false}
+                          exaggerate
+                          padding={{ top: 0, right: 4, bottom: 0, left: 4 }}
+                        />
+                      </div>
+                    )}
+                    <div className="mt-2 text-[10px] text-text-tertiary">
+                      {connection.lastPolledAt ? `Synced ${new Date(connection.lastPolledAt).toLocaleString()}` : 'Ready for first sync'}
                     </div>
-                    <div>
-                      <div className="text-[11px] font-medium text-text-tertiary">Balance</div>
-                      <div className="mt-0.5 text-sm font-semibold">{formatCurrency(connection.balance)}</div>
-                    </div>
-                  </div>
-                  {timeline.length > 1 && (
-                    <div className="mt-3 h-[32px]">
-                      <Liveline
-                        data={timeline}
-                        value={connection.periodSpend ?? 0}
-                        window={604800}
-                        theme="light"
-                        color={provider?.accent ?? '#6366f1'}
-                        fill
-                        pulse={false}
-                        momentum={false}
-                        scrub={false}
-                        grid={false}
-                        badge={false}
-                        exaggerate
-                        padding={{ top: 0, right: 4, bottom: 0, left: 4 }}
-                      />
-                    </div>
-                  )}
-                  <div className="mt-2 text-[10px] text-text-tertiary">
-                    {connection.lastPolledAt ? `Synced ${new Date(connection.lastPolledAt).toLocaleString()}` : 'Ready for first sync'}
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-
-        <div>
-          <div className="mb-3 text-sm font-medium text-text-secondary">Add Next</div>
-          <div className="space-y-3">
-            {nextProviders.map((provider) => (
-              <Link
-                key={provider.id}
-                href={`/dashboard/providers/${provider.id}`}
-                className="flex items-center gap-3 rounded-xl border border-border bg-white p-3 transition-colors hover:border-accent/30"
-              >
-                <ProviderLogo providerId={provider.id} />
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium">{provider.name}</div>
-                  <div className="truncate text-xs text-text-tertiary">{provider.capabilities.map(capabilityLabel).join(' · ')}</div>
-                </div>
+                  </>
+                ) : (
+                  <p className="mt-3 text-xs text-text-tertiary">{catalogProvider.description}</p>
+                )}
               </Link>
-            ))}
-          </div>
+            )
+          })}
         </div>
       </div>
     </div>

@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
 
   const totalPeriodSpend = connections.reduce((sum, connection) => sum + (connection.periodSpend ?? 0), 0)
 
-  // Spend timeline: periodSpend snapshots from connection poll history
+  // Spend timeline from poll snapshots
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
   const spendSnapshots = await db.usageCredit.findMany({
     where: {
@@ -121,15 +121,17 @@ export async function GET(request: NextRequest) {
       timestamp: { gte: thirtyDaysAgo },
     },
     orderBy: { timestamp: 'asc' },
-    select: { provider: true, creditsRemaining: true, creditsLimit: true, timestamp: true },
+    select: { provider: true, requestCost: true, creditsRemaining: true, creditsLimit: true, timestamp: true },
   })
 
   const spendTimeline: { time: number; value: number; provider: string }[] = []
   for (const snap of spendSnapshots) {
-    if (snap.creditsLimit != null && snap.creditsRemaining != null) {
+    const spend = snap.requestCost
+      ?? (snap.creditsLimit != null && snap.creditsRemaining != null ? snap.creditsLimit - snap.creditsRemaining : null)
+    if (spend != null) {
       spendTimeline.push({
         time: Math.floor(snap.timestamp.getTime() / 1000),
-        value: snap.creditsLimit - snap.creditsRemaining,
+        value: spend,
         provider: snap.provider,
       })
     }

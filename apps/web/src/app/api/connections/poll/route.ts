@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
           app: 'billing-api',
           creditsLimit: snapshot.creditLimit,
           creditsRemaining: snapshot.balance,
+          requestCost: snapshot.periodSpend,
         },
       })
     }
