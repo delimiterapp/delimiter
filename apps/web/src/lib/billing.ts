@@ -1,3 +1,6 @@
+import { CostExplorerClient, GetCostAndUsageCommand } from '@aws-sdk/client-cost-explorer'
+import { BudgetsClient, DescribeBudgetsCommand } from '@aws-sdk/client-budgets'
+import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts'
 import { PROVIDER_CATALOG } from './provider-catalog'
 
 export interface BillingSnapshot {
@@ -124,13 +127,82 @@ async function pollPendingProvider(apiKey: string): Promise<BillingSnapshot> {
   }
 }
 
+function parseAwsCredential(raw: string): { accessKeyId: string; secretAccessKey: string; region: string } {
+  const parsed = JSON.parse(raw)
+  if (!parsed.accessKeyId || !parsed.secretAccessKey) {
+    throw new Error('Credential JSON must include accessKeyId and secretAccessKey')
+  }
+  return {
+    accessKeyId: parsed.accessKeyId,
+    secretAccessKey: parsed.secretAccessKey,
+    region: parsed.region || 'us-east-1',
+  }
+}
+
+async function pollBedrock(apiKey: string): Promise<BillingSnapshot> {
+  const creds = parseAwsCredential(apiKey)
+  const credentials = { accessKeyId: creds.accessKeyId, secretAccessKey: creds.secretAccessKey }
+
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const endDate = new Date(now)
+  endDate.setDate(endDate.getDate() + 1)
+
+  // Cost Explorer is global — always us-east-1
+  const ceClient = new CostExplorerClient({ region: 'us-east-1', credentials })
+  const ceResponse = await ceClient.send(new GetCostAndUsageCommand({
+    TimePeriod: {
+      Start: startOfMonth.toISOString().split('T')[0],
+      End: endDate.toISOString().split('T')[0],
+    },
+    Granularity: 'MONTHLY',
+    Metrics: ['UnblendedCost'],
+    Filter: {
+      Dimensions: { Key: 'SERVICE', Values: ['Amazon Bedrock'] },
+    },
+  }))
+
+  let periodSpend = 0
+  for (const result of ceResponse.ResultsByTime ?? []) {
+    periodSpend += parseFloat(result.Total?.UnblendedCost?.Amount ?? '0')
+  }
+
+  let creditLimit: number | null = null
+  try {
+    const stsClient = new STSClient({ region: 'us-east-1', credentials })
+    const identity = await stsClient.send(new GetCallerIdentityCommand({}))
+    const accountId = identity.Account
+    if (accountId) {
+      const budgetsClient = new BudgetsClient({ region: 'us-east-1', credentials })
+      const budgetsResponse = await budgetsClient.send(new DescribeBudgetsCommand({
+        AccountId: accountId,
+      }))
+      for (const budget of budgetsResponse.Budgets ?? []) {
+        if (budget.BudgetLimit?.Amount) {
+          const limit = parseFloat(budget.BudgetLimit.Amount)
+          if (creditLimit === null || limit > creditLimit) creditLimit = limit
+        }
+      }
+    }
+  } catch {
+    // Budgets access may not be configured — non-fatal
+  }
+
+  return {
+    balance: creditLimit != null ? creditLimit - periodSpend : null,
+    creditLimit,
+    periodSpend,
+    periodStart: startOfMonth,
+  }
+}
+
 const POLLERS: Record<string, (apiKey: string) => Promise<BillingSnapshot>> = {
   openai: pollOpenAI,
   anthropic: pollAnthropic,
   openrouter: pollOpenRouter,
   xai: pollXAI,
   google: pollPendingProvider,
-  bedrock: pollPendingProvider,
+  bedrock: pollBedrock,
 }
 
 export const SUPPORTED_PROVIDERS = PROVIDER_CATALOG
