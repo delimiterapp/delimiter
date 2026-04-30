@@ -30,7 +30,7 @@ async function pollOpenAI(apiKey: string): Promise<BillingSnapshot> {
     for (const bucket of data.data) {
       if (bucket.results) {
         for (const result of bucket.results) {
-          periodSpend += result.amount?.value ?? 0
+          periodSpend += Number(result.amount?.value ?? 0)
         }
       }
     }
@@ -39,7 +39,7 @@ async function pollOpenAI(apiKey: string): Promise<BillingSnapshot> {
   return {
     balance: null,
     creditLimit: null,
-    periodSpend: periodSpend / 100,
+    periodSpend: Number.isFinite(periodSpend) ? periodSpend : null,
     periodStart: startOfMonth,
   }
 }
@@ -59,14 +59,14 @@ async function pollAnthropic(apiKey: string): Promise<BillingSnapshot> {
   let periodSpend = 0
   if (data.data) {
     for (const bucket of data.data) {
-      periodSpend += parseFloat(bucket.amount ?? '0')
+      periodSpend += Number(bucket.amount ?? 0)
     }
   }
 
   return {
     balance: null,
     creditLimit: null,
-    periodSpend: periodSpend / 100,
+    periodSpend: Number.isFinite(periodSpend) ? periodSpend : null,
     periodStart: startOfMonth,
   }
 }
