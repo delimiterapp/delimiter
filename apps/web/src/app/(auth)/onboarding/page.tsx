@@ -95,7 +95,8 @@ export default function Onboarding() {
       if (data.providerKey?.status === 'valid') {
         const spend = data.snapshot?.periodSpend
         const balance = data.snapshot?.balance
-        const msg = balance != null ? `$${balance.toFixed(2)} remaining` : spend != null ? `$${spend.toFixed(2)} spent this period` : 'Connected'
+        const fmt = (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        const msg = balance != null ? `$${fmt(balance)} remaining` : spend != null ? `$${fmt(spend)} spent this period` : 'Connected'
         setConnectResult({ status: 'valid', message: msg })
         setConnectedProviders((prev) => new Set(prev).add(selectedProvider))
         setApiKeyInput('')

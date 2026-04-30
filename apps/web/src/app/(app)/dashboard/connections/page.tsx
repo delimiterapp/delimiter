@@ -27,7 +27,7 @@ type Connection = {
 
 function formatCurrency(value: number | null): string {
   if (value == null) return '—'
-  return `$${value.toFixed(2)}`
+  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 export default function ConnectionsPage() {

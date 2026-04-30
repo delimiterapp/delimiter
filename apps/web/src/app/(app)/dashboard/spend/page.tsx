@@ -24,7 +24,7 @@ type SpendData = {
 
 function formatCurrency(value: number | null | undefined): string {
   if (value == null) return '—'
-  return `$${value.toFixed(2)}`
+  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 function spendRisk(provider: ConnectedProvider) {

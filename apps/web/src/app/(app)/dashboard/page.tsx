@@ -25,7 +25,7 @@ type OverviewData = {
 
 function formatCurrency(value: number | null | undefined) {
   if (value == null) return '—'
-  return `$${value.toFixed(2)}`
+  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 export default function OverviewPage() {
