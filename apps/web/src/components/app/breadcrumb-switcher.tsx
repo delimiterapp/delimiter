@@ -61,7 +61,7 @@ export function BreadcrumbSwitcher() {
 
         {/* Separator */}
         <svg className="h-4 w-4 shrink-0 text-border" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-          <path d="M9 4l6 16" />
+          <path d="M15 4l-6 16" />
         </svg>
 
         {/* Project selector */}
