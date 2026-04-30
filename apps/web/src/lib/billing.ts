@@ -20,22 +20,40 @@ async function pollOpenAI(apiKey: string): Promise<BillingSnapshot> {
   startOfMonth.setHours(0, 0, 0, 0)
   const monthStart = Math.floor(startOfMonth.getTime() / 1000)
 
-  const res = await fetch(
-    `https://api.openai.com/v1/organization/costs?start_time=${monthStart}&end_time=${now}&bucket_width=1d`,
-    { headers: { Authorization: `Bearer ${apiKey}` } },
-  )
-  if (!res.ok) throw new Error(`OpenAI API error: ${res.status}`)
-
-  const data = await res.json() as { data?: { results?: { amount?: { value?: number } }[] }[] }
-
+  const headers = { Authorization: `Bearer ${apiKey}` }
   let periodSpend = 0
-  if (data.data) {
-    for (const bucket of data.data) {
-      if (bucket.results) {
-        for (const result of bucket.results) {
-          periodSpend += Number(result.amount?.value ?? 0)
+  let url: string | null = `https://api.openai.com/v1/organization/costs?start_time=${monthStart}&end_time=${now}&bucket_width=1d&limit=30`
+
+  while (url) {
+    const res = await fetch(url, { headers })
+    if (!res.ok) throw new Error(`OpenAI API error: ${res.status}`)
+
+    const page = await res.json() as {
+      data?: { results?: { amount?: { value?: number } }[] }[]
+      has_more?: boolean
+      next_page?: string
+    }
+
+    if (page.data) {
+      for (const bucket of page.data) {
+        if (bucket.results) {
+          for (const result of bucket.results) {
+            periodSpend += Number(result.amount?.value ?? 0)
+          }
         }
       }
+    }
+
+    if (page.has_more && page.next_page) {
+      const base = new URL(`https://api.openai.com/v1/organization/costs`)
+      base.searchParams.set('start_time', String(monthStart))
+      base.searchParams.set('end_time', String(now))
+      base.searchParams.set('bucket_width', '1d')
+      base.searchParams.set('limit', '30')
+      base.searchParams.set('page', page.next_page)
+      url = base.toString()
+    } else {
+      url = null
     }
   }
 
@@ -51,18 +69,40 @@ async function pollAnthropic(apiKey: string): Promise<BillingSnapshot> {
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-  const res = await fetch(
-    `https://api.anthropic.com/v1/organizations/cost_report?starting_at=${startOfMonth.toISOString()}&ending_at=${now.toISOString()}&bucket_width=1d`,
-    { headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' } },
-  )
-  if (!res.ok) throw new Error(`Anthropic API error: ${res.status}`)
-
-  const data = await res.json() as { data?: { amount?: string }[] }
-
+  const headers = { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' }
   let periodSpend = 0
-  if (data.data) {
-    for (const bucket of data.data) {
-      periodSpend += Number(bucket.amount ?? 0)
+  let url: string | null = `https://api.anthropic.com/v1/organizations/cost_report?starting_at=${startOfMonth.toISOString()}&ending_at=${now.toISOString()}&bucket_width=1d&limit=100`
+
+  while (url) {
+    const res = await fetch(url, { headers })
+    if (!res.ok) throw new Error(`Anthropic API error: ${res.status}`)
+
+    const page = await res.json() as {
+      data?: { results?: { amount?: string }[] }[]
+      has_more?: boolean
+      next_page?: string
+    }
+
+    if (page.data) {
+      for (const bucket of page.data) {
+        if (bucket.results) {
+          for (const result of bucket.results) {
+            periodSpend += Number(result.amount ?? 0)
+          }
+        }
+      }
+    }
+
+    if (page.has_more && page.next_page) {
+      const base = new URL('https://api.anthropic.com/v1/organizations/cost_report')
+      base.searchParams.set('starting_at', startOfMonth.toISOString())
+      base.searchParams.set('ending_at', now.toISOString())
+      base.searchParams.set('bucket_width', '1d')
+      base.searchParams.set('limit', '100')
+      base.searchParams.set('page', page.next_page)
+      url = base.toString()
+    } else {
+      url = null
     }
   }
 
