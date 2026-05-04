@@ -24,11 +24,18 @@ type ConnectedProvider = {
 
 type SpendPoint = { time: number; value: number; provider: string }
 
+type CreditSummary = {
+  provider: string
+  creditsRemaining: number
+  creditsLimit: number | null
+}
+
 type OverviewData = {
   connectedProviders: ConnectedProvider[]
   totalPeriodSpend: number
   recentAlerts: number
   spendTimeline: SpendPoint[]
+  creditSummary: CreditSummary[]
   hasData: boolean
 }
 
@@ -41,16 +48,21 @@ export default function OverviewPage() {
   const { activeProject } = useApp()
   const [data, setData] = useState<OverviewData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+
+  const fetchOverview = (projectId: string) =>
+    fetch(`/api/dashboard/overview?projectId=${projectId}`)
+      .then((r) => r.json())
+      .then((overview: OverviewData) => {
+        setData(overview)
+        return overview
+      })
 
   useEffect(() => {
     if (!activeProject) return
     setLoading(true)
-    fetch(`/api/dashboard/overview?projectId=${activeProject.id}`)
-      .then((response) => response.json())
-      .then((overview: OverviewData) => {
-        setData(overview)
-
-        // Auto-poll stale providers (last sync > 1 hour ago)
+    fetchOverview(activeProject.id)
+      .then((overview) => {
         const staleThreshold = Date.now() - 60 * 60 * 1000
         const stale = overview.connectedProviders.filter(
           (p) => p.lastPolledAt && new Date(p.lastPolledAt).getTime() < staleThreshold
@@ -64,21 +76,39 @@ export default function OverviewPage() {
                 body: JSON.stringify({ projectId: activeProject.id, provider: p.provider }),
               })
             )
-          ).then(() =>
-            fetch(`/api/dashboard/overview?projectId=${activeProject.id}`)
-              .then((r) => r.json())
-              .then(setData)
-          )
+          ).then(() => fetchOverview(activeProject.id))
         }
       })
       .finally(() => setLoading(false))
   }, [activeProject?.id])
 
+  const handleRefresh = () => {
+    if (!activeProject || refreshing) return
+    setRefreshing(true)
+    const providers = data?.connectedProviders ?? []
+    Promise.allSettled(
+      providers.map((p) =>
+        fetch('/api/connections/poll', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId: activeProject.id, provider: p.provider }),
+        })
+      )
+    )
+      .then(() => fetchOverview(activeProject.id))
+      .finally(() => setRefreshing(false))
+  }
+
   const connected = data?.connectedProviders ?? []
   const connectedIds = useMemo(() => new Set(connected.map((provider) => provider.provider)), [connected])
   const nextProviders = PROVIDER_CATALOG.filter((provider) => !connectedIds.has(provider.id)).slice(0, 3)
-  const connectedCount = connected.length
   const errorCount = connected.filter((provider) => provider.status === 'error').length
+
+  const totalRemainingCredits = useMemo(() => {
+    const credits = data?.creditSummary ?? []
+    if (credits.length === 0) return null
+    return credits.reduce((sum, c) => sum + c.creditsRemaining, 0)
+  }, [data])
 
   // Per-provider spend timelines for sparklines
   const providerTimelines = useMemo(() => {
@@ -188,8 +218,20 @@ export default function OverviewPage() {
           <div className="mt-2 text-2xl font-semibold tracking-tight">{formatCurrency(data?.totalPeriodSpend)}</div>
         </div>
         <div className="rounded-xl border border-border bg-white p-4">
-          <div className="text-xs font-medium text-text-tertiary">Connected Providers</div>
-          <div className="mt-2 text-2xl font-semibold tracking-tight">{connectedCount}</div>
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-medium text-text-tertiary">Remaining Credits</div>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-gray-100 hover:text-text-secondary disabled:opacity-50"
+              title="Refresh all providers"
+            >
+              <svg className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+          <div className="mt-2 text-2xl font-semibold tracking-tight">{totalRemainingCredits != null ? formatCurrency(totalRemainingCredits) : '—'}</div>
         </div>
         <div className="rounded-xl border border-border bg-white p-4">
           <div className="text-xs font-medium text-text-tertiary">Provider Errors</div>
