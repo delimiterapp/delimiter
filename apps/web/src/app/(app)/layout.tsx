@@ -8,9 +8,8 @@ import { Sidebar } from '@/components/app/sidebar'
 import { getProvider } from '@/lib/provider-catalog'
 
 const PAGE_LABELS: Record<string, string> = {
-  '/dashboard': 'Overview',
-  '/dashboard/providers': 'Providers',
-  '/dashboard/spend': 'Spend',
+  '/dashboard': 'Spend',
+  '/dashboard/providers': 'Connect',
   '/dashboard/alerts': 'Alerts',
   '/dashboard/settings': 'Settings',
   '/dashboard/logs': 'Logs',

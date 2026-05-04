@@ -7,9 +7,8 @@ import { useApp } from './app-context'
 import { BreadcrumbSwitcher } from './breadcrumb-switcher'
 
 const navItems = [
-  { label: 'Overview', href: '/dashboard', icon: 'overview' },
-  { label: 'Providers', href: '/dashboard/providers', icon: 'connections' },
-  { label: 'Spend', href: '/dashboard/spend', icon: 'credits' },
+  { label: 'Spend', href: '/dashboard', icon: 'credits' },
+  { label: 'Connect', href: '/dashboard/providers', icon: 'connections' },
   { label: 'Alerts', href: '/dashboard/alerts', icon: 'alerts' },
 ]
 
