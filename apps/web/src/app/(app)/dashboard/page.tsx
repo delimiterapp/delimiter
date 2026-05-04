@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useApp } from '@/components/app/app-context'
 import { ProviderLogo } from '@/components/app/provider-logo'
-import { capabilityLabel, getProvider, PROVIDER_CATALOG } from '@/lib/provider-catalog'
+import { capabilityLabel, getProvider, PROVIDER_CATALOG, PROVIDER_CATEGORIES, type ProviderCategory } from '@/lib/provider-catalog'
 
 const Liveline = dynamic(() => import('liveline').then((m) => m.Liveline), {
   ssr: false,
@@ -127,6 +127,25 @@ export default function SpendDashboard() {
     return byProvider
   }, [data])
 
+  const [categoryFilter, setCategoryFilter] = useState<ProviderCategory | null>(null)
+
+  const activeCategories = useMemo(() => {
+    const cats = new Set<ProviderCategory>()
+    for (const c of connected) {
+      const catalog = getProvider(c.provider)
+      if (catalog) cats.add(catalog.category)
+    }
+    return PROVIDER_CATEGORIES.filter((cat) => cats.has(cat.id))
+  }, [connected])
+
+  const filteredConnected = useMemo(() => {
+    if (!categoryFilter) return connected
+    return connected.filter((c) => {
+      const catalog = getProvider(c.provider)
+      return catalog?.category === categoryFilter
+    })
+  }, [connected, categoryFilter])
+
   const [spendWindow, setSpendWindow] = useState(604800)
   const spendWindowRef = useRef(spendWindow)
   spendWindowRef.current = spendWindow
@@ -169,10 +188,10 @@ export default function SpendDashboard() {
             <div className="h-px w-16 bg-border" />
             <ProviderLogo providerId="bedrock" size="lg" />
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Connect your first AI provider</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Connect your first service</h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-text-secondary">
-            Delimiter monitors AI API spend, usage, balances, and configured rate limits from provider reporting APIs.
-            Add a dedicated read-only or admin reporting key to start syncing.
+            Delimiter monitors spend, usage, balances, and limits across AI providers, delivery APIs, financial services, and more.
+            Add a dedicated read-only or reporting key to start syncing.
           </p>
           <div className="mt-8 grid w-full gap-3 sm:grid-cols-3">
             {PROVIDER_CATALOG.slice(0, 3).map((provider) => (
@@ -191,7 +210,7 @@ export default function SpendDashboard() {
             href="/dashboard/providers"
             className="shine-hover mt-8 rounded-lg bg-text-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-text-primary/90"
           >
-            View all providers
+            View all services
           </Link>
         </div>
       </div>
@@ -204,7 +223,7 @@ export default function SpendDashboard() {
         <div>
           <h1 className="text-lg font-semibold">Spend</h1>
           <p className="mt-1 text-sm text-text-secondary">
-            Billing-period spend, balances, and limits across connected providers.
+            Billing-period spend, balances, and limits across all connected services.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -222,7 +241,7 @@ export default function SpendDashboard() {
             href="/dashboard/providers"
             className="rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-text-primary/90"
           >
-            Add provider
+            Add service
           </Link>
         </div>
       </div>
@@ -287,9 +306,33 @@ export default function SpendDashboard() {
       )}
 
       <div>
-        <div className="mb-3 text-sm font-medium text-text-secondary">Providers</div>
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setCategoryFilter(null)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              categoryFilter === null
+                ? 'bg-text-primary text-white'
+                : 'bg-white border border-border text-text-secondary hover:bg-surface hover:text-text-primary'
+            }`}
+          >
+            All
+          </button>
+          {activeCategories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setCategoryFilter(categoryFilter === cat.id ? null : cat.id)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                categoryFilter === cat.id
+                  ? 'bg-text-primary text-white'
+                  : 'bg-white border border-border text-text-secondary hover:bg-surface hover:text-text-primary'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {connected.map((connection) => {
+          {filteredConnected.map((connection) => {
             const catalogProvider = getProvider(connection.provider)
             const timeline = providerTimelines.get(connection.provider) ?? []
             const risk = spendRisk(connection)

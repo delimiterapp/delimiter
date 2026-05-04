@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useApp } from '@/components/app/app-context'
 import { ProviderLogo } from '@/components/app/provider-logo'
-import { capabilityLabel, getProvider, PROVIDER_CATALOG } from '@/lib/provider-catalog'
+import { capabilityLabel, getProvider, PROVIDER_CATALOG, PROVIDER_CATEGORIES, type ProviderCategory } from '@/lib/provider-catalog'
 
 type ProviderKeyInfo = {
   id: string
@@ -63,9 +63,16 @@ export default function ConnectionsPage() {
     setPolling(null)
   }
 
+  const [categoryFilter, setCategoryFilter] = useState<ProviderCategory | null>(null)
+
   const keyMap = useMemo(() => new Map(keys.map((key) => [key.provider, key])), [keys])
   const connectionMap = useMemo(() => new Map(connections.map((connection) => [connection.provider, connection])), [connections])
   const connectedCount = connections.filter((connection) => connection.status === 'connected').length
+
+  const filteredCatalog = useMemo(() => {
+    if (!categoryFilter) return PROVIDER_CATALOG
+    return PROVIDER_CATALOG.filter((p) => p.category === categoryFilter)
+  }, [categoryFilter])
 
   if (loading) {
     return (
@@ -79,9 +86,9 @@ export default function ConnectionsPage() {
     <div className="p-4 md:p-8">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-lg font-semibold">Providers</h1>
+          <h1 className="text-lg font-semibold">Services</h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-text-secondary">
-            Connect provider reporting credentials to monitor AI spend, usage, balances, and configured rate limits in one place.
+            Connect reporting credentials to monitor spend, usage, balances, and limits across AI, delivery, financial, and infrastructure services.
           </p>
         </div>
         <div className="rounded-lg border border-border bg-white px-3 py-2 text-xs text-text-secondary">
@@ -98,8 +105,34 @@ export default function ConnectionsPage() {
         </div>
       </div>
 
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => setCategoryFilter(null)}
+          className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            categoryFilter === null
+              ? 'bg-text-primary text-white'
+              : 'bg-white border border-border text-text-secondary hover:bg-surface hover:text-text-primary'
+          }`}
+        >
+          All
+        </button>
+        {PROVIDER_CATEGORIES.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => setCategoryFilter(categoryFilter === cat.id ? null : cat.id)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              categoryFilter === cat.id
+                ? 'bg-text-primary text-white'
+                : 'bg-white border border-border text-text-secondary hover:bg-surface hover:text-text-primary'
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {PROVIDER_CATALOG.map((provider) => {
+        {filteredCatalog.map((provider) => {
           const key = keyMap.get(provider.id)
           const connection = connectionMap.get(provider.id)
           const isConnected = key?.status === 'valid' && connection?.status === 'connected'
