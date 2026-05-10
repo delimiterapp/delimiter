@@ -471,6 +471,24 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
     securityNote: 'Delimiter reads usage data only. It never initiates browser sessions.',
     statusNote: 'Initial connection stores the credential securely. Usage sync is next.',
   },
+  {
+    id: 'supabase',
+    name: 'Supabase',
+    shortName: 'Sb',
+    category: 'infra',
+    keyType: 'Organization access token',
+    keyHint: 'Create an access token from your Supabase organization settings.',
+    capabilities: ['spend', 'usage', 'balance'],
+    accent: '#3ecf8e',
+    bg: '#ecfdf5',
+    description: 'Monitor project compute hours, storage, bandwidth, and remaining credits across your Supabase organization.',
+    setupSteps: [
+      'Open Supabase Dashboard > Organization Settings > Access Tokens.',
+      'Create a new token for Delimiter with read-only scope.',
+      'Paste the token here. Delimiter reads usage metrics and billing data.',
+    ],
+    securityNote: 'Delimiter reads billing and usage metrics only. It never modifies databases, projects, or organization settings.',
+  },
 ]
 
 export function getProvider(providerId: string): ProviderCatalogItem | undefined {
