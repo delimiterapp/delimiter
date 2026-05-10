@@ -370,6 +370,61 @@ async function pollBedrock(apiKey: string, creditCtx?: CreditBalanceContext): Pr
   }
 }
 
+async function pollSupabase(apiKey: string, creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
+  const headers = { Authorization: `Bearer ${apiKey}` }
+
+  const orgsRes = await fetch('https://api.supabase.com/v1/organizations', { headers })
+  if (!orgsRes.ok) {
+    const body = await orgsRes.text().catch(() => '')
+    throw new Error(`Supabase API error: ${orgsRes.status} ${body}`.trim())
+  }
+
+  const orgs = await orgsRes.json() as { id: string; slug: string }[]
+  if (!orgs.length) throw new Error('No Supabase organizations found for this token')
+
+  const orgSlug = orgs[0].slug
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  let periodSpend: number | null = null
+  try {
+    const usageRes = await fetch(
+      `https://api.supabase.com/v1/organizations/${orgSlug}/billing/usage`,
+      { headers },
+    )
+    if (usageRes.ok) {
+      const usage = await usageRes.json() as { total_usage?: number; usages?: { usage?: number; cost?: number }[] }
+      if (usage.total_usage != null) {
+        periodSpend = usage.total_usage / 100
+      } else if (usage.usages) {
+        let total = 0
+        for (const u of usage.usages) {
+          total += u.cost ?? 0
+        }
+        periodSpend = total / 100
+      }
+    }
+  } catch {
+    // usage endpoint may not be accessible
+  }
+
+  let balance: number | null = null
+  let creditLimit: number | null = null
+  if (creditCtx) {
+    creditLimit = creditCtx.creditBalanceEntry
+    balance = periodSpend != null
+      ? creditCtx.creditBalanceEntry - periodSpend
+      : creditCtx.creditBalanceEntry
+  }
+
+  return {
+    balance,
+    creditLimit,
+    periodSpend,
+    periodStart: startOfMonth,
+  }
+}
+
 const POLLERS: Record<string, (apiKey: string, creditCtx?: CreditBalanceContext) => Promise<BillingSnapshot>> = {
   openai: pollOpenAI,
   anthropic: pollAnthropic,
@@ -377,6 +432,22 @@ const POLLERS: Record<string, (apiKey: string, creditCtx?: CreditBalanceContext)
   xai: pollXAI,
   google: pollPendingProvider,
   bedrock: pollBedrock,
+  supabase: pollSupabase,
+  increase: pollPendingProvider,
+  nash: pollPendingProvider,
+  senpex: pollPendingProvider,
+  uber_direct: pollPendingProvider,
+  serper: pollPendingProvider,
+  parallel: pollPendingProvider,
+  neon: pollPendingProvider,
+  doordash: pollPendingProvider,
+  vapi: pollPendingProvider,
+  retell: pollPendingProvider,
+  livekit: pollPendingProvider,
+  pipecat: pollPendingProvider,
+  stripe: pollPendingProvider,
+  google_maps: pollPendingProvider,
+  smooth: pollPendingProvider,
 }
 
 export const SUPPORTED_PROVIDERS = PROVIDER_CATALOG
