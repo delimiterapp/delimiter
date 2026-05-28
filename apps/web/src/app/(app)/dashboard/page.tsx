@@ -111,10 +111,15 @@ export default function SpendDashboard() {
   const connected = data?.connectedProviders ?? []
   const errorCount = connected.filter((p) => p.status === 'error').length
 
-  const totalRemainingCredits = useMemo(() => {
+  const totalTokenCredits = useMemo(() => {
     const credits = data?.creditSummary ?? []
     if (credits.length === 0) return null
-    return credits.reduce((sum, c) => sum + c.creditsRemaining, 0)
+    const aiCredits = credits.filter((c) => {
+      const catalog = getProvider(c.provider)
+      return catalog?.category === 'ai'
+    })
+    if (aiCredits.length === 0) return null
+    return aiCredits.reduce((sum, c) => sum + c.creditsRemaining, 0)
   }, [data])
 
   const providerTimelines = useMemo(() => {
@@ -252,8 +257,8 @@ export default function SpendDashboard() {
           <div className="mt-2 text-2xl font-semibold tracking-tight">{formatCurrency(data?.totalPeriodSpend)}</div>
         </div>
         <div className="rounded-xl border border-border bg-white p-4">
-          <div className="text-xs font-medium text-text-tertiary">Remaining Credits</div>
-          <div className="mt-2 text-2xl font-semibold tracking-tight">{totalRemainingCredits != null ? formatCurrency(totalRemainingCredits) : '—'}</div>
+          <div className="text-xs font-medium text-text-tertiary">Token Credits</div>
+          <div className="mt-2 text-2xl font-semibold tracking-tight">{totalTokenCredits != null ? formatCurrency(totalTokenCredits) : '—'}</div>
         </div>
         <div className="rounded-xl border border-border bg-white p-4">
           <div className="text-xs font-medium text-text-tertiary">Provider Errors</div>

@@ -448,6 +448,9 @@ const POLLERS: Record<string, (apiKey: string, creditCtx?: CreditBalanceContext)
   stripe: pollPendingProvider,
   google_maps: pollPendingProvider,
   smooth: pollPendingProvider,
+  digitalocean: pollPendingProvider,
+  render: pollPendingProvider,
+  elevenlabs: pollPendingProvider,
 }
 
 export const SUPPORTED_PROVIDERS = PROVIDER_CATALOG
