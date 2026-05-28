@@ -493,6 +493,7 @@ const POLLERS: Record<string, (apiKey: string, creditCtx?: CreditBalanceContext)
   digitalocean: pollDigitalOcean,
   render: pollPendingProvider,
   elevenlabs: pollPendingProvider,
+  backblaze: pollPendingProvider,
 }
 
 export const SUPPORTED_PROVIDERS = PROVIDER_CATALOG

@@ -474,6 +474,24 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
     ],
     securityNote: 'Delimiter uses this key only to read usage and billing. It never generates speech or modifies voices.',
   },
+  {
+    id: 'backblaze',
+    name: 'Backblaze',
+    shortName: 'B2',
+    categories: ['infra'],
+    keyType: 'Application key',
+    keyHint: 'Create an application key from your Backblaze B2 account.',
+    capabilities: ['spend', 'usage', 'balance'],
+    accent: '#e21e29',
+    bg: '#fef2f2',
+    description: 'Monitor B2 storage usage, bandwidth costs, and remaining credits across your Backblaze account.',
+    setupSteps: [
+      'Open Backblaze B2 > App Keys and create a new application key.',
+      'Use a key with read-only access to billing and usage.',
+      'Paste the key ID and application key here (comma-separated: keyId,applicationKey).',
+    ],
+    securityNote: 'Delimiter reads billing and usage data only. It never creates, modifies, or deletes buckets or files.',
+  },
 ]
 
 export function getProvider(providerId: string): ProviderCatalogItem | undefined {
