@@ -32,6 +32,7 @@ export type ProviderCatalogItem = {
   description: string
   setupSteps: string[]
   securityNote: string
+  tokenCredits?: boolean
   statusNote?: string
   iamPolicy?: string
 }
@@ -42,6 +43,7 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
     name: 'OpenAI',
     shortName: 'OA',
     category: 'ai',
+    tokenCredits: true,
     keyType: 'Admin API key',
     keyHint: 'Create an Admin API key in OpenAI organization settings.',
     capabilities: ['spend', 'usage', 'configured_limits', 'models'],
@@ -60,6 +62,7 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
     name: 'Anthropic',
     shortName: 'An',
     category: 'ai',
+    tokenCredits: true,
     keyType: 'Admin API key',
     keyHint: 'Create an Admin API key in Claude Console organization settings.',
     capabilities: ['spend', 'usage', 'configured_limits', 'models'],
@@ -78,6 +81,7 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
     name: 'Google Gemini',
     shortName: 'G',
     category: 'ai',
+    tokenCredits: true,
     keyType: 'Google AI / Vertex credential',
     keyHint: 'Use a Gemini API key or a Google Cloud credential with billing/usage visibility.',
     capabilities: ['spend', 'usage', 'configured_limits', 'models'],
@@ -97,6 +101,7 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
     name: 'AWS Bedrock',
     shortName: 'AWS',
     category: 'ai',
+    tokenCredits: true,
     keyType: 'Read-only IAM credential JSON',
     keyHint: 'Dedicated read-only credential scoped to Bedrock spend, models, and quotas. Never use root keys.',
     capabilities: ['spend', 'usage', 'configured_limits', 'models'],
@@ -163,6 +168,7 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
     name: 'OpenRouter',
     shortName: 'OR',
     category: 'ai',
+    tokenCredits: true,
     keyType: 'API key',
     keyHint: 'Create an OpenRouter API key from account settings.',
     capabilities: ['spend', 'usage', 'balance', 'models'],
@@ -181,6 +187,7 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
     name: 'xAI',
     shortName: 'xAI',
     category: 'ai',
+    tokenCredits: true,
     keyType: 'API key',
     keyHint: 'Create an API key from xAI Console. Management keys unlock billing sync.',
     capabilities: ['balance', 'configured_limits'],
@@ -417,6 +424,7 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
     name: 'DigitalOcean',
     shortName: 'DO',
     category: 'infra',
+    tokenCredits: true,
     keyType: 'Personal access token',
     keyHint: 'Create a read-only personal access token from your DigitalOcean account.',
     capabilities: ['spend', 'usage', 'balance'],

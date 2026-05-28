@@ -119,12 +119,12 @@ export default function SpendDashboard() {
   const totalTokenCredits = useMemo(() => {
     const credits = data?.creditSummary ?? []
     if (credits.length === 0) return null
-    const aiCredits = credits.filter((c) => {
+    const tokenProviders = credits.filter((c) => {
       const catalog = getProvider(c.provider)
-      return catalog?.category === 'ai'
+      return catalog?.tokenCredits === true
     })
-    if (aiCredits.length === 0) return null
-    return aiCredits.reduce((sum, c) => sum + c.creditsRemaining, 0)
+    if (tokenProviders.length === 0) return null
+    return tokenProviders.reduce((sum, c) => sum + c.creditsRemaining, 0)
   }, [data])
 
   const providerTimelines = useMemo(() => {
