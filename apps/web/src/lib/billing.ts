@@ -273,14 +273,60 @@ async function pollXAI(apiKey: string, creditCtx?: CreditBalanceContext): Promis
   }
 }
 
-async function pollPendingProvider(apiKey: string, _creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
+async function pollPendingProvider(apiKey: string, creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
   if (!apiKey.trim()) throw new Error('Credential is required')
 
+  let balance: number | null = null
+  let creditLimit: number | null = null
+  if (creditCtx) {
+    creditLimit = creditCtx.creditBalanceEntry
+    balance = creditCtx.creditBalanceEntry
+  }
+
   return {
-    balance: null,
-    creditLimit: null,
+    balance,
+    creditLimit,
     periodSpend: null,
     periodStart: null,
+  }
+}
+
+async function pollDigitalOcean(apiKey: string, creditCtx?: CreditBalanceContext): Promise<BillingSnapshot> {
+  const headers = { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }
+
+  let periodSpend: number | null = null
+  try {
+    const balanceRes = await fetch('https://api.digitalocean.com/v2/customers/balance', { headers })
+    if (balanceRes.ok) {
+      const data = await balanceRes.json() as {
+        month_to_date_usage?: string
+        account_balance?: string
+        month_to_date_balance?: string
+      }
+      periodSpend = Math.abs(parseFloat(data.month_to_date_usage ?? '0'))
+    }
+  } catch {
+    // balance endpoint may not be accessible
+  }
+
+  let balance: number | null = null
+  let creditLimit: number | null = null
+  if (creditCtx) {
+    creditLimit = creditCtx.creditBalanceEntry
+    balance = periodSpend != null
+      ? creditCtx.creditBalanceEntry - periodSpend
+      : creditCtx.creditBalanceEntry
+  }
+
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0, 0, 0, 0)
+
+  return {
+    balance,
+    creditLimit,
+    periodSpend,
+    periodStart: startOfMonth,
   }
 }
 
@@ -444,7 +490,7 @@ const POLLERS: Record<string, (apiKey: string, creditCtx?: CreditBalanceContext)
   stripe: pollPendingProvider,
   google_maps: pollPendingProvider,
   smooth: pollPendingProvider,
-  digitalocean: pollPendingProvider,
+  digitalocean: pollDigitalOcean,
   render: pollPendingProvider,
   elevenlabs: pollPendingProvider,
 }
