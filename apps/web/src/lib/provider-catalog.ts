@@ -5,12 +5,11 @@ export type ProviderCapability =
   | 'balance'
   | 'models'
 
-export type ProviderCategory = 'ai' | 'delivery' | 'financial' | 'voice' | 'search' | 'infra'
+export type ProviderCategory = 'ai' | 'financial' | 'voice' | 'search' | 'infra'
 
 export const PROVIDER_CATEGORIES: { id: ProviderCategory; label: string }[] = [
   { id: 'ai', label: 'AI' },
   { id: 'voice', label: 'Voice' },
-  { id: 'delivery', label: 'Delivery' },
   { id: 'financial', label: 'Financial' },
   { id: 'search', label: 'Search' },
   { id: 'infra', label: 'Infra' },
@@ -214,63 +213,6 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
     securityNote: 'Use a read-only key. Delimiter never initiates transactions or modifies account settings.',
   },
   {
-    id: 'nash',
-    name: 'Nash',
-    shortName: 'Na',
-    category: 'delivery',
-    keyType: 'API key',
-    keyHint: 'Create an API key from your Nash dashboard.',
-    capabilities: ['spend', 'usage'],
-    accent: '#6d28d9',
-    bg: '#f5f3ff',
-    description: 'Track delivery spend, job volume, and carrier routing costs across your Nash delivery orchestration.',
-    setupSteps: [
-      'Open your Nash dashboard and navigate to API settings.',
-      'Create a key or use your existing API key.',
-      'Paste the key here. Delimiter uses it to read delivery history and costs.',
-    ],
-    securityNote: 'Delimiter reads delivery history and cost data only. It never creates or modifies jobs.',
-    statusNote: 'Initial connection stores the credential securely. Full delivery cost sync is next.',
-  },
-  {
-    id: 'senpex',
-    name: 'Senpex',
-    shortName: 'Sx',
-    category: 'delivery',
-    keyType: 'Client credentials',
-    keyHint: 'Use your Senpex client ID and secret.',
-    capabilities: ['spend', 'usage'],
-    accent: '#0284c7',
-    bg: '#f0f9ff',
-    description: 'Track last-mile delivery costs, job volume, and delivery status from Senpex.',
-    setupSteps: [
-      'Locate your Senpex client ID and secret from your account settings.',
-      'Paste both values here (comma-separated: clientId,secret).',
-      'Delimiter uses these to read delivery history and invoiced costs.',
-    ],
-    securityNote: 'Delimiter reads delivery records only. It never creates deliveries or modifies account settings.',
-    statusNote: 'Initial connection stores credentials securely. Delivery cost sync is next.',
-  },
-  {
-    id: 'uber_direct',
-    name: 'Uber Direct',
-    shortName: 'UD',
-    category: 'delivery',
-    keyType: 'OAuth client credentials',
-    keyHint: 'Use your Uber Direct client ID and secret.',
-    capabilities: ['spend', 'usage'],
-    accent: '#000000',
-    bg: '#f4f4f5',
-    description: 'Track delivery spend, trip costs, and volume from Uber Direct.',
-    setupSteps: [
-      'Open your Uber Developer dashboard and locate your Direct API credentials.',
-      'Paste client ID and secret here (comma-separated: clientId,secret).',
-      'Delimiter uses these to read trip costs and delivery history.',
-    ],
-    securityNote: 'Delimiter reads delivery data only. It never creates deliveries or charges your account.',
-    statusNote: 'Initial connection stores credentials securely. Trip cost sync is next.',
-  },
-  {
     id: 'serper',
     name: 'Serper',
     shortName: 'Se',
@@ -323,25 +265,6 @@ export const PROVIDER_CATALOG: ProviderCatalogItem[] = [
       'Paste it here. Delimiter reads project usage and billing data.',
     ],
     securityNote: 'Delimiter reads billing and usage metrics only. It never modifies databases or project settings.',
-  },
-  {
-    id: 'doordash',
-    name: 'DoorDash',
-    shortName: 'DD',
-    category: 'delivery',
-    keyType: 'Developer credentials',
-    keyHint: 'Use your DoorDash Developer ID, key ID, and signing secret.',
-    capabilities: ['spend', 'usage'],
-    accent: '#ff3008',
-    bg: '#fff5f3',
-    description: 'Track delivery spend, order volume, and fees from DoorDash Drive.',
-    setupSteps: [
-      'Open your DoorDash Developer Portal and locate your credentials.',
-      'Paste developer ID, key ID, and signing secret here (comma-separated).',
-      'Delimiter uses these to read delivery costs and order history.',
-    ],
-    securityNote: 'Delimiter reads delivery data only. It never creates orders or modifies your DoorDash account.',
-    statusNote: 'Initial connection stores credentials securely. Delivery cost sync is next.',
   },
   {
     id: 'vapi',
