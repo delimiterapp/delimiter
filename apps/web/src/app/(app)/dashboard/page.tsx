@@ -143,7 +143,7 @@ export default function SpendDashboard() {
     const cats = new Set<ProviderCategory>()
     for (const c of connected) {
       const catalog = getProvider(c.provider)
-      if (catalog) cats.add(catalog.category)
+      if (catalog) catalog.categories.forEach((cat) => cats.add(cat))
     }
     return PROVIDER_CATEGORIES.filter((cat) => cats.has(cat.id))
   }, [connected])
@@ -152,7 +152,7 @@ export default function SpendDashboard() {
     if (!categoryFilter) return connected
     return connected.filter((c) => {
       const catalog = getProvider(c.provider)
-      return catalog?.category === categoryFilter
+      return catalog?.categories.includes(categoryFilter)
     })
   }, [connected, categoryFilter])
 

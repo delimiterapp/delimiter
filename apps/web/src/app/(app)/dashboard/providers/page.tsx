@@ -71,7 +71,7 @@ export default function ConnectionsPage() {
 
   const filteredCatalog = useMemo(() => {
     if (!categoryFilter) return PROVIDER_CATALOG
-    return PROVIDER_CATALOG.filter((p) => p.category === categoryFilter)
+    return PROVIDER_CATALOG.filter((p) => p.categories.includes(categoryFilter))
   }, [categoryFilter])
 
   if (loading) {
