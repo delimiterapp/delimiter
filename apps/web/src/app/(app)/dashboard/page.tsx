@@ -109,7 +109,6 @@ export default function SpendDashboard() {
   }
 
   const connected = data?.connectedProviders ?? []
-  const errorCount = connected.filter((p) => p.status === 'error').length
 
   const totalRemainingCredits = useMemo(() => {
     const credits = data?.creditSummary ?? []
@@ -257,7 +256,7 @@ export default function SpendDashboard() {
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-5">
+      <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
         <div className="rounded-xl border border-border bg-white p-4">
           <div className="text-xs font-medium text-text-tertiary">Period Spend</div>
           <div className="mt-2 text-2xl font-semibold tracking-tight">{formatCurrency(data?.totalPeriodSpend)}</div>
@@ -270,16 +269,6 @@ export default function SpendDashboard() {
           <div className="text-xs font-medium text-text-tertiary">Token Credits</div>
           <div className="mt-2 text-2xl font-semibold tracking-tight">{totalTokenCredits != null ? formatCurrency(totalTokenCredits) : '—'}</div>
         </div>
-        <div className="rounded-xl border border-border bg-white p-4">
-          <div className="text-xs font-medium text-text-tertiary">Provider Errors</div>
-          <div className={`mt-2 text-2xl font-semibold tracking-tight ${errorCount > 0 ? 'text-red' : ''}`}>{errorCount}</div>
-        </div>
-        <Link href="/dashboard/alerts" className="rounded-xl border border-border bg-white p-4 transition-colors hover:border-accent/30">
-          <div className="text-xs font-medium text-text-tertiary">Alerts 24h</div>
-          <div className={`mt-2 text-2xl font-semibold tracking-tight ${(data?.recentAlerts ?? 0) > 0 ? 'text-red' : ''}`}>
-            {data?.recentAlerts ?? 0}
-          </div>
-        </Link>
       </div>
 
       {spendLive.length > 1 && (
